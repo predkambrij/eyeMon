@@ -189,8 +189,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         Rect[] facesArray = faces.toArray();
         for (int i = 0; i < facesArray.length; i++)
             Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
-        String result = getString(5,2);
-        Log.i(TAG, "XXXXXXResult: "+result);
+        //String result = getString(5,2);
+        //Log.i(TAG, "XXXXXXResult: "+result);
         return mRgba;
     }
 

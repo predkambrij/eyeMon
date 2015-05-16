@@ -51,7 +51,7 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="OpenCV Sample - face-detection.null.1639518055" name="OpenCV Sample - face-detection"/>
+		<project id="1 OpenCV optical-flow.null.1639518055" name="1 OpenCV optical-flow"/>
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
@@ -60,7 +60,7 @@
 		</scannerConfigBuildInfo>
 	</storageModule>
 	<storageModule moduleId="refreshScope" versionNumber="1">
-		<resource resourceType="PROJECT" workspacePath="/OpenCV Sample - face-detection"/>
+		<resource resourceType="PROJECT" workspacePath="/1 OpenCV optical-flow"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>

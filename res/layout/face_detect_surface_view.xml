@@ -9,7 +9,7 @@
         android:layout_height="fill_parent"
         android:id="@+id/fd_activity_surface_view"
         opencv:show_fps="true"
-        opencv:camera_id="back"
+        opencv:camera_id="front"
          />
 
 </LinearLayout>
