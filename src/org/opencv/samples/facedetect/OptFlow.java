@@ -10,7 +10,7 @@ public class OptFlow {
     }
 
     public void detect(Mat imageRGB, Mat imageGray) {
-        optFlowDetect(mNativeObj, imageRGB.getNativeObjAddr(), imageGray.getNativeObjAddr());
+        optFlowDetect(imageRGB.getNativeObjAddr(), imageGray.getNativeObjAddr());
     }
 
     public void release() {
@@ -21,6 +21,6 @@ public class OptFlow {
     
     private static native long optFlowCreateObject(String cascadeName, int minFaceSize);
     private static native void optFlowDestroyObject(long thiz);
-    private static native void optFlowDetect(long thiz, long inputImageRGB, long inputImageGray);
+    private static native void optFlowDetect(long inputImageRGB, long inputImageGray);
     
 }
