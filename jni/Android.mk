@@ -7,9 +7,11 @@ include $(CLEAR_VARS)
 #OPENCV_LIB_TYPE:=SHARED
 include ../../sdk/native/jni/OpenCV.mk
 
-LOCAL_SRC_FILES  := DetectionBasedTracker_jni.cpp native.c
+LOCAL_SRC_FILES  := DetectionBasedTracker_jni.cpp native.c optflow.cpp
 LOCAL_C_INCLUDES += $(LOCAL_PATH)
 LOCAL_LDLIBS     += -llog -ldl
+
+LOCAL_CFLAGS += -std=c++11
 
 LOCAL_MODULE     := detection_based_tracker
 

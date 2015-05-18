@@ -43,6 +43,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private Mat                    mRgba;
     private Mat                    mGray;
     private File                   mCascadeFile;
+    private OptFlow      optFlow;
     private CascadeClassifier      mJavaDetector;
     private DetectionBasedTracker  mNativeDetector;
 
@@ -90,6 +91,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
 
                         cascadeDir.delete();
+                        
+                        optFlow = new OptFlow();
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -103,6 +106,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                     super.onManagerConnected(status);
                 } break;
             }
+            
         }
     };
 
@@ -159,6 +163,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
     	
+    	
         mRgba = inputFrame.rgba();
         Core.flip(mRgba,mRgba,1); //1 is for y-axis
         mGray = inputFrame.gray();
@@ -191,6 +196,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
         //String result = getString(5,2);
         //Log.i(TAG, "XXXXXXResult: "+result);
+        String tes = "acih "+optFlowTest(1, 2);//optFlowTest getString 
+        Core.putText(mRgba, " "+tes,
+                new org.opencv.core.Point(125,50), Core.FONT_HERSHEY_PLAIN, 3.0, new Scalar(0, 0, 0, 255));
+        
+        optFlow.detect(mRgba, mGray);
         return mRgba;
     }
 
@@ -242,6 +252,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             }
         }
     }
+    private native String optFlowTest1(int value1, int value2);
+    private native String optFlowTest(int value1, int value2);
     private native void helloLog(String logThis);
     private native String getString(int value1, int value2);
 }

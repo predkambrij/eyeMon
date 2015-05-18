@@ -7,6 +7,30 @@
 #define DEBUG_TAG "NDK_AndroidNDK1SampleActivity"
 
 
+jstring Java_org_opencv_samples_facedetect_FdActivity_optFlowTest1(JNIEnv * env, jobject this, jint value1, jint value2)
+{
+        char *szFormat = "native res: %i";
+        char *szResult;
+
+        // add the two values
+        jlong sum = value1+value2;
+
+        // malloc room for the resulting string
+        szResult = malloc(sizeof(szFormat) + 200);
+
+        // standard sprintf
+        sprintf(szResult, szFormat, sum);
+
+        // get an object string
+        jstring result = (*env)->NewStringUTF(env, szResult);
+
+        // cleanup
+        free(szResult);
+
+        return result;
+}
+
+
 
 
 
