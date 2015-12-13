@@ -266,13 +266,14 @@ class OptFlow {
                 
             }
             if (yes1 == false &&
-                    std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-start).count() > 1000000000) {
+                    std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-start).count() > 3000000000) {
                 goodFeaturesToTrack(gray, points[1], MAX_COUNT, 0.01, 10, Mat(), 3, 0, 0.04);
                 char buffer [500];
                 sprintf (buffer, "INIIITTT (%i)", points[1].size());
                 doLog(jenv, buffer);
                 
                 cornerSubPix(gray, points[1], subPixWinSize, Size(-1,-1), termcrit); // sig abrt
+                yes1=true;
             }
             
             
