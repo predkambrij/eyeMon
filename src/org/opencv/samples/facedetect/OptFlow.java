@@ -5,6 +5,7 @@ import org.opencv.core.MatOfRect;
 
 public class OptFlow {
     private long mNativeObj = 0;
+
     public OptFlow() {
         mNativeObj = optFlowCreateObject("cascadeName", 123);
     }
@@ -18,9 +19,7 @@ public class OptFlow {
         mNativeObj = 0;
     }
 
-    
     private static native long optFlowCreateObject(String cascadeName, int minFaceSize);
-    private static native void optFlowDestroyObject(long thiz);
     private static native void optFlowDetect(long inputImageRGB, long inputImageGray);
-    
+    private static native void optFlowDestroyObject(long thiz);
 }

@@ -1,20 +1,9 @@
 // fake h file
 #include <jni.h>
 
-//  JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeSetFaceSize
-//  (JNIEnv *, jclass, jlong, jint);
-
-
-
-
 #include <string.h>
 #include <stdio.h>
 #include <android/log.h>
-
-
-#define DEBUG_TAG "NDK_AndroidNDK1SampleActivity"
-
-
 
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -24,14 +13,14 @@
 #include <ctype.h>
 #include <chrono>
 
+#define DEBUG_TAG "NDK_AndroidNDK1SampleActivity"
+
 using namespace cv;
 using namespace std;
-//using namespace std::chrono;
 
 extern "C" {
 auto start = std::chrono::high_resolution_clock::now();
 
-//auto start = std::chrono::high_resolution_clock::now();
 JNIEXPORT jstring JNICALL Java_org_opencv_samples_facedetect_FdActivity_optFlowTest(JNIEnv * env, jclass, jint value1, jint value2)
 {
         //char *szFormat = "native result: %i";
@@ -47,20 +36,16 @@ JNIEXPORT jstring JNICALL Java_org_opencv_samples_facedetect_FdActivity_optFlowT
         auto end = std::chrono::high_resolution_clock::now();
         unsigned long long int ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
         
-        
         // standard sprintf
         sprintf(szResult, "r: %llu", ns);// szFormat sum
 
         // get an object string
         jstring result = (env)->NewStringUTF(szResult);
 
-
         __android_log_print(ANDROID_LOG_DEBUG, DEBUG_TAG, "NDK:OPTFLOL: [%s]", szResult);// szLogThis
         
         // cleanup
         free(szResult);
-        
-        
 
         return result;
 }
@@ -87,9 +72,6 @@ void doLog(JNIEnv * env, const char* text) {
     // cleanup
     free(szResult);
 }
-
-
-
 
 Point2f point;
 bool addRemovePt = false;
@@ -334,8 +316,3 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowDetect
 
 
 }
-
-
-/*
-
-*/
