@@ -45,7 +45,7 @@ void doLogx(JNIEnv * env, const char* text) {
 
 
 class OptFlow {
-    Mat rgb, grayx, gray, prevGray;
+    Mat rgb, grayx, left, right, prevLeft, prevRight;
     unsigned long long int ns = 0;
     vector<Point2f> points[2];
     const int MAX_COUNT = 500;
@@ -71,9 +71,10 @@ class OptFlow {
     }
     public: int run(JNIEnv * jenv, Mat rgb, Mat grayo) {
         cvtColor(rgb, grayx, COLOR_BGR2GRAY);
-        preprocess(grayx, &gray);
-        if(prevGray.empty()) {
-            gray.copyTo(prevGray);
+        preprocess(grayx, &left, &right);
+        if(prevLeft.empty()) {
+            left.copyTo(prevLeft);
+            right.copyTo(prevRight);
             /*
             point = Point2f((float)10, (float)30);
             vector<Point2f> tmp;
@@ -87,10 +88,13 @@ class OptFlow {
         //process(previous, next, &cflow);
         //environment(jenv);
 
-        process(prevGray, gray, rgb);
+        process(prevLeft, left, prevRight, right, rgb);
+
+        cv::swap(prevLeft, left);
+        cv::swap(prevRight, right);
         
         return 0;
-
+/*
         if (yes1 == false &&
                 std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-startx).count() > 3000000000) {
             goodFeaturesToTrack(gray, points[1], MAX_COUNT, 0.01, 10, Mat(), 3, 0, 0.04);
@@ -143,6 +147,6 @@ class OptFlow {
         cv::swap(prevGray, gray);
         //gray.copyTo(prevGray);
         yes = true;
-        return 0;
+        return 0;*/
     }
 }; // end of OptFlow class definition
