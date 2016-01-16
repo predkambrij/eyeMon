@@ -12,9 +12,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.objdetect.CascadeClassifier;
@@ -39,8 +37,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private Mat                    mRgba;
     private Mat                    mGray;
-    //private File                   mCascadeFile;
-    private OptFlow      optFlow;
     private CascadeClassifier      mJavaDetector;
     private DetectionBasedTracker  mNativeDetector;
 
@@ -50,8 +46,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private float                  mRelativeFaceSize   = 0.2f;
     private int                    mAbsoluteFaceSize   = 0;
 
-    private CameraBridgeViewBase   mOpenCvCameraView;
+    private CameraBridgeViewBase mOpenCvCameraView;
 
+    // native detector
+    private OptFlow optFlow;
+    
     public FdActivity() {
     }
 
@@ -112,6 +111,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
         mOpenCvCameraView.setCvCameraViewListener(this);
+
+        //mOpenCvCameraView.setMaxFrameSize(1280, 960);
+        mOpenCvCameraView.setMaxFrameSize(640, 480);
+        //mOpenCvCameraView.setMaxFrameSize(176, 144);
     }
 
     public void onPause()
@@ -145,9 +148,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         mRgba = inputFrame.rgba();
         // 1 means flip over y-axis
-        Core.flip(mRgba, mRgba, 1);
+        //Core.flip(mRgba, mRgba, 1);
         mGray = inputFrame.gray();
-
+/*
         if (mAbsoluteFaceSize == 0) {
             int height = mGray.rows();
             if (Math.round(height * mRelativeFaceSize) > 0) {
@@ -155,11 +158,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             }
             mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
         }
-
-        MatOfRect faces = new MatOfRect();
-
-        String tes = " "+optFlowTest(1, 2); 
-        Core.putText(mRgba, " "+tes,
+*/
+        Core.putText(mRgba, " 3",
                 new org.opencv.core.Point(10,60), Core.FONT_HERSHEY_PLAIN, 3.0, new Scalar(0, 0, 0, 255));
         
         optFlow.detect(mRgba, mGray);
@@ -167,23 +167,18 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
-        detectStart   = menu.add("Detector start");
-        detectStop    = menu.add("Detector stop");
+        detectStart = menu.add("Detector start");
+        detectStop  = menu.add("Detector stop");
         return true;
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item == detectStart) {
             mNativeDetector.start();
-        } else if (item == detectStart) {
+        } else if (item == detectStop) {
             mNativeDetector.stop();
         }
 
         return true;
     }
-
-    private native String optFlowTest1(int value1, int value2);
-    private native String optFlowTest(int value1, int value2);
-    private native void helloLog(String logThis);
-    private native String getString(int value1, int value2);
 }

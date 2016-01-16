@@ -38,7 +38,4 @@ public class DetectionBasedTracker
     private static native void nativeStop(long thiz);
     private static native void nativeSetFaceSize(long thiz, int size);
     private static native void nativeDetect(long thiz, long inputImage, long faces);
-    
-    //private native void helloLog(String logThis);
-    //private native String getString(int value1, int value2);
 }
