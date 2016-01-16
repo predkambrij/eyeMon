@@ -45,7 +45,7 @@ void doLogx(JNIEnv * env, const char* text) {
 
 
 class OptFlow {
-    Mat rgb, gray, prevGray;
+    Mat rgb, grayx, gray, prevGray;
     unsigned long long int ns = 0;
     vector<Point2f> points[2];
     const int MAX_COUNT = 500;
@@ -70,7 +70,8 @@ class OptFlow {
         
     }
     public: int run(JNIEnv * jenv, Mat rgb, Mat grayo) {
-        cvtColor(rgb, gray, COLOR_BGR2GRAY);
+        cvtColor(rgb, grayx, COLOR_BGR2GRAY);
+        preprocess(grayx, &gray);
         if(prevGray.empty()) {
             gray.copyTo(prevGray);
             /*
@@ -85,6 +86,7 @@ class OptFlow {
         Mat cflow;
         //process(previous, next, &cflow);
         //environment(jenv);
+
         process(prevGray, gray, rgb);
         
         return 0;

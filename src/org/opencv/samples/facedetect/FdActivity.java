@@ -148,7 +148,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         mRgba = inputFrame.rgba();
         // 1 means flip over y-axis
-        //Core.flip(mRgba, mRgba, 1);
+        Core.flip(mRgba, mRgba, 1);
         mGray = inputFrame.gray();
 
         Core.putText(mRgba, " 3",
