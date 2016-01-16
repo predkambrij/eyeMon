@@ -150,15 +150,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         // 1 means flip over y-axis
         //Core.flip(mRgba, mRgba, 1);
         mGray = inputFrame.gray();
-/*
-        if (mAbsoluteFaceSize == 0) {
-            int height = mGray.rows();
-            if (Math.round(height * mRelativeFaceSize) > 0) {
-                mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
-            }
-            mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
-        }
-*/
+
         Core.putText(mRgba, " 3",
                 new org.opencv.core.Point(10,60), Core.FONT_HERSHEY_PLAIN, 3.0, new Scalar(0, 0, 0, 255));
         

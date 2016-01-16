@@ -115,7 +115,7 @@ int process(Mat previous, Mat next, Mat cflow)
 
     start = clock();
     if (PHONE == 0) {
-        //cvtColor(previous, cflow, CV_GRAY2BGR);
+        cvtColor(previous, cflow, CV_GRAY2BGR);
     }
     diffclock("- cvtColor", start);
 
@@ -125,11 +125,11 @@ int process(Mat previous, Mat next, Mat cflow)
     //drawOptFlowMap(flow, *cflow, 10, CV_RGB(0, 255, 0));
     diffclock("- drawOptFlowMap", start);
 
-    if (DEBUG_LEVEL > 1) {
+    if (DEBUG_LEVEL > 1 && PHONE == 0) {
         imshow("OpticalFlowFarneback", cflow);
     }
 
-    if (DEBUG_LEVEL > 2) {
+    if (DEBUG_LEVEL > 2 && PHONE == 0) {
         imshow("previous", previous);
         imshow("next", next);
     }
