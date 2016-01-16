@@ -7,6 +7,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/video/background_segm.hpp>
 
+#include <eyelike/main.cpp>
 
 //#ifdef _DEBUG        
 //#pragma comment(lib, "opencv_core247d.lib")
@@ -126,6 +127,15 @@ int preprocess(Mat frame, Mat *output, Mat *output1)
 
 int process(Mat previous, Mat next, Mat previous1, Mat next1, Mat cflow)
 {
+    Mat frame = cflow;
+    Mat debugImage;
+    Mat out;
+    debugImage= frame; //frame.copyTo(debugImage);
+
+    //detectAndDisplay(frame, &out);
+    imshow(main_window_name,out);
+    return 0;
+    /////
     clock_t start;
     Mat flow, flow1;
 
@@ -154,15 +164,15 @@ int process(Mat previous, Mat next, Mat previous1, Mat next1, Mat cflow)
     }
 }
 
-int main()
+int mainx()
 {
     PHONE = 0;
     // video source
     char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
     //char fileName[100] = "/opt/docker_volumes/mag/home_developer/other/posnetki/o4_29.mp4";
     //char fileName[100] = "mm2.avi"; //video\\mm2.avi"; //mm2.avi"; //cctv 2.mov"; //mm2.avi"; //";//_p1.avi";
-    //VideoCapture stream1(fileName);   //0 is the id of video device.0 if you have only one camera   
-    VideoCapture stream1(0);   //0 is the id of video device.0 if you have only one camera   
+    VideoCapture stream1(fileName);   //0 is the id of video device.0 if you have only one camera   
+    //VideoCapture stream1(0);   //0 is the id of video device.0 if you have only one camera   
 
     // controls
     int pause = 0;
@@ -227,5 +237,68 @@ int main()
         previous = next.clone();
         previous1 = next1.clone();
     }
+
+    releaseCornerKernels();
+
     return 0;
+}
+
+int main( int argc, const char** argv ) {char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
+    
+  CvCapture* capture;
+  cv::Mat frame;
+
+  // Load the cascades
+  if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading face cascade, please change face_cascade_name in source code.\n"); return -1; };
+
+  cv::namedWindow(main_window_name,CV_WINDOW_NORMAL);
+  cv::moveWindow(main_window_name, 400, 100);
+  cv::namedWindow(face_window_name,CV_WINDOW_NORMAL);
+  cv::moveWindow(face_window_name, 10, 100);
+  cv::namedWindow("Right Eye",CV_WINDOW_NORMAL);
+  cv::moveWindow("Right Eye", 10, 600);
+  cv::namedWindow("Left Eye",CV_WINDOW_NORMAL);
+  cv::moveWindow("Left Eye", 10, 800);
+  cv::namedWindow("aa",CV_WINDOW_NORMAL);
+  cv::moveWindow("aa", 10, 800);
+  cv::namedWindow("aaa",CV_WINDOW_NORMAL);
+  cv::moveWindow("aaa", 10, 800);
+
+  createCornerKernels();
+  ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2),
+          43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);
+
+   // Read the video stream
+  capture = cvCaptureFromCAM( -1 );
+  //VideoCapture capture(fileName);
+  if( capture ) {
+    while( true ) {
+      frame = cvQueryFrame( capture );
+      // mirror it
+      cv::flip(frame, frame, 1);
+      frame.copyTo(debugImage);
+
+      // Apply the classifier to the frame
+      if( !frame.empty() ) {
+        detectAndDisplay( frame );
+      }
+      else {
+        printf(" --(!) No captured frame -- Break!");
+        break;
+      }
+
+      imshow(main_window_name,debugImage);
+
+      int c = cv::waitKey(10);
+      if( (char)c == 'c' ) { break; }
+      if( (char)c == 'f' ) {
+        imwrite("frame.png",frame);
+      }
+
+    }
+  }
+
+  releaseCornerKernels();
+
+  return 0;
 }
