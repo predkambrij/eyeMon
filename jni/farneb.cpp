@@ -110,9 +110,19 @@ void drawOptFlowMap (const Mat flow, Mat cflowmap, int step, const Scalar& color
 int faceDetect() {
 }
 
-//int environment(JNIEnv* envi) {
-//    env = envi;
-//}
+int preprocess(Mat frame, Mat *output, Mat *output1)
+{
+    int resizeFactor = 1;
+    //resize(frame, *output, Size(frame.size().width/resizeFactor, frame.size().height/resizeFactor));
+
+    frame(cv::Rect(xoffset,yoffset,cols,rows)).copyTo(*output);
+    frame(cv::Rect(xoffset1,yoffset1,cols1,rows1)).copyTo(*output1);
+    //frame.copyTo(output);
+    if (PHONE == 0) {
+        cvtColor(*output, *output, CV_BGR2GRAY);
+        cvtColor(*output1, *output1, CV_BGR2GRAY);
+    }
+}
 
 int process(Mat previous, Mat next, Mat previous1, Mat next1, Mat cflow)
 {
@@ -141,20 +151,6 @@ int process(Mat previous, Mat next, Mat previous1, Mat next1, Mat cflow)
     if (DEBUG_LEVEL >= 2 && PHONE == 0) {
         imshow("previous", previous);
         imshow("next", next);
-    }
-}
-
-int preprocess(Mat frame, Mat *output, Mat *output1)
-{
-    int resizeFactor = 1;
-    //resize(frame, *output, Size(frame.size().width/resizeFactor, frame.size().height/resizeFactor));
-
-    frame(cv::Rect(xoffset,yoffset,cols,rows)).copyTo(*output);
-    frame(cv::Rect(xoffset1,yoffset1,cols1,rows1)).copyTo(*output1);
-    //frame.copyTo(output);
-    if (PHONE == 0) {
-        cvtColor(*output, *output, CV_BGR2GRAY);
-        cvtColor(*output1, *output1, CV_BGR2GRAY);
     }
 }
 
