@@ -36,11 +36,11 @@
 using namespace cv;
 using namespace std;
 
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 3
 //#define PHONE 0
 
 //JNIEnv* env;
-int PHONE = 1;
+int PHONE = 1, farne = 0;
 void doLogClock(const char* format, const char* title, double diffms) {
     if (PHONE != 1) {
         printf(format, title, diffms);
@@ -125,17 +125,7 @@ int preprocess(Mat frame, Mat *output, Mat *output1)
     }
 }
 
-int process(Mat previous, Mat next, Mat previous1, Mat next1, Mat cflow)
-{
-    Mat frame = cflow;
-    Mat debugImage;
-    Mat out;
-    debugImage= frame; //frame.copyTo(debugImage);
-
-    //detectAndDisplay(frame, &out);
-    imshow(main_window_name,out);
-    return 0;
-    /////
+int process(Mat previous, Mat next, Mat previous1, Mat next1, Mat cflow) {
     clock_t start;
     Mat flow, flow1;
 
@@ -159,13 +149,14 @@ int process(Mat previous, Mat next, Mat previous1, Mat next1, Mat cflow)
     }
 
     if (DEBUG_LEVEL >= 2 && PHONE == 0) {
-        imshow("previous", previous);
         imshow("next", next);
+        imshow("next1", next1);
     }
 }
 
 int main() {
     PHONE = 0;
+    farne = 1;
     // video source
     char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
     //char fileName[100] = "/opt/docker_volumes/mag/home_developer/other/posnetki/o4_29.mp4";
@@ -187,14 +178,17 @@ int main() {
     if(!face_cascade.load(face_cascade_name)) {
         printf("--(!)Error loading face cascade, please change face_cascade_name in source code.\n");
         return -1;
-    };
+    }
 
-    cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
-    cv::namedWindow("Right Eye",CV_WINDOW_NORMAL); cv::moveWindow("Right Eye", 10, 600);
-    cv::namedWindow("Left Eye",CV_WINDOW_NORMAL); cv::moveWindow("Left Eye", 10, 800);
+    if (farne == 0) {
+        cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
+        cv::namedWindow("Right Eye",CV_WINDOW_NORMAL); cv::moveWindow("Right Eye", 10, 600);
+        cv::namedWindow("Left Eye",CV_WINDOW_NORMAL); cv::moveWindow("Left Eye", 10, 800);
 
-    createCornerKernels();
-    ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2), 43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);
+        createCornerKernels();
+        ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2), 43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);
+    }
+
 
     while (true) {// //cv::flip(frame, frame, 1);
         if(!(stream1.read(frame))) {
@@ -202,25 +196,27 @@ int main() {
             return 0;
         }
 
-        // if (firstLoop == 1) {
-        //     loopStart = clock();
-        //     preprocess(frame, &previous, &previous1);
-        //     firstLoop = 0;
-        //     continue;
-        // }
+        if (firstLoop == 1) {
+            loopStart = clock();
+            preprocess(frame, &previous, &previous1);
+            firstLoop = 0;
+            continue;
+        }
 
-        // diffclock("\nwhole loop", loopStart);
-        // loopStart = clock();
+        diffclock("\nwhole loop", loopStart);
+        loopStart = clock();
 
-        // start = clock();
-        // preprocess(frame, &next, &next1);
-        // diffclock("preprocess", start);
+        start = clock();
+        preprocess(frame, &next, &next1);
+        diffclock("preprocess", start);
 
-        // start = clock();
-        // process(previous, next, previous1, next1, frame);
-        // diffclock("process", start);
-
-        detectAndDisplay(frame);
+        if (farne == 0) {
+            detectAndDisplay(frame, next);
+        } else {
+            start = clock();
+            process(previous, next, previous1, next1, frame);
+            diffclock("process", start);
+        }
 
         // flow control
         int c = cv::waitKey(10);
@@ -248,7 +244,9 @@ int main() {
         previous1 = next1.clone();
     }
 
-    releaseCornerKernels();
+    if (farne == 0) {
+        releaseCornerKernels();
+    }
 
     return 0;
 }

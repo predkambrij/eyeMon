@@ -31,7 +31,7 @@ cv::Mat skinCrCbHist = cv::Mat::zeros(cv::Size(256, 256), CV_8UC1);
 
 /**
  * @function main
- */
+ *//*
 int mainx( int argc, const char** argv ) {
   CvCapture* capture;
   cv::Mat frame;
@@ -88,7 +88,7 @@ int mainx( int argc, const char** argv ) {
   releaseCornerKernels();
 
   return 0;
-}
+}*/
 
 void findEyes(cv::Mat frame_gray, cv::Rect face) {
   cv::Mat faceROI = frame_gray(face);
@@ -193,7 +193,7 @@ cv::Mat findSkin (cv::Mat &frame) {
 /**
  * @function detectAndDisplay
  */
-void detectAndDisplay( cv::Mat frame) {
+void detectAndDisplay(cv::Mat frame, cv::Mat frame_grayx) {
   std::vector<cv::Rect> faces;
   //cv::Mat frame_gray;
 
@@ -201,19 +201,29 @@ void detectAndDisplay( cv::Mat frame) {
   cv::split(frame, rgbChannels);
   cv::Mat frame_gray = rgbChannels[2];
 
-  //cvtColor( frame, frame_gray, CV_BGR2GRAY );
-  //equalizeHist( frame_gray, frame_gray );
-  //cv::pow(frame_gray, CV_64F, frame_gray);
   //-- Detect faces
-  face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150) );
-//  findSkin(debugImage);
+  face_cascade.detectMultiScale(frame_gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
 
-  for( int i = 0; i < faces.size(); i++ )
-  {
-    rectangle(debugImage, faces[i], 1234);
-  }
   //-- Show what you got
   if (faces.size() > 0) {
     findEyes(frame_gray, faces[0]);
   }
 }
+/*
+void detectAndDisplay(cv::Mat frame, cv::Mat frame_gray) {
+  std::vector<cv::Rect> faces;
+
+  //-- Detect faces
+  face_cascade.detectMultiScale(frame_gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
+
+
+  for( int i = 0; i < faces.size(); i++ ) {
+    rectangle(debugImage, faces[i], 1234);
+  }
+
+  //-- Show what you got
+  if (faces.size() > 0) {
+    findEyes(frame_gray, faces[0]);
+  }
+}
+*/
