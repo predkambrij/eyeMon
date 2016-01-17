@@ -111,18 +111,19 @@ void drawOptFlowMap (const Mat flow, Mat cflowmap, int step, const Scalar& color
 int faceDetect() {
 }
 
-int preprocess(Mat frame, Mat *output, Mat *output1)
-{
+int preprocess(Mat frame, Mat *gray, Mat *left, Mat *right) {
     int resizeFactor = 1;
     //resize(frame, *output, Size(frame.size().width/resizeFactor, frame.size().height/resizeFactor));
 
-    frame(cv::Rect(xoffset,yoffset,cols,rows)).copyTo(*output);
-    frame(cv::Rect(xoffset1,yoffset1,cols1,rows1)).copyTo(*output1);
-    //frame.copyTo(output);
     if (PHONE == 0) {
-        cvtColor(*output, *output, CV_BGR2GRAY);
-        cvtColor(*output1, *output1, CV_BGR2GRAY);
+      //cvtColor(frame, *gray, CV_BGR2GRAY);
+      std::vector<cv::Mat> rgbChannels(3);
+      cv::split(frame, rgbChannels);
+      *gray = rgbChannels[2];
     }
+
+    (*gray)(cv::Rect(xoffset,yoffset,cols,rows)).copyTo(*left);
+    (*gray)(cv::Rect(xoffset1,yoffset1,cols1,rows1)).copyTo(*right);
 }
 
 int process(Mat pleft, Mat left, Mat pright, Mat right, Mat cflow) {
@@ -156,7 +157,7 @@ int process(Mat pleft, Mat left, Mat pright, Mat right, Mat cflow) {
 
 int main() {
     PHONE = 0;
-    farne = 0;
+    farne = 1;
     // video source
     char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
     //char fileName[100] = "/opt/docker_volumes/mag/home_developer/other/posnetki/o4_29.mp4";
@@ -170,7 +171,7 @@ int main() {
     clock_t loopStart;
     clock_t start;
 
-    Mat frame;
+    Mat frame, gray;
     Mat pleft, left;
     Mat pright, right;
     Mat cflow;
@@ -198,7 +199,7 @@ int main() {
 
         if (firstLoop == 1) {
             loopStart = clock();
-            preprocess(frame, &pleft, &pright);
+            preprocess(frame, &gray, &pleft, &pright);
             firstLoop = 0;
             continue;
         }
@@ -207,11 +208,11 @@ int main() {
         loopStart = clock();
 
         start = clock();
-        preprocess(frame, &left, &right);
+        preprocess(frame, &gray, &left, &right);
         diffclock("preprocess", start);
 
         if (farne == 0) {
-            detectAndDisplay(frame, left);
+            detectAndDisplay(frame, gray);
         } else {
             start = clock();
             process(pleft, left, pright, right, frame);
