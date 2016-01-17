@@ -125,13 +125,13 @@ int preprocess(Mat frame, Mat *output, Mat *output1)
     }
 }
 
-int process(Mat previous, Mat next, Mat previous1, Mat next1, Mat cflow) {
+int process(Mat pleft, Mat left, Mat pright, Mat right, Mat cflow) {
     clock_t start;
     Mat flow, flow1;
 
     start = clock();
-    calcOpticalFlowFarneback(previous, next, flow, 0.5, 3, 15, 3, 5, 1.2, 0);
-    calcOpticalFlowFarneback(previous1, next1, flow1, 0.5, 3, 15, 3, 5, 1.2, 0);
+    calcOpticalFlowFarneback(pleft, left, flow, 0.5, 3, 15, 3, 5, 1.2, 0);
+    calcOpticalFlowFarneback(pright, right, flow1, 0.5, 3, 15, 3, 5, 1.2, 0);
     diffclock("- farneback", start);
 
     start = clock();
@@ -149,14 +149,14 @@ int process(Mat previous, Mat next, Mat previous1, Mat next1, Mat cflow) {
     }
 
     if (DEBUG_LEVEL >= 2 && PHONE == 0) {
-        imshow("next", next);
-        imshow("next1", next1);
+        imshow("left", left);
+        imshow("right", right);
     }
 }
 
 int main() {
     PHONE = 0;
-    farne = 1;
+    farne = 0;
     // video source
     char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
     //char fileName[100] = "/opt/docker_volumes/mag/home_developer/other/posnetki/o4_29.mp4";
@@ -171,8 +171,8 @@ int main() {
     clock_t start;
 
     Mat frame;
-    Mat previous, next;
-    Mat previous1, next1;
+    Mat pleft, left;
+    Mat pright, right;
     Mat cflow;
 
     if(!face_cascade.load(face_cascade_name)) {
@@ -198,7 +198,7 @@ int main() {
 
         if (firstLoop == 1) {
             loopStart = clock();
-            preprocess(frame, &previous, &previous1);
+            preprocess(frame, &pleft, &pright);
             firstLoop = 0;
             continue;
         }
@@ -207,14 +207,14 @@ int main() {
         loopStart = clock();
 
         start = clock();
-        preprocess(frame, &next, &next1);
+        preprocess(frame, &left, &right);
         diffclock("preprocess", start);
 
         if (farne == 0) {
-            detectAndDisplay(frame, next);
+            detectAndDisplay(frame, left);
         } else {
             start = clock();
-            process(previous, next, previous1, next1, frame);
+            process(pleft, left, pright, right, frame);
             diffclock("process", start);
         }
 
@@ -240,8 +240,8 @@ int main() {
             }
         }
 
-        previous = next.clone();
-        previous1 = next1.clone();
+        pleft = left.clone();
+        pright = right.clone();
     }
 
     if (farne == 0) {
