@@ -152,8 +152,19 @@ int process1(Mat pleft, Mat left, Mat pright, Mat right, Mat cflow) {
     }
 }
 
-int faceDetect(Mat gray, std::vector<cv::Rect> *faces) {
-    face_cascade.detectMultiScale(gray, *faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
+int faceDetect(Mat gray, cv::Rect *face, Mat *faceROI) {
+    std::vector<cv::Rect> faces;
+    face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
+    if (faces.size() != 1) {
+        return -1;
+    }
+    *face = faces[0];
+    *faceROI = gray(*face);
+    if (kSmoothFaceImage) {
+        double sigma = kSmoothFaceFactor * (*face).width;
+        GaussianBlur(*faceROI, *faceROI, cv::Size(0, 0), sigma);
+    }
+    return 0;
 }
 
 int eyeRegions(cv::Rect face, cv::Rect *leftEyeRegion, cv::Rect *rightEyeRegion) {
@@ -163,18 +174,37 @@ int eyeRegions(cv::Rect face, cv::Rect *leftEyeRegion, cv::Rect *rightEyeRegion)
     (*leftEyeRegion) = cv::Rect(face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
     (*rightEyeRegion) = cv::Rect(face.width - eye_region_width - face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
 }
+int eyeCenters(Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point *leftPupil, cv::Point *rightPupil) {
+    *leftPupil  = findEyeCenter(faceROI, leftEyeRegion, "Left Eye");
+    *rightPupil = findEyeCenter(faceROI, rightEyeRegion, "Right Eye");
+}
+
+int showResult(Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil) {
+    // change eye centers to face coordinates
+    rightPupil.x += rightEyeRegion.x; rightPupil.y += rightEyeRegion.y;
+    leftPupil.x += leftEyeRegion.x; leftPupil.y += leftEyeRegion.y;
+    // draw eye centers
+    circle(faceROI, rightPupil, 3, 1234);
+    circle(faceROI, leftPupil, 3, 1234);
+
+    imshow(face_window_name, faceROI);
+}
 
 int process(Mat frame, Mat gray, Mat pleft, Mat left, Mat pright, Mat right, Mat cflow) {
-    std::vector<cv::Rect> faces;
-    cv::Rect leftEyeRegion, rightEyeRegion;
+    cv::Rect face, leftEyeRegion, rightEyeRegion;
+    cv::Point leftPupil, rightPupil;
+    Mat faceROI;
 
     if (farne == 0) {
-        faceDetect(gray, &faces);
-        if (faces.size() != 1) {
+        if (faceDetect(gray, &face, &faceROI) != 0) {
             return -1;
         }
-        eyeRegions(faces[0], &leftEyeRegion, &rightEyeRegion);
-        findEyes(gray, faces[0], leftEyeRegion, rightEyeRegion);
+        eyeRegions(face, &leftEyeRegion, &rightEyeRegion);
+        eyeCenters(faceROI, leftEyeRegion, rightEyeRegion, &leftPupil, &rightPupil);
+
+        if (PHONE == 0) {
+            showResult(faceROI, leftEyeRegion, rightEyeRegion, leftPupil, rightPupil);
+        }
     } else {
         process1(pleft, left, pright, right, frame);
     }
