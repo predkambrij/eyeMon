@@ -164,8 +164,7 @@ int process(Mat previous, Mat next, Mat previous1, Mat next1, Mat cflow)
     }
 }
 
-int mainx()
-{
+int main() {
     PHONE = 0;
     // video source
     char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
@@ -184,33 +183,44 @@ int mainx()
     Mat previous, next;
     Mat previous1, next1;
     Mat cflow;
-/*if (PHONE == 0) {
-        cvtColor(previous, cflow, CV_GRAY2BGR);
-    }*/
-    
-    while (true) {
+
+    if(!face_cascade.load(face_cascade_name)) {
+        printf("--(!)Error loading face cascade, please change face_cascade_name in source code.\n");
+        return -1;
+    };
+
+    cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
+    cv::namedWindow("Right Eye",CV_WINDOW_NORMAL); cv::moveWindow("Right Eye", 10, 600);
+    cv::namedWindow("Left Eye",CV_WINDOW_NORMAL); cv::moveWindow("Left Eye", 10, 800);
+
+    createCornerKernels();
+    ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2), 43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);
+
+    while (true) {// //cv::flip(frame, frame, 1);
         if(!(stream1.read(frame))) {
             doLog(" --(!) No captured frame -- Break!");
             return 0;
         }
 
-        if (firstLoop == 1) {
-            loopStart = clock();
-            preprocess(frame, &previous, &previous1);
-            firstLoop = 0;
-            continue;
-        }
+        // if (firstLoop == 1) {
+        //     loopStart = clock();
+        //     preprocess(frame, &previous, &previous1);
+        //     firstLoop = 0;
+        //     continue;
+        // }
 
-        diffclock("\nwhole loop", loopStart);
-        loopStart = clock();
+        // diffclock("\nwhole loop", loopStart);
+        // loopStart = clock();
 
-        start = clock();
-        preprocess(frame, &next, &next1);
-        diffclock("preprocess", start);
+        // start = clock();
+        // preprocess(frame, &next, &next1);
+        // diffclock("preprocess", start);
 
-        start = clock();
-        process(previous, next, previous1, next1, frame);
-        diffclock("process", start);
+        // start = clock();
+        // process(previous, next, previous1, next1, frame);
+        // diffclock("process", start);
+
+        detectAndDisplay(frame);
 
         // flow control
         int c = cv::waitKey(10);
@@ -241,64 +251,4 @@ int mainx()
     releaseCornerKernels();
 
     return 0;
-}
-
-int main( int argc, const char** argv ) {char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
-    
-  CvCapture* capture;
-  cv::Mat frame;
-
-  // Load the cascades
-  if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading face cascade, please change face_cascade_name in source code.\n"); return -1; };
-
-  cv::namedWindow(main_window_name,CV_WINDOW_NORMAL);
-  cv::moveWindow(main_window_name, 400, 100);
-  cv::namedWindow(face_window_name,CV_WINDOW_NORMAL);
-  cv::moveWindow(face_window_name, 10, 100);
-  cv::namedWindow("Right Eye",CV_WINDOW_NORMAL);
-  cv::moveWindow("Right Eye", 10, 600);
-  cv::namedWindow("Left Eye",CV_WINDOW_NORMAL);
-  cv::moveWindow("Left Eye", 10, 800);
-  cv::namedWindow("aa",CV_WINDOW_NORMAL);
-  cv::moveWindow("aa", 10, 800);
-  cv::namedWindow("aaa",CV_WINDOW_NORMAL);
-  cv::moveWindow("aaa", 10, 800);
-
-  createCornerKernels();
-  ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2),
-          43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);
-
-   // Read the video stream
-  capture = cvCaptureFromCAM( -1 );
-  //VideoCapture capture(fileName);
-  if( capture ) {
-    while( true ) {
-      frame = cvQueryFrame( capture );
-      // mirror it
-      cv::flip(frame, frame, 1);
-      frame.copyTo(debugImage);
-
-      // Apply the classifier to the frame
-      if( !frame.empty() ) {
-        detectAndDisplay( frame );
-      }
-      else {
-        printf(" --(!) No captured frame -- Break!");
-        break;
-      }
-
-      imshow(main_window_name,debugImage);
-
-      int c = cv::waitKey(10);
-      if( (char)c == 'c' ) { break; }
-      if( (char)c == 'f' ) {
-        imwrite("frame.png",frame);
-      }
-
-    }
-  }
-
-  releaseCornerKernels();
-
-  return 0;
 }
