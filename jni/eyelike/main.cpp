@@ -90,7 +90,7 @@ int mainx( int argc, const char** argv ) {
   return 0;
 }*/
 
-void findEyes(cv::Mat frame_gray, cv::Rect face) {
+void findEyes(cv::Mat frame_gray, cv::Rect face, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion) {
   cv::Mat faceROI = frame_gray(face);
   cv::Mat debugFace = faceROI;
 
@@ -98,14 +98,6 @@ void findEyes(cv::Mat frame_gray, cv::Rect face) {
     double sigma = kSmoothFaceFactor * face.width;
     GaussianBlur( faceROI, faceROI, cv::Size( 0, 0 ), sigma);
   }
-  //-- Find eye regions and draw them
-  int eye_region_width = face.width * (kEyePercentWidth/100.0);
-  int eye_region_height = face.width * (kEyePercentHeight/100.0);
-  int eye_region_top = face.height * (kEyePercentTop/100.0);
-  cv::Rect leftEyeRegion(face.width*(kEyePercentSide/100.0),
-                         eye_region_top,eye_region_width,eye_region_height);
-  cv::Rect rightEyeRegion(face.width - eye_region_width - face.width*(kEyePercentSide/100.0),
-                          eye_region_top,eye_region_width,eye_region_height);
 
   //-- Find Eye Centers
   cv::Point leftPupil = findEyeCenter(faceROI,leftEyeRegion,"Left Eye");
@@ -190,17 +182,3 @@ cv::Mat findSkin (cv::Mat &frame) {
   return output;
 }
 
-/**
- * @function detectAndDisplay
- */
-void detectAndDisplay(cv::Mat frame, cv::Mat frame_gray) {
-  std::vector<cv::Rect> faces;
-
-  //-- Detect faces
-  face_cascade.detectMultiScale(frame_gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
-
-  //-- Show what you got
-  if (faces.size() > 0) {
-    findEyes(frame_gray, faces[0]);
-  }
-}

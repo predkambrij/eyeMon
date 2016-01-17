@@ -108,9 +108,6 @@ void drawOptFlowMap (const Mat flow, Mat cflowmap, int step, const Scalar& color
     }
 }
 
-int faceDetect() {
-}
-
 int preprocess(Mat frame, Mat *gray, Mat *left, Mat *right) {
     int resizeFactor = 1;
     //resize(frame, *output, Size(frame.size().width/resizeFactor, frame.size().height/resizeFactor));
@@ -126,7 +123,7 @@ int preprocess(Mat frame, Mat *gray, Mat *left, Mat *right) {
     (*gray)(cv::Rect(xoffset1,yoffset1,cols1,rows1)).copyTo(*right);
 }
 
-int process(Mat pleft, Mat left, Mat pright, Mat right, Mat cflow) {
+int process1(Mat pleft, Mat left, Mat pright, Mat right, Mat cflow) {
     clock_t start;
     Mat flow, flow1;
 
@@ -155,9 +152,37 @@ int process(Mat pleft, Mat left, Mat pright, Mat right, Mat cflow) {
     }
 }
 
+int faceDetect(Mat gray, std::vector<cv::Rect> *faces) {
+    face_cascade.detectMultiScale(gray, *faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
+}
+
+int eyeRegions(cv::Rect face, cv::Rect *leftEyeRegion, cv::Rect *rightEyeRegion) {
+    int eye_region_width = face.width * (kEyePercentWidth/100.0);
+    int eye_region_height = face.width * (kEyePercentHeight/100.0);
+    int eye_region_top = face.height * (kEyePercentTop/100.0);
+    (*leftEyeRegion) = cv::Rect(face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
+    (*rightEyeRegion) = cv::Rect(face.width - eye_region_width - face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
+}
+
+int process(Mat frame, Mat gray, Mat pleft, Mat left, Mat pright, Mat right, Mat cflow) {
+    std::vector<cv::Rect> faces;
+    cv::Rect leftEyeRegion, rightEyeRegion;
+
+    if (farne == 0) {
+        faceDetect(gray, &faces);
+        if (faces.size() != 1) {
+            return -1;
+        }
+        eyeRegions(faces[0], &leftEyeRegion, &rightEyeRegion);
+        findEyes(gray, faces[0], leftEyeRegion, rightEyeRegion);
+    } else {
+        process1(pleft, left, pright, right, frame);
+    }
+}
+
 int main() {
     PHONE = 0;
-    farne = 1;
+    farne = 0;
     // video source
     char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
     //char fileName[100] = "/opt/docker_volumes/mag/home_developer/other/posnetki/o4_29.mp4";
@@ -211,13 +236,9 @@ int main() {
         preprocess(frame, &gray, &left, &right);
         diffclock("preprocess", start);
 
-        if (farne == 0) {
-            detectAndDisplay(frame, gray);
-        } else {
-            start = clock();
-            process(pleft, left, pright, right, frame);
-            diffclock("process", start);
-        }
+        start = clock();
+        process(frame, gray, pleft, left, pright, right, frame);
+        diffclock("process", start);
 
         // flow control
         int c = cv::waitKey(10);
