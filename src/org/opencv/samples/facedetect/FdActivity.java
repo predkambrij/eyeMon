@@ -82,10 +82,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
                         mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
 
-                        cascadeDir.delete();
-
                         // native library wrapper
-                        optFlow = new OptFlow();
+                        optFlow = new OptFlow(mCascadeFile.getAbsolutePath());
+                        cascadeDir.delete();
                     } catch (IOException e) {
                         e.printStackTrace();
                         Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);

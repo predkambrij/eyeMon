@@ -155,17 +155,33 @@ int eyeCenters(Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv:
     *rightPupil = findEyeCenter(faceROI, rightEyeRegion, "Right Eye");
 }
 
-int showResult(Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil) {
+int showResult(Mat cflow, Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil) {
     // change eye centers to face coordinates
     rightPupil.x += rightEyeRegion.x; rightPupil.y += rightEyeRegion.y;
     leftPupil.x += leftEyeRegion.x; leftPupil.y += leftEyeRegion.y;
     // draw eye centers
-    circle(faceROI, rightPupil, 3, 1234);
-    circle(faceROI, leftPupil, 3, 1234);
-
-    imshow(face_window_name, faceROI);
+    if (PHONE == 0) {
+        circle(faceROI, rightPupil, 3, 1234);
+        circle(faceROI, leftPupil, 3, 1234);
+        imshow(face_window_name, faceROI);
+    } else {
+        circle(cflow, rightPupil, 3, 1234);
+        circle(cflow, leftPupil, 3, 1234);
+        circle(cflow, Point2f((float)15, (float)15), 10, Scalar(0,255,0), -1, 8);
+    }
 }
 
+int setUp(const char* cascadePath) {
+    // throw;
+    try {
+        if(!face_cascade.load(cascadePath)) {
+            throw "--(!)Error loading face cascade, please change face_cascade_name in source code.\n";
+        }
+    } catch (const char* msg) {
+        doLog(msg);
+        throw;
+    }
+}
 int process(Mat frame, Mat gray, Mat pleft, Mat left, Mat pright, Mat right, Mat cflow) {
     cv::Rect face, leftEyeRegion, rightEyeRegion;
     cv::Point leftPupil, rightPupil;
@@ -177,52 +193,36 @@ int process(Mat frame, Mat gray, Mat pleft, Mat left, Mat pright, Mat right, Mat
         }
         eyeRegions(face, &leftEyeRegion, &rightEyeRegion);
         eyeCenters(faceROI, leftEyeRegion, rightEyeRegion, &leftPupil, &rightPupil);
-
-        if (PHONE == 0) {
-            showResult(faceROI, leftEyeRegion, rightEyeRegion, leftPupil, rightPupil);
-        }
+        showResult(frame, faceROI, leftEyeRegion, rightEyeRegion, leftPupil, rightPupil);
     } else {
         process1(pleft, left, pright, right, frame);
     }
 }
 
 int main() {
-    PHONE = 0;
-    farne = 0;
+    PHONE = 0; farne = 0;
     // video source
-    char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
+    // char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
+    char fileName[200] = "/home/developer/other/android_deps/OpenCV-2.4.10-android-sdk/samples/optical-flow/res/raw/lbpcascade_frontalface.xml";
     //char fileName[100] = "/opt/docker_volumes/mag/home_developer/other/posnetki/o4_29.mp4";
-    //char fileName[100] = "mm2.avi"; //video\\mm2.avi"; //mm2.avi"; //cctv 2.mov"; //mm2.avi"; //";//_p1.avi";
-    VideoCapture stream1(fileName);   //0 is the id of video device.0 if you have only one camera   
-    //VideoCapture stream1(0);   //0 is the id of video device.0 if you have only one camera   
+    // VideoCapture stream1(fileName);   //0 is the id of video device.0 if you have only one camera   
+    VideoCapture stream1(0);   //0 is the id of video device.0 if you have only one camera   
 
     // controls
-    int pause = 0;
-    int firstLoop = 1;
-    clock_t loopStart;
-    clock_t start;
+    int pause = 0, firstLoop = 1;
+    clock_t loopStart, start;
+    Mat frame, gray,  pleft, left,  pright, right,  cflow;
 
-    Mat frame, gray;
-    Mat pleft, left;
-    Mat pright, right;
-    Mat cflow;
-
-    if(!face_cascade.load(face_cascade_name)) {
-        printf("--(!)Error loading face cascade, please change face_cascade_name in source code.\n");
-        return -1;
-    }
+    setUp(fileName);
 
     if (farne == 0) {
         cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
         cv::namedWindow("Right Eye",CV_WINDOW_NORMAL); cv::moveWindow("Right Eye", 10, 600);
         cv::namedWindow("Left Eye",CV_WINDOW_NORMAL); cv::moveWindow("Left Eye", 10, 800);
-
-        createCornerKernels();
-        ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2), 43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);
+        // createCornerKernels(), at the end // releaseCornerKernels(); // ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2), 43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);
     }
 
-
-    while (true) {// //cv::flip(frame, frame, 1);
+    while (true) { cv::flip(frame, frame, 1);
         if(!(stream1.read(frame))) {
             doLog(" --(!) No captured frame -- Break!");
             return 0;
@@ -268,12 +268,7 @@ int main() {
             }
         }
 
-        pleft = left.clone();
-        pright = right.clone();
-    }
-
-    if (farne == 0) {
-        releaseCornerKernels();
+        pleft = left.clone(); pright = right.clone();
     }
 
     return 0;

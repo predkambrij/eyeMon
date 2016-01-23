@@ -200,8 +200,13 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_FdActivity_optFlow(JNI
     doLog(env, "KONEC");
     
 }
+OptFlow optf;
+
 JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowCreateObject
-                                                                            (JNIEnv * jenv, jclass, jstring jFileName, jint faceSize) {
+                                                                (JNIEnv * jenv, jclass, jstring jCascadeFileName, jint faceSize) {
+    const char *cascadeFileName = (jenv)->GetStringUTFChars(jCascadeFileName, 0);
+    optf.setup(cascadeFileName);
+    (jenv)->ReleaseStringUTFChars(jCascadeFileName, cascadeFileName);
     jlong result = 0;
     return result;
 }
@@ -209,7 +214,6 @@ JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowCreate
 JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowDestroyObject(JNIEnv * jenv, jclass, jlong thiz) {
 }
 
-OptFlow optf;
 
 JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowDetect
                                                                 (JNIEnv * jenv, jclass, jlong imageRGB, jlong imageGray) {

@@ -134,7 +134,7 @@ cv::Point findEyeCenter(cv::Mat face, cv::Rect eye, std::string debugWindow) {
       }
     }
   }
-  imshow(debugWindow,gradientX);
+  // imshow(debugWindow,gradientX);
   //-- Create a blurred and inverted image for weighting
   cv::Mat weight;
   GaussianBlur( eyeROI, weight, cv::Size( kWeightBlurSize, kWeightBlurSize ), 0, 0 );
@@ -179,7 +179,7 @@ cv::Point findEyeCenter(cv::Mat face, cv::Rect eye, std::string debugWindow) {
     cv::threshold(out, floodClone, floodThresh, 0.0f, cv::THRESH_TOZERO);
     if(kPlotVectorField) {
       //plotVecField(gradientX, gradientY, floodClone);
-      imwrite("eyeFrame.png",eyeROIUnscaled);
+      // imwrite("eyeFrame.png",eyeROIUnscaled);
     }
     cv::Mat mask = floodKillEdges(floodClone);
     //imshow(debugWindow + " Mask",mask);

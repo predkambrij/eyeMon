@@ -69,9 +69,13 @@ class OptFlow {
         winSize = Size(31,31);
         
     }
+    public: int setup(const char* cascadeFileName) {
+        setUp(cascadeFileName);
+        return 0;
+    }
     public: int run(JNIEnv * jenv, Mat rgb, Mat grayo) {
         cvtColor(rgb, grayx, COLOR_BGR2GRAY);
-        preprocess(grayx, &left, &right);
+        preprocess(rgb, &grayx, &left, &right);
         if(prevLeft.empty()) {
             left.copyTo(prevLeft);
             right.copyTo(prevRight);
@@ -88,7 +92,8 @@ class OptFlow {
         //process(previous, next, &cflow);
         //environment(jenv);
 
-        process(prevLeft, left, prevRight, right, rgb);
+        // process(prevLeft, left, prevRight, right, rgb);
+        process(rgb, grayx, prevLeft, left, prevRight, right, rgb);
 
         cv::swap(prevLeft, left);
         cv::swap(prevRight, right);

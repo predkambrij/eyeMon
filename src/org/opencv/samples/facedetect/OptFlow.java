@@ -6,8 +6,8 @@ import org.opencv.core.MatOfRect;
 public class OptFlow {
     private long mNativeObj = 0;
 
-    public OptFlow() {
-        mNativeObj = optFlowCreateObject("cascadeName", 123);
+    public OptFlow(String cascadeName) {
+        mNativeObj = optFlowCreateObject(cascadeName, 123);
     }
 
     public void detect(Mat imageRGB, Mat imageGray) {
