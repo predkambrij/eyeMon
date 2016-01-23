@@ -159,17 +159,16 @@ int showResult(Mat cflow, cv::Rect face, Mat faceROI, cv::Rect leftEyeRegion, cv
     // change eye centers to face coordinates
     rightPupil.x += rightEyeRegion.x; rightPupil.y += rightEyeRegion.y;
     leftPupil.x += leftEyeRegion.x; leftPupil.y += leftEyeRegion.y;
+    rightPupil.x += face.x; rightPupil.y += face.y;
+    leftPupil.x += face.x; leftPupil.y += face.y;
+
+    circle(cflow, Point2f((float)15, (float)15), 10, Scalar(0,255,0), -1, 8);
+    circle(cflow, rightPupil, 3, Scalar(0,255,0), -1, 8);
+    circle(cflow, leftPupil, 3, Scalar(0,255,0), -1, 8);
+
     // draw eye centers
     if (PHONE == 0) {
-        circle(faceROI, rightPupil, 3, 1234);
-        circle(faceROI, leftPupil, 3, 1234);
-        imshow(face_window_name, faceROI);
-    } else {
-        rightPupil.x += face.x; rightPupil.y += face.y;
-        leftPupil.x += face.x; leftPupil.y += face.y;
-        circle(cflow, rightPupil, 3, 1234);
-        circle(cflow, leftPupil, 3, 1234);
-        circle(cflow, Point2f((float)15, (float)15), 10, Scalar(0,255,0), -1, 8);
+        imshow("main", cflow);
     }
 }
 
@@ -219,8 +218,9 @@ int main() {
 
     if (farne == 0) {
         cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
-        cv::namedWindow("Right Eye",CV_WINDOW_NORMAL); cv::moveWindow("Right Eye", 10, 600);
-        cv::namedWindow("Left Eye",CV_WINDOW_NORMAL); cv::moveWindow("Left Eye", 10, 800);
+        cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 10, 100);
+        // cv::namedWindow("Right Eye",CV_WINDOW_NORMAL); cv::moveWindow("Right Eye", 10, 600);
+        // cv::namedWindow("Left Eye",CV_WINDOW_NORMAL); cv::moveWindow("Left Eye", 10, 800);
         // createCornerKernels(), at the end // releaseCornerKernels(); // ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2), 43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);
     }
 
