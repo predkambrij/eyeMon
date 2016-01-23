@@ -155,7 +155,7 @@ int eyeCenters(Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv:
     *rightPupil = findEyeCenter(faceROI, rightEyeRegion, "Right Eye");
 }
 
-int showResult(Mat cflow, Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil) {
+int showResult(Mat cflow, cv::Rect face, Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil) {
     // change eye centers to face coordinates
     rightPupil.x += rightEyeRegion.x; rightPupil.y += rightEyeRegion.y;
     leftPupil.x += leftEyeRegion.x; leftPupil.y += leftEyeRegion.y;
@@ -165,6 +165,8 @@ int showResult(Mat cflow, Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEye
         circle(faceROI, leftPupil, 3, 1234);
         imshow(face_window_name, faceROI);
     } else {
+        rightPupil.x += face.x; rightPupil.y += face.y;
+        leftPupil.x += face.x; leftPupil.y += face.y;
         circle(cflow, rightPupil, 3, 1234);
         circle(cflow, leftPupil, 3, 1234);
         circle(cflow, Point2f((float)15, (float)15), 10, Scalar(0,255,0), -1, 8);
@@ -193,7 +195,7 @@ int process(Mat frame, Mat gray, Mat pleft, Mat left, Mat pright, Mat right, Mat
         }
         eyeRegions(face, &leftEyeRegion, &rightEyeRegion);
         eyeCenters(faceROI, leftEyeRegion, rightEyeRegion, &leftPupil, &rightPupil);
-        showResult(frame, faceROI, leftEyeRegion, rightEyeRegion, leftPupil, rightPupil);
+        showResult(frame, face, faceROI, leftEyeRegion, rightEyeRegion, leftPupil, rightPupil);
     } else {
         process1(pleft, left, pright, right, frame);
     }
