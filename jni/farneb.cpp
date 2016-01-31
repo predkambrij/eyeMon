@@ -93,38 +93,16 @@ int getGray(Mat frame, Mat *gray) {
     *gray = rgbChannels[2];
 }
 
-int getLeftRightEyeMat(Mat gray, Mat *left, Mat *right) {
-    gray(cv::Rect(leftXOffset,leftYOffset,leftCols,leftRows)).copyTo(*left);
-    gray(cv::Rect(rightXOffset,rightYOffset,rightCols,rightRows)).copyTo(*right);
-}
+int eye_region_width, eye_region_height;
 
-int process1(Mat pleft, Mat left, Mat pright, Mat right, Mat cflow) {
-    clock_t start;
-    Mat flow, flow1;
-
-    start = clock();
-    calcOpticalFlowFarneback(pleft, left, flow, 0.5, 3, 15, 3, 5, 1.2, 0);
-    calcOpticalFlowFarneback(pright, right, flow1, 0.5, 3, 15, 3, 5, 1.2, 0);
-    diffclock("- farneback", start);
-
-    start = clock();
-    diffclock("- cvtColor", start);
-
-    start = clock();
-    drawOptFlowMap(flow, cflow, 10, Scalar(0, 255, 0), 0);
-    drawOptFlowMap(flow1, cflow, 10, Scalar(0, 255, 0), 1);
-    
-    //drawOptFlowMap(flow, *cflow, 10, CV_RGB(0, 255, 0));
-    diffclock("- drawOptFlowMap", start);
-
-    if (DEBUG_LEVEL >= 1 && PHONE == 0) {
-        imshow("OpticalFlowFarneback", cflow);
-    }
-
-    if (DEBUG_LEVEL >= 2 && PHONE == 0) {
-        imshow("left", left);
-        imshow("right", right);
-    }
+int getLeftRightEyeMat(Mat gray, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, Mat *left, Mat *right) {
+    // printf("eye_region_width %d, eye_region_height %d\n", eye_region_width, eye_region_height);
+    // printf("leftEyeRegion %d, leftEyeRegion %d\n", leftEyeRegion.x, leftEyeRegion.y);
+    // printf("rightEyeRegion %d, rightEyeRegion %d\n", rightEyeRegion.x, rightEyeRegion.y);
+    // gray(cv::Rect(leftEyeRegion.x, leftEyeRegion.y, 60, 70)).copyTo(*left);
+    // gray(cv::Rect(rightEyeRegion.x, rightEyeRegion.y, 60, 70)).copyTo(*right);
+    gray(cv::Rect(leftXOffset, leftYOffset, leftCols, leftRows)).copyTo(*left);
+    gray(cv::Rect(rightXOffset, rightYOffset, rightCols, rightRows)).copyTo(*right);
 }
 
 int faceDetect(Mat gray, cv::Rect *face, Mat *faceROI) {
@@ -141,10 +119,9 @@ int faceDetect(Mat gray, cv::Rect *face, Mat *faceROI) {
     }
     return 0;
 }
-
 int eyeRegions(cv::Rect face, cv::Rect *leftEyeRegion, cv::Rect *rightEyeRegion) {
-    int eye_region_width = face.width * (kEyePercentWidth/100.0);
-    int eye_region_height = face.width * (kEyePercentHeight/100.0);
+    eye_region_width = face.width * (kEyePercentWidth/100.0);
+    eye_region_height = face.width * (kEyePercentHeight/100.0);
     int eye_region_top = face.height * (kEyePercentTop/100.0);
     (*leftEyeRegion) = cv::Rect(face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
     (*rightEyeRegion) = cv::Rect(face.width - eye_region_width - face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
@@ -160,13 +137,15 @@ int showResult(Mat cflow, cv::Rect face, Mat faceROI, cv::Rect leftEyeRegion, cv
     leftPupil.x += leftEyeRegion.x; leftPupil.y += leftEyeRegion.y;
     rightPupil.x += face.x; rightPupil.y += face.y;
     leftPupil.x += face.x; leftPupil.y += face.y;
+    leftXOffset = leftPupil.x - 50; rightXOffset = rightPupil.x - 50;
+    leftYOffset = leftPupil.y - 50; rightYOffset = rightPupil.y - 50;
 
     circle(cflow, Point2f((float)15, (float)15), 10, Scalar(0,255,0), -1, 8);
     circle(cflow, rightPupil, 3, Scalar(0,255,0), -1, 8);
     circle(cflow, leftPupil, 3, Scalar(0,255,0), -1, 8);
 
     // draw eye centers
-    if (PHONE == 0) {
+    if (DEBUG_LEVEL >= 1 && PHONE == 0) {
         imshow("main", cflow);
     }
 }
@@ -183,18 +162,46 @@ int setUp(const char* cascadePath) {
     }
 }
 Mat pleft, pright;
-
+int firstLoopProcs = 1;
 int process(Mat frame, Mat gray, Mat out) {
+    clock_t start;
     cv::Rect face, leftEyeRegion, rightEyeRegion;
     cv::Point leftPupil, rightPupil;
     Mat faceROI;
     Mat left, right;
+    Mat flowLeft, flowRight;
 
     if (faceDetect(gray, &face, &faceROI) != 0) { return -1; }
-    getLeftRightEyeMat(gray, &left, &right);
 
     eyeRegions(face, &leftEyeRegion, &rightEyeRegion);
     eyeCenters(faceROI, leftEyeRegion, rightEyeRegion, &leftPupil, &rightPupil);
+
+    getLeftRightEyeMat(gray, leftEyeRegion, rightEyeRegion,  &left, &right);
+
+    if (firstLoopProcs == 0) {
+        start = clock();
+        calcOpticalFlowFarneback(pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
+        calcOpticalFlowFarneback(pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
+        diffclock("- farneback", start);
+
+        start = clock();
+        diffclock("- cvtColor", start);
+
+        start = clock();
+        drawOptFlowMap(flowLeft, out, 10, Scalar(0, 255, 0), 0);
+        drawOptFlowMap(flowRight, out, 10, Scalar(0, 255, 0), 1);
+//imshow("fris", faceROI);
+        
+        //drawOptFlowMap(flowLeft, *out, 10, CV_RGB(0, 255, 0));
+        diffclock("- drawOptFlowMap", start);
+        if (DEBUG_LEVEL >= 2 && PHONE == 0) {
+            imshow("left", left);
+            imshow("right", right);
+        }
+    } else {
+        firstLoopProcs = 0;
+    }
+
     showResult(out, face, faceROI, leftEyeRegion, rightEyeRegion, leftPupil, rightPupil);
 
     pleft = left.clone(); pright = right.clone(); // TODO try just with assigning

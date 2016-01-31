@@ -75,25 +75,7 @@ class OptFlow {
     }
     public: int run(JNIEnv * jenv, Mat rgb, Mat grayo) {
         cvtColor(rgb, grayx, COLOR_BGR2GRAY);
-        preprocess(rgb, &grayx, &left, &right);
-        if(prevLeft.empty()) {
-            left.copyTo(prevLeft);
-            right.copyTo(prevRight);
-            /*
-            point = Point2f((float)10, (float)30);
-            vector<Point2f> tmp;
-            tmp.push_back(point);
-            cornerSubPix( gray, tmp, winSize, cvSize(-1,-1), termcrit);
-            points[1].push_back(tmp[0]);
-            */
-            
-        }
-        Mat cflow;
-        //process(previous, next, &cflow);
-        //environment(jenv);
-
-        // process(prevLeft, left, prevRight, right, rgb);
-        process(rgb, grayx, prevLeft, left, prevRight, right, rgb);
+        process(rgb, grayx, rgb);
 
         cv::swap(prevLeft, left);
         cv::swap(prevRight, right);
