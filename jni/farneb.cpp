@@ -84,19 +84,18 @@ void drawOptFlowMap (const Mat flow, Mat cflowmap, int step, const Scalar& color
     }
 }
 
-int preprocess(Mat frame, Mat *gray, Mat *left, Mat *right) {
-    int resizeFactor = 1;
+int getGray(Mat frame, Mat *gray) {
+    // int resizeFactor = 1;
     //resize(frame, *output, Size(frame.size().width/resizeFactor, frame.size().height/resizeFactor));
+    //cvtColor(frame, *gray, CV_BGR2GRAY);
+    std::vector<cv::Mat> rgbChannels(3);
+    cv::split(frame, rgbChannels);
+    *gray = rgbChannels[2];
+}
 
-    if (PHONE == 0) {
-      //cvtColor(frame, *gray, CV_BGR2GRAY);
-      std::vector<cv::Mat> rgbChannels(3);
-      cv::split(frame, rgbChannels);
-      *gray = rgbChannels[2];
-    }
-
-    (*gray)(cv::Rect(leftXOffset,leftYOffset,leftCols,leftRows)).copyTo(*left);
-    (*gray)(cv::Rect(rightXOffset,rightYOffset,rightCols,rightRows)).copyTo(*right);
+int getLeftRightEyeMat(Mat gray, Mat *left, Mat *right) {
+    gray(cv::Rect(leftXOffset,leftYOffset,leftCols,leftRows)).copyTo(*left);
+    gray(cv::Rect(rightXOffset,rightYOffset,rightCols,rightRows)).copyTo(*right);
 }
 
 int process1(Mat pleft, Mat left, Mat pright, Mat right, Mat cflow) {
@@ -183,38 +182,43 @@ int setUp(const char* cascadePath) {
         throw;
     }
 }
-int process(Mat frame, Mat gray, Mat pleft, Mat left, Mat pright, Mat right, Mat cflow) {
+Mat pleft, pright;
+
+int process(Mat frame, Mat gray, Mat out) {
     cv::Rect face, leftEyeRegion, rightEyeRegion;
     cv::Point leftPupil, rightPupil;
     Mat faceROI;
+    Mat left, right;
 
-    if (farne == 0) {
-        if (faceDetect(gray, &face, &faceROI) != 0) {
-            return -1;
-        }
-        eyeRegions(face, &leftEyeRegion, &rightEyeRegion);
-        eyeCenters(faceROI, leftEyeRegion, rightEyeRegion, &leftPupil, &rightPupil);
-        showResult(frame, face, faceROI, leftEyeRegion, rightEyeRegion, leftPupil, rightPupil);
-    } else {
-        process1(pleft, left, pright, right, frame);
-    }
+    if (faceDetect(gray, &face, &faceROI) != 0) { return -1; }
+    getLeftRightEyeMat(gray, &left, &right);
+
+    eyeRegions(face, &leftEyeRegion, &rightEyeRegion);
+    eyeCenters(faceROI, leftEyeRegion, rightEyeRegion, &leftPupil, &rightPupil);
+    showResult(out, face, faceROI, leftEyeRegion, rightEyeRegion, leftPupil, rightPupil);
+
+    pleft = left.clone(); pright = right.clone(); // TODO try just with assigning
 }
 
 int main() {
     PHONE = 0; farne = 0;
-    // video source
+    // test videos
     // char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
-    char fileName[200] = "/home/developer/other/android_deps/OpenCV-2.4.10-android-sdk/samples/optical-flow/res/raw/lbpcascade_frontalface.xml";
+    // char fileName1[200] = "/home/developer/other/test_videos/crnc1.mp4";
+    // char fileName1[200] = "/home/developer/other/test_videos/indian_close.mp4";
+    // char fileName1[200] = "/home/developer/other/test_videos/yellow_close.mp4";
+    // char fileName1[200] = "/home/developer/other/test_videos/very_dark.mp4";
     //char fileName[100] = "/opt/docker_volumes/mag/home_developer/other/posnetki/o4_29.mp4";
-    // VideoCapture stream1(fileName);   //0 is the id of video device.0 if you have only one camera   
+    // VideoCapture stream1(fileName1);   //0 is the id of video device.0 if you have only one camera   
     VideoCapture stream1(0);   //0 is the id of video device.0 if you have only one camera   
+    char faceDetector[200] = "/home/developer/other/android_deps/OpenCV-2.4.10-android-sdk/samples/optical-flow/res/raw/lbpcascade_frontalface.xml";
 
     // controls
     int pause = 0, firstLoop = 1;
     clock_t loopStart, start;
-    Mat frame, gray,  pleft, left,  pright, right,  cflow;
+    Mat frame, gray, cflow;
 
-    setUp(fileName);
+    setUp(faceDetector);
 
     if (farne == 0) {
         cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
@@ -232,7 +236,6 @@ int main() {
 
         if (firstLoop == 1) {
             loopStart = clock();
-            preprocess(frame, &gray, &pleft, &pright);
             firstLoop = 0;
             continue;
         }
@@ -241,17 +244,16 @@ int main() {
         loopStart = clock();
 
         start = clock();
-        preprocess(frame, &gray, &left, &right);
-        diffclock("preprocess", start);
+        getGray(frame, &gray);
+        diffclock("getGray", start);
 
         start = clock();
-        process(frame, gray, pleft, left, pright, right, frame);
+        process(frame, gray, frame);
         diffclock("process", start);
 
         // flow control
         int c = cv::waitKey(10);
-        if(c == 27) {
-            // esc
+        if(c == 27) { // esc
             break;
         } else if((char)c == 'p') {
             pause = 1;
@@ -266,11 +268,8 @@ int main() {
                 } else if((char)c == 'n') {
                     break;
                 }
-                //sleep(100)
             }
         }
-
-        pleft = left.clone(); pright = right.clone();
     }
 
     return 0;
