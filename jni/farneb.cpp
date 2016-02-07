@@ -59,6 +59,9 @@ void diffclock(char const *title, clock_t clock2) {
 int leftXOffset=100, leftYOffset=170, leftCols=100, leftRows=100;
 int rightXOffset=250, rightYOffset=170, rightCols=100, rightRows=100;
 
+int leftXp1=0, leftYp1=0, rightXp1=0, rightYp1=0;
+int leftXlast=0, leftYlast=0, rightXlast=0, rightYlast=0;
+int leftXavg=0, leftYavg=0, rightXavg=0, rightYavg=0;
 void drawOptFlowMap (const Mat flow, Mat cflowmap, int step, const Scalar& color, int eye) {
     //circle(cflowmap, Point2f((float)10, (float)10), 3, Scalar(0,255,0), -1, 8);
     circle(cflowmap, Point2f((float)15, (float)15), 10, Scalar(0,255,0), -1, 8);
@@ -139,6 +142,23 @@ int showResult(Mat cflow, cv::Rect face, Mat faceROI, cv::Rect leftEyeRegion, cv
     leftPupil.x += face.x; leftPupil.y += face.y;
     leftXOffset = leftPupil.x - 50; rightXOffset = rightPupil.x - 50;
     leftYOffset = leftPupil.y - 50; rightYOffset = rightPupil.y - 50;
+
+    if (leftXavg==0) {
+        // first iteration
+        leftXp1=leftPupil.x; leftXlast=leftPupil.x; leftXavg=leftPupil.x;
+        leftYp1=leftPupil.y; leftYlast=leftPupil.y; leftYavg=leftPupil.y;
+        rightXp1=rightPupil.x; rightXlast=rightPupil.x; rightXavg=rightPupil.x;
+        rightYp1=rightPupil.y; rightYlast=rightPupil.y; rightYavg=rightPupil.y;
+    } else {
+        // calculate avg
+        leftXavg=(leftXp1+leftXlast+leftPupil.x)/3; leftYavg=(leftYp1+leftYlast+leftPupil.y)/3;
+        rightXavg=(rightXp1+rightXlast+rightPupil.x)/3; rightYavg=(rightYp1+rightYlast+rightPupil.y)/3;
+        // rotate
+        leftXp1=leftXlast; rightXp1=rightXlast; leftYp1=leftYlast; rightYp1=rightYlast;
+        leftXlast=leftPupil.x; rightXlast=rightPupil.x; leftYlast=leftPupil.y; rightYlast=rightPupil.y;
+    }
+    leftXOffset = leftXavg-50; leftYOffset = leftYavg-50;
+    rightXOffset = rightXavg-50; rightYOffset = rightYavg-50;
 
     circle(cflow, Point2f((float)15, (float)15), 10, Scalar(0,255,0), -1, 8);
     circle(cflow, rightPupil, 3, Scalar(0,255,0), -1, 8);
