@@ -56,8 +56,8 @@ void diffclock(char const *title, clock_t clock2) {
 
     doLogClock("%s: %f", title, diffms);
 }
-int leftXOffset=100, leftYOffset=130, leftCols=100, leftRows=100;
-int rightXOffset=210, rightYOffset=130, rightCols=100, rightRows=100;
+int leftXOffset=200, leftYOffset=130, leftCols=100, leftRows=100;
+int rightXOffset=350, rightYOffset=130, rightCols=100, rightRows=100;
 
 int leftXp1=0, leftYp1=0, rightXp1=0, rightYp1=0;
 int leftXlast=0, leftYlast=0, rightXlast=0, rightYlast=0;
@@ -140,25 +140,25 @@ int showResult(Mat cflow, cv::Rect face, Mat faceROI, cv::Rect leftEyeRegion, cv
     leftPupil.x += leftEyeRegion.x; leftPupil.y += leftEyeRegion.y;
     rightPupil.x += face.x; rightPupil.y += face.y;
     leftPupil.x += face.x; leftPupil.y += face.y;
-    leftXOffset = leftPupil.x - 50; rightXOffset = rightPupil.x - 50;
-    leftYOffset = leftPupil.y - 50; rightYOffset = rightPupil.y - 50;
+    // leftXOffset = leftPupil.x - 50; rightXOffset = rightPupil.x - 50;
+    // leftYOffset = leftPupil.y - 50; rightYOffset = rightPupil.y - 50;
 
-    if (leftXavg==0) {
-        // first iteration
-        leftXp1=leftPupil.x; leftXlast=leftPupil.x; leftXavg=leftPupil.x;
-        leftYp1=leftPupil.y; leftYlast=leftPupil.y; leftYavg=leftPupil.y;
-        rightXp1=rightPupil.x; rightXlast=rightPupil.x; rightXavg=rightPupil.x;
-        rightYp1=rightPupil.y; rightYlast=rightPupil.y; rightYavg=rightPupil.y;
-    } else {
-        // calculate avg
-        leftXavg=(leftXp1+leftXlast+leftPupil.x)/3; leftYavg=(leftYp1+leftYlast+leftPupil.y)/3;
-        rightXavg=(rightXp1+rightXlast+rightPupil.x)/3; rightYavg=(rightYp1+rightYlast+rightPupil.y)/3;
-        // rotate
-        leftXp1=leftXlast; rightXp1=rightXlast; leftYp1=leftYlast; rightYp1=rightYlast;
-        leftXlast=leftPupil.x; rightXlast=rightPupil.x; leftYlast=leftPupil.y; rightYlast=rightPupil.y;
-    }
-    leftXOffset = leftXavg-50; leftYOffset = leftYavg-50;
-    rightXOffset = rightXavg-50; rightYOffset = rightYavg-50;
+    // if (leftXavg==0) {
+    //     // first iteration
+    //     leftXp1=leftPupil.x; leftXlast=leftPupil.x; leftXavg=leftPupil.x;
+    //     leftYp1=leftPupil.y; leftYlast=leftPupil.y; leftYavg=leftPupil.y;
+    //     rightXp1=rightPupil.x; rightXlast=rightPupil.x; rightXavg=rightPupil.x;
+    //     rightYp1=rightPupil.y; rightYlast=rightPupil.y; rightYavg=rightPupil.y;
+    // } else {
+    //     // calculate avg
+    //     leftXavg=(leftXp1+leftXlast+leftPupil.x)/3; leftYavg=(leftYp1+leftYlast+leftPupil.y)/3;
+    //     rightXavg=(rightXp1+rightXlast+rightPupil.x)/3; rightYavg=(rightYp1+rightYlast+rightPupil.y)/3;
+    //     // rotate
+    //     leftXp1=leftXlast; rightXp1=rightXlast; leftYp1=leftYlast; rightYp1=rightYlast;
+    //     leftXlast=leftPupil.x; rightXlast=rightPupil.x; leftYlast=leftPupil.y; rightYlast=rightPupil.y;
+    // }
+    // leftXOffset = leftXavg-50; leftYOffset = leftYavg-50;
+    // rightXOffset = rightXavg-50; rightYOffset = rightYavg-50;
 
     circle(cflow, Point2f((float)15, (float)15), 10, Scalar(0,255,0), -1, 8);
     circle(cflow, rightPupil, 3, Scalar(0,255,0), -1, 8);
@@ -191,17 +191,24 @@ int process(Mat frame, Mat gray, Mat out) {
     Mat left, right;
     Mat flowLeft, flowRight;
 
+    start = clock();
     if (faceDetect(gray, &face, &faceROI) != 0) {
         if (DEBUG_LEVEL >= 1 && PHONE == 0) {
             imshow("main", out);
         }
-
         return -1;
     }
+    diffclock("- facedetect", start);
 
+    start = clock();
     eyeRegions(face, &leftEyeRegion, &rightEyeRegion);
+    diffclock("- eyeRegions", start);
+    start = clock();
     eyeCenters(faceROI, leftEyeRegion, rightEyeRegion, &leftPupil, &rightPupil);
+    diffclock("- eyeCenters", start);
+    start = clock();
     getLeftRightEyeMat(gray, leftEyeRegion, rightEyeRegion,  &left, &right);
+    diffclock("- getLeftRightEyeMat", start);
 
     if (firstLoopProcs == 0) {
         start = clock();
@@ -210,14 +217,10 @@ int process(Mat frame, Mat gray, Mat out) {
         diffclock("- farneback", start);
 
         start = clock();
-        diffclock("- cvtColor", start);
-
-        start = clock();
         drawOptFlowMap(flowLeft, out, 10, Scalar(0, 255, 0), 0);
         drawOptFlowMap(flowRight, out, 10, Scalar(0, 255, 0), 1);
-
-        //drawOptFlowMap(flowLeft, *out, 10, CV_RGB(0, 255, 0));
         diffclock("- drawOptFlowMap", start);
+
         if (DEBUG_LEVEL >= 2 && PHONE == 0) {
             imshow("left", left);
             imshow("right", right);
@@ -226,7 +229,9 @@ int process(Mat frame, Mat gray, Mat out) {
         firstLoopProcs = 0;
     }
 
+    start = clock();
     showResult(out, face, faceROI, leftEyeRegion, rightEyeRegion, leftPupil, rightPupil);
+    diffclock("- showResult", start);
 
     pleft = left.clone(); pright = right.clone(); // TODO try just with assigning
 }
