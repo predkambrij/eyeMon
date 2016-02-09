@@ -108,18 +108,13 @@ int getLeftRightEyeMat(Mat gray, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion
     gray(cv::Rect(rightXOffset, rightYOffset, rightCols, rightRows)).copyTo(*right);
 }
 
-int faceDetect(Mat gray, cv::Rect *face, Mat *faceROI) {
+int faceDetect(Mat gray, cv::Rect *face) {
     std::vector<cv::Rect> faces;
     face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
     if (faces.size() != 1) {
         return -1;
     }
     *face = faces[0];
-    *faceROI = gray(*face);
-    if (kSmoothFaceImage) {
-        double sigma = kSmoothFaceFactor * (*face).width;
-        GaussianBlur(*faceROI, *faceROI, cv::Size(0, 0), sigma);
-    }
     return 0;
 }
 int eyeRegions(cv::Rect face, cv::Rect *leftEyeRegion, cv::Rect *rightEyeRegion) {
@@ -135,34 +130,34 @@ int eyeCenters(Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv:
 }
 
 int showResult(Mat cflow, cv::Rect face, Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil) {
-    // change eye centers to face coordinates
-    rightPupil.x += rightEyeRegion.x; rightPupil.y += rightEyeRegion.y;
-    leftPupil.x += leftEyeRegion.x; leftPupil.y += leftEyeRegion.y;
-    rightPupil.x += face.x; rightPupil.y += face.y;
-    leftPupil.x += face.x; leftPupil.y += face.y;
-    // leftXOffset = leftPupil.x - 50; rightXOffset = rightPupil.x - 50;
-    // leftYOffset = leftPupil.y - 50; rightYOffset = rightPupil.y - 50;
+    // // change eye centers to face coordinates
+    // rightPupil.x += rightEyeRegion.x; rightPupil.y += rightEyeRegion.y;
+    // leftPupil.x += leftEyeRegion.x; leftPupil.y += leftEyeRegion.y;
+    // rightPupil.x += face.x; rightPupil.y += face.y;
+    // leftPupil.x += face.x; leftPupil.y += face.y;
+    // // leftXOffset = leftPupil.x - 50; rightXOffset = rightPupil.x - 50;
+    // // leftYOffset = leftPupil.y - 50; rightYOffset = rightPupil.y - 50;
 
-    // if (leftXavg==0) {
-    //     // first iteration
-    //     leftXp1=leftPupil.x; leftXlast=leftPupil.x; leftXavg=leftPupil.x;
-    //     leftYp1=leftPupil.y; leftYlast=leftPupil.y; leftYavg=leftPupil.y;
-    //     rightXp1=rightPupil.x; rightXlast=rightPupil.x; rightXavg=rightPupil.x;
-    //     rightYp1=rightPupil.y; rightYlast=rightPupil.y; rightYavg=rightPupil.y;
-    // } else {
-    //     // calculate avg
-    //     leftXavg=(leftXp1+leftXlast+leftPupil.x)/3; leftYavg=(leftYp1+leftYlast+leftPupil.y)/3;
-    //     rightXavg=(rightXp1+rightXlast+rightPupil.x)/3; rightYavg=(rightYp1+rightYlast+rightPupil.y)/3;
-    //     // rotate
-    //     leftXp1=leftXlast; rightXp1=rightXlast; leftYp1=leftYlast; rightYp1=rightYlast;
-    //     leftXlast=leftPupil.x; rightXlast=rightPupil.x; leftYlast=leftPupil.y; rightYlast=rightPupil.y;
-    // }
-    // leftXOffset = leftXavg-50; leftYOffset = leftYavg-50;
-    // rightXOffset = rightXavg-50; rightYOffset = rightYavg-50;
+    // // if (leftXavg==0) {
+    // //     // first iteration
+    // //     leftXp1=leftPupil.x; leftXlast=leftPupil.x; leftXavg=leftPupil.x;
+    // //     leftYp1=leftPupil.y; leftYlast=leftPupil.y; leftYavg=leftPupil.y;
+    // //     rightXp1=rightPupil.x; rightXlast=rightPupil.x; rightXavg=rightPupil.x;
+    // //     rightYp1=rightPupil.y; rightYlast=rightPupil.y; rightYavg=rightPupil.y;
+    // // } else {
+    // //     // calculate avg
+    // //     leftXavg=(leftXp1+leftXlast+leftPupil.x)/3; leftYavg=(leftYp1+leftYlast+leftPupil.y)/3;
+    // //     rightXavg=(rightXp1+rightXlast+rightPupil.x)/3; rightYavg=(rightYp1+rightYlast+rightPupil.y)/3;
+    // //     // rotate
+    // //     leftXp1=leftXlast; rightXp1=rightXlast; leftYp1=leftYlast; rightYp1=rightYlast;
+    // //     leftXlast=leftPupil.x; rightXlast=rightPupil.x; leftYlast=leftPupil.y; rightYlast=rightPupil.y;
+    // // }
+    // // leftXOffset = leftXavg-50; leftYOffset = leftYavg-50;
+    // // rightXOffset = rightXavg-50; rightYOffset = rightYavg-50;
 
-    circle(cflow, Point2f((float)15, (float)15), 10, Scalar(0,255,0), -1, 8);
-    circle(cflow, rightPupil, 3, Scalar(0,255,0), -1, 8);
-    circle(cflow, leftPupil, 3, Scalar(0,255,0), -1, 8);
+    // circle(cflow, Point2f((float)15, (float)15), 10, Scalar(0,255,0), -1, 8);
+    // circle(cflow, rightPupil, 3, Scalar(0,255,0), -1, 8);
+    // circle(cflow, leftPupil, 3, Scalar(0,255,0), -1, 8);
 
     // draw eye centers
     if (DEBUG_LEVEL >= 1 && PHONE == 0) {
@@ -181,6 +176,12 @@ int setUp(const char* cascadePath) {
         throw;
     }
 }
+TermCriteria termcrit;
+Size subPixWinSize, winSize;
+const int MAX_COUNT = 500;
+bool addRemovePtx = false;
+int flg=0;
+vector<Point2f> points[2];
 Mat pleft, pright;
 int firstLoopProcs = 1;
 int process(Mat frame, Mat gray, Mat out) {
@@ -192,20 +193,27 @@ int process(Mat frame, Mat gray, Mat out) {
     Mat flowLeft, flowRight;
 
     start = clock();
-    if (faceDetect(gray, &face, &faceROI) != 0) {
+    if (faceDetect(gray, &face) != 0) {
         if (DEBUG_LEVEL >= 1 && PHONE == 0) {
             imshow("main", out);
         }
         return -1;
     }
+    // // faceROI = gray(face);
+    // if (kSmoothFaceImage) {
+    //     double sigma = kSmoothFaceFactor * gray.cols*1;
+    //     // todo only farne eye region
+    //     GaussianBlur(gray, gray, cv::Size(0, 0), sigma);
+    // }
+
     diffclock("- facedetect", start);
 
-    start = clock();
-    eyeRegions(face, &leftEyeRegion, &rightEyeRegion);
-    diffclock("- eyeRegions", start);
-    start = clock();
-    eyeCenters(faceROI, leftEyeRegion, rightEyeRegion, &leftPupil, &rightPupil);
-    diffclock("- eyeCenters", start);
+    // start = clock();
+    // eyeRegions(face, &leftEyeRegion, &rightEyeRegion);
+    // diffclock("- eyeRegions", start);
+    // start = clock();
+    // eyeCenters(faceROI, leftEyeRegion, rightEyeRegion, &leftPupil, &rightPupil);
+    // diffclock("- eyeCenters", start);
     start = clock();
     getLeftRightEyeMat(gray, leftEyeRegion, rightEyeRegion,  &left, &right);
     diffclock("- getLeftRightEyeMat", start);
@@ -217,8 +225,8 @@ int process(Mat frame, Mat gray, Mat out) {
         diffclock("- farneback", start);
 
         start = clock();
-        drawOptFlowMap(flowLeft, out, 10, Scalar(0, 255, 0), 0);
-        drawOptFlowMap(flowRight, out, 10, Scalar(0, 255, 0), 1);
+        // drawOptFlowMap(flowLeft, out, 10, Scalar(0, 255, 0), 0);
+        // drawOptFlowMap(flowRight, out, 10, Scalar(0, 255, 0), 1);
         diffclock("- drawOptFlowMap", start);
 
         if (DEBUG_LEVEL >= 2 && PHONE == 0) {
@@ -229,17 +237,54 @@ int process(Mat frame, Mat gray, Mat out) {
         firstLoopProcs = 0;
     }
 
+    if (flg == 1) {
+        Size subPixWinSize(10,10), winSize(31,31);
+        goodFeaturesToTrack(left, points[1], MAX_COUNT, 0.01, 10, Mat(), 3, 0, 0.04);
+        // cornerSubPix(gray, points[1], subPixWinSize, Size(-1,-1), termcrit); // sig abrt
+        flg = 0;
+    } else {
+        if(!points[0].empty()){
+            printf("BUJU BUJU\n");
+            Point2f point;
+            vector<uchar> status;
+            vector<float> err;
+            TermCriteria termcrit(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 20, 0.03);
+            Size subPixWinSize(10,10), winSize(31,31);
+            calcOpticalFlowPyrLK(pleft, left, points[0], points[1], status, err, winSize,
+                                 3, termcrit, 0, 0.001);
+            size_t i, k;
+            for(i = k = 0; i < points[1].size(); i++) {
+                if(addRemovePtx) {
+                    if(norm(point - points[1][i]) <= 5 ) {
+                        addRemovePtx = false;
+                        continue;
+                    }
+                }
+            
+                if(!status[i]) {
+                    continue;
+                }
+                
+                points[1][k++] = points[1][i];
+                circle(frame, points[1][i], 3, Scalar(0,255,0), -1, 8);
+            }
+            points[1].resize(k);
+        }
+    }
+
     start = clock();
     showResult(out, face, faceROI, leftEyeRegion, rightEyeRegion, leftPupil, rightPupil);
     diffclock("- showResult", start);
 
     pleft = left.clone(); pright = right.clone(); // TODO try just with assigning
+    std::swap(points[1], points[0]);
 }
 
 int main() {
     PHONE = 0; farne = 0;
     // test videos
-    char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
+    // char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
+    char fileName[100] = "/home/developer/other/posnetki/o4_30.mp4";
     // char fileName[200] = "/home/developer/other/test_videos/crnc1.mp4";
     // char fileName[200] = "/home/developer/other/test_videos/indian_close.mp4";
     // char fileName[200] = "/home/developer/other/test_videos/yellow_close.mp4";
@@ -303,7 +348,8 @@ int main() {
         } else if((char)c == 'p') {
             pause = 1;
         } else if((char)c == 'f') {
-            imwrite("/tmp/frame.png",cflow);
+            flg = 1;
+            // imwrite("/tmp/frame.png",cflow);
         } else if (pause == 1) {
             while (true) {
                 int c = cv::waitKey(10);
