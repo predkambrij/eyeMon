@@ -1,0 +1,8 @@
+bin
+gen
+libs
+obj
+
+# x86_64 binaries
+el
+
