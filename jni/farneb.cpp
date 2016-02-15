@@ -83,8 +83,11 @@ void drawOptFlowMap (const Mat flow, Mat cflowmap, int step, const Scalar& color
             circle(cflowmap, Point(cvRound(px+fxy.x), cvRound(py+fxy.y)), 1, color, -1, 8);
 
             //circle( image, points[1][i], 3, Scalar(0,255,0), -1, 8);
+            printf("%.0f ", fxy.y);
         }
+        printf("\n");
     }
+    printf("\n\n\n");
 }
 
 int getGray(Mat frame, Mat *gray) {
@@ -166,7 +169,6 @@ int showResult(Mat cflow, cv::Rect face, Mat faceROI, cv::Rect leftEyeRegion, cv
 }
 
 int setUp(const char* cascadePath) {
-    // throw;
     try {
         if(!face_cascade.load(cascadePath)) {
             throw "--(!)Error loading face cascade, please change face_cascade_name in source code.\n";
@@ -176,6 +178,7 @@ int setUp(const char* cascadePath) {
         throw;
     }
 }
+
 TermCriteria termcrit;
 Size subPixWinSize, winSize;
 const int MAX_COUNT = 500;
@@ -225,8 +228,8 @@ int process(Mat frame, Mat gray, Mat out) {
         diffclock("- farneback", start);
 
         start = clock();
-        // drawOptFlowMap(flowLeft, out, 10, Scalar(0, 255, 0), 0);
-        // drawOptFlowMap(flowRight, out, 10, Scalar(0, 255, 0), 1);
+        drawOptFlowMap(flowLeft, out, 10, Scalar(0, 255, 0), 0);
+        drawOptFlowMap(flowRight, out, 10, Scalar(0, 255, 0), 1);
         diffclock("- drawOptFlowMap", start);
 
         if (DEBUG_LEVEL >= 2 && PHONE == 0) {
@@ -237,40 +240,40 @@ int process(Mat frame, Mat gray, Mat out) {
         firstLoopProcs = 0;
     }
 
-    if (flg == 1) {
-        Size subPixWinSize(10,10), winSize(31,31);
-        goodFeaturesToTrack(left, points[1], MAX_COUNT, 0.01, 10, Mat(), 3, 0, 0.04);
-        // cornerSubPix(gray, points[1], subPixWinSize, Size(-1,-1), termcrit); // sig abrt
-        flg = 0;
-    } else {
-        if(!points[0].empty()){
-            printf("BUJU BUJU\n");
-            Point2f point;
-            vector<uchar> status;
-            vector<float> err;
-            TermCriteria termcrit(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 20, 0.03);
-            Size subPixWinSize(10,10), winSize(31,31);
-            calcOpticalFlowPyrLK(pleft, left, points[0], points[1], status, err, winSize,
-                                 3, termcrit, 0, 0.001);
-            size_t i, k;
-            for(i = k = 0; i < points[1].size(); i++) {
-                if(addRemovePtx) {
-                    if(norm(point - points[1][i]) <= 5 ) {
-                        addRemovePtx = false;
-                        continue;
-                    }
-                }
+    // if (flg == 1) {
+    //     Size subPixWinSize(10,10), winSize(31,31);
+    //     goodFeaturesToTrack(left, points[1], MAX_COUNT, 0.01, 10, Mat(), 3, 0, 0.04);
+    //     // cornerSubPix(gray, points[1], subPixWinSize, Size(-1,-1), termcrit); // sig abrt
+    //     flg = 0;
+    // } else {
+    //     if(!points[0].empty()){
+    //         printf("BUJU BUJU\n");
+    //         Point2f point;
+    //         vector<uchar> status;
+    //         vector<float> err;
+    //         TermCriteria termcrit(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 20, 0.03);
+    //         Size subPixWinSize(10,10), winSize(31,31);
+    //         calcOpticalFlowPyrLK(pleft, left, points[0], points[1], status, err, winSize,
+    //                              3, termcrit, 0, 0.001);
+    //         size_t i, k;
+    //         for(i = k = 0; i < points[1].size(); i++) {
+    //             if(addRemovePtx) {
+    //                 if(norm(point - points[1][i]) <= 5 ) {
+    //                     addRemovePtx = false;
+    //                     continue;
+    //                 }
+    //             }
             
-                if(!status[i]) {
-                    continue;
-                }
+    //             if(!status[i]) {
+    //                 continue;
+    //             }
                 
-                points[1][k++] = points[1][i];
-                circle(frame, points[1][i], 3, Scalar(0,255,0), -1, 8);
-            }
-            points[1].resize(k);
-        }
-    }
+    //             points[1][k++] = points[1][i];
+    //             circle(frame, points[1][i], 3, Scalar(0,255,0), -1, 8);
+    //         }
+    //         points[1].resize(k);
+    //     }
+    // }
 
     start = clock();
     showResult(out, face, faceROI, leftEyeRegion, rightEyeRegion, leftPupil, rightPupil);
@@ -284,14 +287,15 @@ int main() {
     PHONE = 0; farne = 0;
     // test videos
     // char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
-    char fileName[100] = "/home/developer/other/posnetki/o4_30.mp4";
+    // char fileName[100] = "/home/developer/other/posnetki/o4_30.mp4";
+    char fileName[100] = "/home/developer/other/posnetki/o4_31.mp4";
     // char fileName[200] = "/home/developer/other/test_videos/crnc1.mp4";
     // char fileName[200] = "/home/developer/other/test_videos/indian_close.mp4";
     // char fileName[200] = "/home/developer/other/test_videos/yellow_close.mp4";
     // char fileName[200] = "/home/developer/other/test_videos/very_dark.mp4";
     // char fileName[100] = "/opt/docker_volumes/mag/home_developer/other/posnetki/o4_29.mp4";
-    // VideoCapture stream1(fileName);   //0 is the id of video device.0 if you have only one camera
-    VideoCapture stream1(0);
+    VideoCapture stream1(fileName);   //0 is the id of video device.0 if you have only one camera
+    // VideoCapture stream1(0);
     if (!stream1.isOpened()) {
         CV_Assert("Cam open failed");
     }
@@ -311,7 +315,7 @@ int main() {
 
     if (farne == 0) {
         cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
-        cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 10, 100);// resizeWindow("main",1280, 960);
+        cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 10, 100); resizeWindow("main",1280, 960);
         // cv::namedWindow("Right Eye",CV_WINDOW_NORMAL); cv::moveWindow("Right Eye", 10, 600);
         // cv::namedWindow("Left Eye",CV_WINDOW_NORMAL); cv::moveWindow("Left Eye", 10, 800);
         // createCornerKernels(), at the end // releaseCornerKernels(); // ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2), 43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);
