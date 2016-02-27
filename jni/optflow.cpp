@@ -19,7 +19,7 @@ using namespace std;
 #define DEBUG_TAGx "NDK_AndroidNDK1SampleActivity"
 
 auto startx = std::chrono::high_resolution_clock::now();
-bool addRemovePtx = false;
+bool addRemovePtx1 = false;
 
 void doLogx(JNIEnv * env, const char* text) {
     // malloc room for the resulting string

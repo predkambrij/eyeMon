@@ -111,6 +111,7 @@
 		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/1 OpenCV optical-flow"/>
 		</configuration>
+		<configuration configurationName="dd"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
