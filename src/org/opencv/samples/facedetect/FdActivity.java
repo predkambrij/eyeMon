@@ -25,7 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
-public class FdActivity extends Activity implements CvCameraViewListener2 {
+public class FdActivity extends Activity {
 
     private static final String    TAG                 = "OCVSample::Activity";
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
@@ -45,7 +45,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private float                  mRelativeFaceSize   = 0.2f;
     private int                    mAbsoluteFaceSize   = 0;
-
+    CameraPreview p;
     private CameraBridgeViewBase mOpenCvCameraView;
 
     // native detector
@@ -109,11 +109,18 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         setContentView(R.layout.face_detect_surface_view);
 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
-        mOpenCvCameraView.setCvCameraViewListener(this);
-
-        //mOpenCvCameraView.setMaxFrameSize(1280, 960);
+        p = new CameraPreview(this, 0);
+        p.setVisibility(1);
+        p.surfaceChanged(null, 0, 0, 0);
+        
+        mOpenCvCameraView = (CameraBridgeViewBase)p;
+        
+        Listener l = new Listener();
+        mOpenCvCameraView.setCvCameraViewListener(l);
+//
+//        //mOpenCvCameraView.setMaxFrameSize(1280, 960);
         mOpenCvCameraView.setMaxFrameSize(640, 480);
-        //mOpenCvCameraView.setMaxFrameSize(176, 144);
+//        //mOpenCvCameraView.setMaxFrameSize(176, 144);
     }
 
     public void onPause()
@@ -132,6 +139,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     public void onDestroy() {
         super.onDestroy();
         mOpenCvCameraView.disableView();
+//        p.disconnectCamera();
     }
 
     public void onCameraViewStarted(int width, int height) {
@@ -154,6 +162,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                 new org.opencv.core.Point(10,60), Core.FONT_HERSHEY_PLAIN, 3.0, new Scalar(0, 0, 0, 255));
         
         optFlow.detect(mRgba, mGray);
+        Log.i(TAG, "frame");
         return mRgba;
     }
 
