@@ -114,6 +114,7 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        mCamera.lock();
         mCamera.startPreview();
 
         return true;
@@ -121,6 +122,7 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
 
     public void disconnectCamera() {
         mCamera.stopPreview();
+        mCamera.unlock();
         mCamera.release();
         return;
     }

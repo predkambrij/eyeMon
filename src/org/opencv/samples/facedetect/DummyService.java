@@ -31,6 +31,7 @@ import android.util.Log;
 public class DummyService extends Service
 {
     private static final String TAG = "Dummy service";
+    private CameraPreview mOpenCvCameraView;
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -52,14 +53,24 @@ public class DummyService extends Service
     public void onCreate() 
     {   
         Log("DummyService: onCreate");
+        
+        mOpenCvCameraView = new CameraPreview(this, 0);
+        mOpenCvCameraView.connectCamera(640, 480);
+        mOpenCvCameraView.setVisibility(1);
 
-//           // Start foreground service to avoid unexpected kill
-//        Notification.Builder notificationB = new Notification.Builder(this)
-//            .setContentTitle("Background Video Recorder")
-//            .setContentText("")
-//            .setSmallIcon(R.drawable.icon);
-//        Notification notification = notificationB.getNotification();
-//        startForeground(1234, notification);
+           // Start foreground service to avoid unexpected kill
+        Notification.Builder notificationB = new Notification.Builder(this)
+            .setContentTitle("Background Video Recorder")
+            .setContentText("")
+            .setSmallIcon(R.drawable.icon);
+        Notification notification = notificationB.getNotification();
+        startForeground(1234, notification);
+    }
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        mOpenCvCameraView.disconnectCamera();
     }
 
     @Override

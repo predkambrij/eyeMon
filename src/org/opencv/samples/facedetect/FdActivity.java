@@ -20,6 +20,7 @@ import org.opencv.objdetect.CascadeClassifier;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -30,13 +31,8 @@ public class FdActivity extends Activity {
 
     private static final String TAG = "OCVSample::Activity";
 
-    private MenuItem               startService;
-    private MenuItem               stopService;
-
-    private Mat                    mRgba;
-    private Mat                    mGray;
-
-    private CameraPreview mOpenCvCameraView;
+    private MenuItem startService;
+    private MenuItem stopService;
 
     // native detector
     private OptFlow optFlow;
@@ -96,10 +92,6 @@ public class FdActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.face_detect_surface_view);
-
-        mOpenCvCameraView = new CameraPreview(this, 0);
-        mOpenCvCameraView.connectCamera(640, 480);
-        mOpenCvCameraView.setVisibility(1);
     }
 
     public void onPause()
@@ -115,7 +107,6 @@ public class FdActivity extends Activity {
 
     public void onDestroy() {
         super.onDestroy();
-        mOpenCvCameraView.disconnectCamera();
     }
 
 
@@ -142,9 +133,11 @@ public class FdActivity extends Activity {
 
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item == startService) {
-            
+            Intent intent = new Intent(FdActivity.this, DummyService.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startService(intent);
         } else if (item == stopService) {
-            
+            stopService(new Intent(FdActivity.this, DummyService.class));
         }
 
         return true;
