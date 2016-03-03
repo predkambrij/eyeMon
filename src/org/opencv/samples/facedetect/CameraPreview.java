@@ -42,10 +42,10 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
 
     @Override
     public void onPreviewFrame(byte[] frame, Camera arg1) {
-        Log.i(TAG, "onPreviewFrame "+testI);
-        Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
+//        Log.i(TAG, "onPreviewFrame "+testI);
+//        Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
         
-        FdActivity.buffer.add(frame);
+//        FdActivity.buffer.add(frame);
         
 //        try {
 ////            Mat m = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
@@ -56,12 +56,12 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
 //        }
         
         
-        testI++;
-        if (testI==300) {
-            Mat m = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
-            m.put(0, 0, frame);
-            Highgui.imwrite("/sdcard/fd/test.jpg", m);
-        }
+//        testI++;
+//        if (testI==300) {
+//            Mat m = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
+//            m.put(0, 0, frame);
+//            Highgui.imwrite("/sdcard/fd/test.jpg", m);
+//        }
         
         
 //        return mYuvFrameData.submat(0, mHeight, 0, mWidth);
