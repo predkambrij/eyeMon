@@ -1,6 +1,7 @@
 package org.opencv.samples.facedetect;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.opencv.android.CameraBridgeViewBase;
@@ -26,6 +27,7 @@ public class CameraPreview extends CameraBridgeViewBase implements PreviewCallba
     SurfaceTexture mSurfaceTexture;
     private static final int MAGIC_TEXTURE_ID = 10;
     private Mat[] mFrameChain;
+    LinkedList<Mat> buffer = new LinkedList<Mat>();
     private int mChainIdx = 0;
     
     private Thread mThread;
@@ -38,10 +40,32 @@ public class CameraPreview extends CameraBridgeViewBase implements PreviewCallba
     public void onPreviewFrame(byte[] frame, Camera arg1) {
         Log.i(TAG, "onPreviewFrame");
         Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
-        synchronized (this) {
-            mFrameChain[1 - mChainIdx].put(0, 0, frame);
-            this.notify();
-        }
+        
+        Mat m = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
+        m.put(0, 0, frame);
+        buffer.add(m);
+        
+//        return mYuvFrameData.submat(0, mHeight, 0, mWidth);
+        // Imgproc.cvtColor(mYuvFrameData, mRgba, Imgproc.COLOR_YUV2BGR_NV12, 4);
+//        return mRgba;
+//        public JavaCameraFrame(Mat Yuv420sp, int width, int height) {
+//            super();
+//            mWidth = width;
+//            mHeight = height;
+//            mYuvFrameData = Yuv420sp;
+//            mRgba = new Mat();
+//        }
+//
+//        public void release() {
+//            mRgba.release();
+//        }
+//
+//        private Mat mYuvFrameData;
+//        private Mat mRgba;
+//        private int mWidth;
+//        private int mHeight;
+
+
         if (mCamera != null)
             mCamera.addCallbackBuffer(mBuffer);
         return;
@@ -60,17 +84,10 @@ public class CameraPreview extends CameraBridgeViewBase implements PreviewCallba
         mFrameHeight = 480;
         int size = mFrameWidth * mFrameHeight;
         size  = size * ImageFormat.getBitsPerPixel(params.getPreviewFormat()) / 8;
+        
         mBuffer = new byte[size];
         mCamera.addCallbackBuffer(mBuffer);
         mCamera.setPreviewCallbackWithBuffer(this);
-        
-        mFrameChain = new Mat[2];
-        mFrameChain[0] = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
-        mFrameChain[1] = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
-        AllocateCache();
-        mCameraFrame = new JavaCameraFrame[2];
-        mCameraFrame[0] = new JavaCameraFrame(mFrameChain[0], mFrameWidth, mFrameHeight);
-        mCameraFrame[1] = new JavaCameraFrame(mFrameChain[1], mFrameWidth, mFrameHeight);
         
         
         mSurfaceTexture = new SurfaceTexture(MAGIC_TEXTURE_ID);
@@ -80,77 +97,14 @@ public class CameraPreview extends CameraBridgeViewBase implements PreviewCallba
             e.printStackTrace();
         }
         mCamera.startPreview();
-        
-        mThread = new Thread(new CameraWorker());
-        mThread.start();
-        
-//        mCamera.unlock();
 
-
-//        List<Camera.Size> sizes = params.getSupportedPreviewSizes();
         return true;
     }
 
     @Override
     protected void disconnectCamera() {
-//        mCamera.lock();
         mCamera.stopPreview();
         mCamera.release();
         return;
     }
-    
-    private boolean mStopThread;
-    protected JavaCameraFrame[] mCameraFrame;
-    private class CameraWorker implements Runnable {
-
-        public void run() {
-            do {
-                synchronized (CameraPreview.this) {
-                    try {
-                        CameraPreview.this.wait();
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-
-                if (!mStopThread) {
-                    if (!mFrameChain[mChainIdx].empty())
-                        deliverAndDrawFrame(mCameraFrame[mChainIdx]);
-                    mChainIdx = 1 - mChainIdx;
-                }
-            } while (!mStopThread);
-            Log.d(TAG, "Finish processing thread");
-        }
-    }
-    
-    private class JavaCameraFrame implements CvCameraViewFrame {
-        public Mat gray() {
-            return mYuvFrameData.submat(0, mHeight, 0, mWidth);
-        }
-
-        public Mat rgba() {
-            Imgproc.cvtColor(mYuvFrameData, mRgba, Imgproc.COLOR_YUV2BGR_NV12, 4);
-            return mRgba;
-        }
-
-        public JavaCameraFrame(Mat Yuv420sp, int width, int height) {
-            super();
-            mWidth = width;
-            mHeight = height;
-            mYuvFrameData = Yuv420sp;
-            mRgba = new Mat();
-        }
-
-        public void release() {
-            mRgba.release();
-        }
-
-        private Mat mYuvFrameData;
-        private Mat mRgba;
-        private int mWidth;
-        private int mHeight;
-    };
-    
-
 }
