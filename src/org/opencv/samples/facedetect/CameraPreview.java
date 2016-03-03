@@ -57,9 +57,11 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
         
         
         testI++;
-//        if (testI==300) {
-//            Highgui.imwrite("/sdcard/fd/test.jpg", m);
-//        }
+        if (testI==300) {
+            Mat m = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
+            m.put(0, 0, frame);
+            Highgui.imwrite("/sdcard/fd/test.jpg", m);
+        }
         
         
 //        return mYuvFrameData.submat(0, mHeight, 0, mWidth);

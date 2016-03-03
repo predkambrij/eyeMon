@@ -36,13 +36,11 @@ public class FdActivity extends Activity {
     private Mat                    mRgba;
     private Mat                    mGray;
 
-    CameraPreview p;
     private CameraPreview mOpenCvCameraView;
 
     // native detector
     private OptFlow optFlow;
     
-//    public static volatile LinkedList<Mat> buffer = new LinkedList<Mat>();
     public static volatile LinkedList<byte[]> buffer = new LinkedList<byte[]>();
     
     public FdActivity() {
@@ -82,7 +80,6 @@ public class FdActivity extends Activity {
                         Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
                     }
 
-//                    mOpenCvCameraView.enableView();
                 } break;
                 default:
                 {
@@ -100,26 +97,14 @@ public class FdActivity extends Activity {
 
         setContentView(R.layout.face_detect_surface_view);
 
-//        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
-        p = new CameraPreview(this, 0);
-        p.connectCamera(640, 480);
-        p.setVisibility(1);
-        
-//        p.surfaceChanged(null, 0, 0, 0);
-        
-//        mOpenCvCameraView = (CameraBridgeViewBase)p;
-        
-//
-//        //mOpenCvCameraView.setMaxFrameSize(1280, 960);
-//        mOpenCvCameraView.setMaxFrameSize(640, 480);
-//        //mOpenCvCameraView.setMaxFrameSize(176, 144);
+        mOpenCvCameraView = new CameraPreview(this, 0);
+        mOpenCvCameraView.connectCamera(640, 480);
+        mOpenCvCameraView.setVisibility(1);
     }
 
     public void onPause()
     {
         super.onPause();
-//        if (mOpenCvCameraView != null)
-//            mOpenCvCameraView.disableView();
     }
 
     public void onResume()
@@ -131,33 +116,23 @@ public class FdActivity extends Activity {
     public void onDestroy() {
         super.onDestroy();
         mOpenCvCameraView.disconnectCamera();
-//        mOpenCvCameraView.disableView();
-//        p.disconnectCamera();
     }
 
-    public void onCameraViewStarted(int width, int height) {
-        mGray = new Mat();
-        mRgba = new Mat();
-    }
 
-    public void onCameraViewStopped() {
-        mGray.release();
-        mRgba.release();
-    }
 
-    public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
-        mRgba = inputFrame.rgba();
-        // 1 means flip over y-axis
-        Core.flip(mRgba, mRgba, 1);
-        mGray = inputFrame.gray();
-
-        Core.putText(mRgba, " 3",
-                new org.opencv.core.Point(10,60), Core.FONT_HERSHEY_PLAIN, 3.0, new Scalar(0, 0, 0, 255));
-        
-        optFlow.detect(mRgba, mGray);
-        Log.i(TAG, "frame");
-        return mRgba;
-    }
+//    public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
+//        mRgba = inputFrame.rgba();
+//        // 1 means flip over y-axis
+//        Core.flip(mRgba, mRgba, 1);
+//        mGray = inputFrame.gray();
+//
+//        Core.putText(mRgba, " 3",
+//                new org.opencv.core.Point(10,60), Core.FONT_HERSHEY_PLAIN, 3.0, new Scalar(0, 0, 0, 255));
+//        
+//        optFlow.detect(mRgba, mGray);
+//        Log.i(TAG, "frame");
+//        return mRgba;
+//    }
 
     public boolean onCreateOptionsMenu(Menu menu) {
         startService = menu.add("startService");
