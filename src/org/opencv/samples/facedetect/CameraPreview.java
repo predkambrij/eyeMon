@@ -8,6 +8,7 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
 
 import android.content.Context;
@@ -27,8 +28,8 @@ public class CameraPreview extends CameraBridgeViewBase implements PreviewCallba
     SurfaceTexture mSurfaceTexture;
     private static final int MAGIC_TEXTURE_ID = 10;
     private Mat[] mFrameChain;
-    LinkedList<Mat> buffer = new LinkedList<Mat>();
     private int mChainIdx = 0;
+    private int testI = 0;
     
     private Thread mThread;
 
@@ -38,12 +39,25 @@ public class CameraPreview extends CameraBridgeViewBase implements PreviewCallba
 
     @Override
     public void onPreviewFrame(byte[] frame, Camera arg1) {
-        Log.i(TAG, "onPreviewFrame");
+        Log.i(TAG, "onPreviewFrame "+testI);
         Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
         
-        Mat m = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
-        m.put(0, 0, frame);
-        buffer.add(m);
+        FdActivity.buffer.add(frame);
+        
+//        try {
+////            Mat m = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
+////            m.put(0, 0, frame);
+//            FdActivity.buffer.add(frame);
+//        } catch (Exception e) {
+//            
+//        }
+        
+        
+        testI++;
+//        if (testI==300) {
+//            Highgui.imwrite("/sdcard/fd/test.jpg", m);
+//        }
+        
         
 //        return mYuvFrameData.submat(0, mHeight, 0, mWidth);
         // Imgproc.cvtColor(mYuvFrameData, mRgba, Imgproc.COLOR_YUV2BGR_NV12, 4);
@@ -73,15 +87,15 @@ public class CameraPreview extends CameraBridgeViewBase implements PreviewCallba
 
     @Override
     protected boolean connectCamera(int width, int height) {
-        mCamera = Camera.open(0);
+        mFrameWidth = 640;
+        mFrameHeight = 480;
+        mCamera = Camera.open(1);
         Camera.Parameters params = mCamera.getParameters();
         params.setPreviewFormat(ImageFormat.NV21);
-        params.setPreviewSize(640, 480);
+        params.setPreviewSize(mFrameWidth, mFrameHeight);
         params.setRecordingHint(true);
         mCamera.setParameters(params);
         params = mCamera.getParameters();
-        mFrameWidth = 640;
-        mFrameHeight = 480;
         int size = mFrameWidth * mFrameHeight;
         size  = size * ImageFormat.getBitsPerPixel(params.getPreviewFormat()) / 8;
         
@@ -107,4 +121,19 @@ public class CameraPreview extends CameraBridgeViewBase implements PreviewCallba
         mCamera.release();
         return;
     }
+
+//    private class FrameGrabber implements Runnable {
+//
+//        public void run() {
+//            do {
+//              Mat m = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
+//              m.put(0, 0, frame);
+//              buffer.add(m);
+//
+//                FdActivity.buffer.add(null);
+//                
+//            } while (!mStopThread);
+//            Log.d(TAG, "Finish processing thread");
+//        }
+//    }
 }

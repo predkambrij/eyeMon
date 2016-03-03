@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedList;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
@@ -50,6 +51,9 @@ public class FdActivity extends Activity {
 
     // native detector
     private OptFlow optFlow;
+    
+//    public static volatile LinkedList<Mat> buffer = new LinkedList<Mat>();
+    public static volatile LinkedList<byte[]> buffer = new LinkedList<byte[]>();
     
     public FdActivity() {
     }
