@@ -37,7 +37,7 @@ public class FdActivity extends Activity {
     private Mat                    mGray;
 
     CameraPreview p;
-    private CameraBridgeViewBase mOpenCvCameraView;
+    private CameraPreview mOpenCvCameraView;
 
     // native detector
     private OptFlow optFlow;
@@ -82,7 +82,7 @@ public class FdActivity extends Activity {
                         Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
                     }
 
-                    mOpenCvCameraView.enableView();
+//                    mOpenCvCameraView.enableView();
                 } break;
                 default:
                 {
@@ -102,22 +102,24 @@ public class FdActivity extends Activity {
 
 //        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
         p = new CameraPreview(this, 0);
+        p.connectCamera(640, 480);
         p.setVisibility(1);
-        p.surfaceChanged(null, 0, 0, 0);
         
-        mOpenCvCameraView = (CameraBridgeViewBase)p;
+//        p.surfaceChanged(null, 0, 0, 0);
+        
+//        mOpenCvCameraView = (CameraBridgeViewBase)p;
         
 //
 //        //mOpenCvCameraView.setMaxFrameSize(1280, 960);
-        mOpenCvCameraView.setMaxFrameSize(640, 480);
+//        mOpenCvCameraView.setMaxFrameSize(640, 480);
 //        //mOpenCvCameraView.setMaxFrameSize(176, 144);
     }
 
     public void onPause()
     {
         super.onPause();
-        if (mOpenCvCameraView != null)
-            mOpenCvCameraView.disableView();
+//        if (mOpenCvCameraView != null)
+//            mOpenCvCameraView.disableView();
     }
 
     public void onResume()
@@ -128,7 +130,8 @@ public class FdActivity extends Activity {
 
     public void onDestroy() {
         super.onDestroy();
-        mOpenCvCameraView.disableView();
+        mOpenCvCameraView.disconnectCamera();
+//        mOpenCvCameraView.disableView();
 //        p.disconnectCamera();
     }
 

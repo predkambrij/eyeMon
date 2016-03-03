@@ -20,7 +20,9 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-public class CameraPreview extends CameraBridgeViewBase implements PreviewCallback {
+public class CameraPreview extends SurfaceView implements PreviewCallback {
+    protected int mFrameWidth;
+    protected int mFrameHeight;
     
     Camera mCamera;
     byte[] mBuffer;
@@ -34,7 +36,8 @@ public class CameraPreview extends CameraBridgeViewBase implements PreviewCallba
     private Thread mThread;
 
     public CameraPreview(Context context, int cameraId) {
-        super(context, cameraId);
+        super(context);
+//        super(context, cameraId);
     }
 
     @Override
@@ -85,8 +88,7 @@ public class CameraPreview extends CameraBridgeViewBase implements PreviewCallba
         return;
     }
 
-    @Override
-    protected boolean connectCamera(int width, int height) {
+    public boolean connectCamera(int width, int height) {
         mFrameWidth = 640;
         mFrameHeight = 480;
         mCamera = Camera.open(1);
@@ -115,8 +117,7 @@ public class CameraPreview extends CameraBridgeViewBase implements PreviewCallba
         return true;
     }
 
-    @Override
-    protected void disconnectCamera() {
+    public void disconnectCamera() {
         mCamera.stopPreview();
         mCamera.release();
         return;
