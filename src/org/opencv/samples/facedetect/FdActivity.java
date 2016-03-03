@@ -28,24 +28,14 @@ import android.view.WindowManager;
 
 public class FdActivity extends Activity {
 
-    private static final String    TAG                 = "OCVSample::Activity";
-    private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
-    public static final int        JAVA_DETECTOR       = 0;
-    public static final int        NATIVE_DETECTOR     = 1;
+    private static final String TAG = "OCVSample::Activity";
 
-    private MenuItem               detectStart;
-    private MenuItem               detectStop;
+    private MenuItem               startService;
+    private MenuItem               stopService;
 
     private Mat                    mRgba;
     private Mat                    mGray;
-    private CascadeClassifier      mJavaDetector;
-    private DetectionBasedTracker  mNativeDetector;
 
-    private int                    mDetectorType       = JAVA_DETECTOR;
-    private String[]               mDetectorName;
-
-    private float                  mRelativeFaceSize   = 0.2f;
-    private int                    mAbsoluteFaceSize   = 0;
     CameraPreview p;
     private CameraBridgeViewBase mOpenCvCameraView;
 
@@ -84,8 +74,6 @@ public class FdActivity extends Activity {
                         is.close();
                         os.close();
 
-                        mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
-
                         // native library wrapper
                         optFlow = new OptFlow(mCascadeFile.getAbsolutePath());
                         cascadeDir.delete();
@@ -112,15 +100,13 @@ public class FdActivity extends Activity {
 
         setContentView(R.layout.face_detect_surface_view);
 
-        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
+//        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
         p = new CameraPreview(this, 0);
         p.setVisibility(1);
         p.surfaceChanged(null, 0, 0, 0);
         
         mOpenCvCameraView = (CameraBridgeViewBase)p;
         
-        Listener l = new Listener();
-        mOpenCvCameraView.setCvCameraViewListener(l);
 //
 //        //mOpenCvCameraView.setMaxFrameSize(1280, 960);
         mOpenCvCameraView.setMaxFrameSize(640, 480);
@@ -171,16 +157,16 @@ public class FdActivity extends Activity {
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
-        detectStart = menu.add("Detector start");
-        detectStop  = menu.add("Detector stop");
+        startService = menu.add("startService");
+        stopService  = menu.add("stopService");
         return true;
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item == detectStart) {
-            mNativeDetector.start();
-        } else if (item == detectStop) {
-            mNativeDetector.stop();
+        if (item == startService) {
+            
+        } else if (item == stopService) {
+            
         }
 
         return true;
