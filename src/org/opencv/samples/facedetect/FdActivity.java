@@ -90,7 +90,7 @@ public class FdActivity extends Activity {
                 @Override
                 public void onClick(View v) {
                     Log.i(TAG, "Staaart");
-                    Intent intent = new Intent(FdActivity.this, DummyService.class);
+                    Intent intent = new Intent(FdActivity.this, MainService.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startService(intent);
                 }
@@ -102,7 +102,7 @@ public class FdActivity extends Activity {
                 @Override
                 public void onClick(View v) {
                     Log.i(TAG, "Stooop");
-                    stopService(new Intent(FdActivity.this, DummyService.class));
+                    stopService(new Intent(FdActivity.this, MainService.class));
                 }
             }
         );
@@ -146,11 +146,11 @@ public class FdActivity extends Activity {
 
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item == startService) {
-            Intent intent = new Intent(FdActivity.this, DummyService.class);
+            Intent intent = new Intent(FdActivity.this, MainService.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startService(intent);
         } else if (item == stopService) {
-            stopService(new Intent(FdActivity.this, DummyService.class));
+            stopService(new Intent(FdActivity.this, MainService.class));
         }
 
         return true;

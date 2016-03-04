@@ -8,7 +8,7 @@
         android:label="@string/app_name"
         android:icon="@drawable/icon">
 
-        <service android:name=".DummyService" />
+        <service android:name=".MainService" />
 
         <activity android:name="FdActivity"
                   android:label="@string/app_name"

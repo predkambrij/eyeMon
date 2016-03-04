@@ -28,7 +28,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
-public class DummyService extends Service
+public class MainService extends Service
 {
     private static final String TAG = "Dummy service";
     private CameraPreview mOpenCvCameraView;
