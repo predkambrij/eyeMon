@@ -13,6 +13,7 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.highgui.Highgui;
 import org.opencv.samples.facedetect.R;
 
 import android.app.Notification;
@@ -137,6 +138,9 @@ public class MainService extends Service {
                     m.put(0, 0, frame);
                     Log.i(TAG, "I have it!");
                     // TODO call optflow or other methods
+                    Highgui.imwrite("/sdcard/fd/test0.jpg", m);
+                    optFlow.detect(m, m);
+                    Highgui.imwrite("/sdcard/fd/test1.jpg", m);
                 }
             }
         }

@@ -74,8 +74,9 @@ class OptFlow {
         return 0;
     }
     public: int run(JNIEnv * jenv, Mat rgb, Mat grayo) {
-        cvtColor(rgb, grayx, COLOR_BGR2GRAY);
-        process(rgb, grayx, rgb);
+        //cvtColor(rgb, grayx, COLOR_BGR2GRAY);
+        //process(rgb, grayx, rgb);
+        process(grayo, grayo, grayo);
 
         cv::swap(prevLeft, left);
         cv::swap(prevRight, right);

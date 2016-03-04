@@ -217,11 +217,12 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowDestroy
 
 JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowDetect
                                                                 (JNIEnv * jenv, jclass, jlong imageRGB, jlong imageGray) {
-    Mat rgb = *((Mat*)imageRGB);
+    //Mat rgb = *((Mat*)imageRGB);
     Mat gray = *((Mat*)imageGray);
         
-    optf.run(jenv, rgb, gray);
-    
+    //optf.run(jenv, rgb, gray);
+    optf.run(jenv, gray, gray);
+        
     doLog(jenv, "end of detectX");
 }
 
