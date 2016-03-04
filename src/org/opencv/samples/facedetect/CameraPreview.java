@@ -15,92 +15,38 @@ import android.util.Log;
 import android.view.SurfaceView;
 
 public class CameraPreview extends SurfaceView implements PreviewCallback {
-    protected int mFrameWidth;
-    protected int mFrameHeight;
-    
-    Camera mCamera;
-    byte[] mBuffer;
-    private static final String TAG = "CameraPreview";
-    SurfaceTexture mSurfaceTexture;
+    private int mFrameWidth;
+    private int mFrameHeight;
+    private SurfaceTexture mSurfaceTexture;
     private static final int MAGIC_TEXTURE_ID = 10;
-    private Mat[] mFrameChain;
-    private int mChainIdx = 0;
-    private int testI = 0;
-    
-    private Thread mThread;
-    long start_time = System.nanoTime();
+    private byte[] mBuffer;
+    private Camera mCamera;
+    private static final String TAG = "CameraPreview";
+    private static int frameMaxSize = 30*60*10;
 
-    public CameraPreview(Context context, int cameraId) {
+    public CameraPreview(Context context) {
         super(context);
-//        super(context, cameraId);
     }
 
     @Override
     public void onPreviewFrame(byte[] frame, Camera arg1) {
-        Log.i(TAG, "onPreviewFrame "+testI);
-//        Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
-        
-//        FdActivity.frameList.add(frame);
-        
-//        try {
-////            Mat m = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
-////            m.put(0, 0, frame);
-//            FdActivity.buffer.add(frame);
-//        } catch (Exception e) {
-//            
-//        }
-        
-        
-        if (testI==0) {
-            start_time = System.nanoTime();
-        } else if (testI==300) {
-            Log.i(TAG, String.format("%d time", (System.nanoTime()-start_time)));
-            start_time = System.nanoTime();
-            testI=0;
-            Mat m = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
-            m.put(0, 0, frame);
-            Highgui.imwrite("/sdcard/fd/test.jpg", m);
+        if (MainService.frameAdding == true) {
+            if (MainService.frameList.size() < CameraPreview.frameMaxSize) {
+                MainService.frameList.add(frame);
+            } else {
+                MainService.frameAdding = false;
+            }
         }
-        testI++;
-        
-        
-//        return mYuvFrameData.submat(0, mHeight, 0, mWidth);
-        // Imgproc.cvtColor(mYuvFrameData, mRgba, Imgproc.COLOR_YUV2BGR_NV12, 4);
-//        return mRgba;
-//        public JavaCameraFrame(Mat Yuv420sp, int width, int height) {
-//            super();
-//            mWidth = width;
-//            mHeight = height;
-//            mYuvFrameData = Yuv420sp;
-//            mRgba = new Mat();
-//        }
-//
-//        public void release() {
-//            mRgba.release();
-//        }
-//
-//        private Mat mYuvFrameData;
-//        private Mat mRgba;
-//        private int mWidth;
-//        private int mHeight;
-
 
         if (mCamera != null)
             mCamera.addCallbackBuffer(mBuffer);
         return;
     }
 
-    public boolean connectCamera(int width, int height) {
-//        mFrameWidth = 352;
-//        mFrameHeight = 288;
-//        mFrameWidth = 1280;
-//        mFrameHeight = 720;
-        mFrameWidth = 640;
-        mFrameHeight = 480;
-        mCamera = Camera.open(1);
-//        mFrameWidth = 1280;
-//        mFrameHeight = 720;
-//        mCamera = Camera.open(0);
+    public boolean connectCamera(int[] widthHeight, int camera) {
+        mFrameWidth = widthHeight[0];
+        mFrameHeight = widthHeight[1];
+        mCamera = Camera.open(camera);
         Camera.Parameters params = mCamera.getParameters();
         params.setPreviewFormat(ImageFormat.NV21);
         params.setPreviewSize(mFrameWidth, mFrameHeight);
@@ -133,19 +79,4 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
         mCamera.release();
         return;
     }
-
-//    private class FrameGrabber implements Runnable {
-//
-//        public void run() {
-//            do {
-//              Mat m = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
-//              m.put(0, 0, frame);
-//              buffer.add(m);
-//
-//                FdActivity.buffer.add(null);
-//                
-//            } while (!mStopThread);
-//            Log.d(TAG, "Finish processing thread");
-//        }
-//    }
 }

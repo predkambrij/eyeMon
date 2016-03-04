@@ -11,13 +11,15 @@ import java.util.List;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 import org.opencv.samples.facedetect.R;
 
 import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.Camera;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -26,6 +28,10 @@ public class MainService extends Service {
     private CameraPreview mOpenCvCameraView;
     private OptFlow optFlow;
     public static List<byte[]> frameList = Collections.synchronizedList(new LinkedList<byte[]>());
+    public static volatile boolean frameAdding = true;
+    protected int[] widthHeight;
+    private Thread frameProcessor;
+    private boolean frameProcessorRunning = true;
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -72,11 +78,17 @@ public class MainService extends Service {
 
     @Override
     public void onCreate() {
-        mOpenCvCameraView = new CameraPreview(this, 0);
-        mOpenCvCameraView.connectCamera(640, 480);
-        mOpenCvCameraView.setVisibility(1);
+        this.frameProcessor = new Thread(new FrameProcessor());
+        this.frameProcessor.start();
 
-           // Start foreground service to avoid unexpected kill
+        this.mOpenCvCameraView = new CameraPreview(this);
+//        this.widthHeight = new int[]{352, 288};
+//        this.widthHeight = new int[]{1280, 720};
+        this.widthHeight =  new int[]{640, 480};
+        this.mOpenCvCameraView.connectCamera(this.widthHeight, 0);
+        this.mOpenCvCameraView.setVisibility(1);
+
+        // Start foreground service to avoid unexpected kill
         Notification.Builder notificationB = new Notification.Builder(this)
             .setContentTitle("Background Video Recorder")
             .setContentText("")
@@ -88,7 +100,8 @@ public class MainService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mOpenCvCameraView.disconnectCamera();
+        this.frameProcessorRunning = false;
+        this.mOpenCvCameraView.disconnectCamera();
     }
 
     @Override
@@ -105,5 +118,27 @@ public class MainService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    private class FrameProcessor implements Runnable {
+        public void run() {
+            while (frameProcessorRunning == true) {
+                if (MainService.frameList.size() == 0) {
+                    if (MainService.frameAdding == false) {
+                        MainService.frameAdding = true;
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                    }
+                } else {
+                    byte[] frame = MainService.frameList.get(0);
+                    Mat m = new Mat(widthHeight[1] + (widthHeight[1]/2), widthHeight[0], CvType.CV_8UC1);
+                    m.put(0, 0, frame);
+                    Log.i(TAG, "I have it!");
+                    // TODO call optflow or other methods
+                }
+            }
+        }
     }
 }
