@@ -1,37 +1,31 @@
 package org.opencv.samples.facedetect;
 
-import java.util.Calendar;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.highgui.Highgui;
-import org.opencv.highgui.VideoCapture;
 
-//import com.ImageInsightInc.GammaPixServiceTest.R;
 import org.opencv.samples.facedetect.R;
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
-import android.app.AlarmManager;
 import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
-public class MainService extends Service
-{
-    private static final String TAG = "Dummy service";
+public class MainService extends Service {
+    private static final String TAG = "MainService";
     private CameraPreview mOpenCvCameraView;
+    private OptFlow optFlow;
+    public static List<byte[]> frameList = Collections.synchronizedList(new LinkedList<byte[]>());
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -39,7 +33,34 @@ public class MainService extends Service
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    Log.i(TAG, "OpenCV loaded successfully in Dummy service");
+                    Log.i(TAG, "OpenCV loaded successfully");
+
+                    // Load native library after(!) OpenCV initialization
+                    System.loadLibrary("eyemon");
+
+                    try {
+                        // load cascade file from application resources
+                        InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
+                        File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
+                        File mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
+                        FileOutputStream os = new FileOutputStream(mCascadeFile);
+
+                        byte[] buffer = new byte[4096];
+                        int bytesRead;
+                        while ((bytesRead = is.read(buffer)) != -1) {
+                            os.write(buffer, 0, bytesRead);
+                        }
+                        is.close();
+                        os.close();
+
+                        // native library wrapper
+                        optFlow = new OptFlow(mCascadeFile.getAbsolutePath());
+                        cascadeDir.delete();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
+                    }
+
                 } break;
                 default:
                 {
@@ -50,10 +71,7 @@ public class MainService extends Service
     };
 
     @Override
-    public void onCreate() 
-    {   
-        Log("DummyService: onCreate");
-        
+    public void onCreate() {
         mOpenCvCameraView = new CameraPreview(this, 0);
         mOpenCvCameraView.connectCamera(640, 480);
         mOpenCvCameraView.setVisibility(1);
@@ -66,27 +84,22 @@ public class MainService extends Service
         Notification notification = notificationB.getNotification();
         startForeground(1234, notification);
     }
+
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         super.onDestroy();
         mOpenCvCameraView.disconnectCamera();
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId)  {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         if (!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback)) {
-            Log("OpenCV Load Failure");
+            Log.i(TAG, "OpenCV Load Failure");
         } else {
-            Log("OpenCV Load success");
+            Log.i(TAG, "OpenCV Load success");
         }
 
         return START_NOT_STICKY;
-    }
-
-    public static void Log(String info)
-    {
-        android.util.Log.i("Dummy", info);
     }
 
     @Override

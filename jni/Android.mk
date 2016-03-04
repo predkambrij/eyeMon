@@ -13,6 +13,6 @@ LOCAL_LDLIBS     += -llog -ldl
 
 LOCAL_CFLAGS += -std=c++11
 
-LOCAL_MODULE     := detection_based_tracker
+LOCAL_MODULE     := eyemon
 
 include $(BUILD_SHARED_LIBRARY)

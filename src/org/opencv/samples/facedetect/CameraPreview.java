@@ -1,15 +1,10 @@
 package org.opencv.samples.facedetect;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 
-import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.JavaCameraView;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.highgui.Highgui;
-import org.opencv.imgproc.Imgproc;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
@@ -17,7 +12,6 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.util.Log;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 public class CameraPreview extends SurfaceView implements PreviewCallback {
@@ -26,7 +20,7 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
     
     Camera mCamera;
     byte[] mBuffer;
-    private static final String    TAG                 = "CameraPreview";
+    private static final String TAG = "CameraPreview";
     SurfaceTexture mSurfaceTexture;
     private static final int MAGIC_TEXTURE_ID = 10;
     private Mat[] mFrameChain;
@@ -43,7 +37,7 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
 
     @Override
     public void onPreviewFrame(byte[] frame, Camera arg1) {
-//        Log.i(TAG, "onPreviewFrame "+testI);
+        Log.i(TAG, "onPreviewFrame "+testI);
 //        Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
         
 //        FdActivity.frameList.add(frame);
