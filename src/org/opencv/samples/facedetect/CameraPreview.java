@@ -34,6 +34,7 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
     private int testI = 0;
     
     private Thread mThread;
+    long start_time = System.nanoTime();
 
     public CameraPreview(Context context, int cameraId) {
         super(context);
@@ -45,7 +46,7 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
 //        Log.i(TAG, "onPreviewFrame "+testI);
 //        Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
         
-//        FdActivity.buffer.add(frame);
+//        FdActivity.frameList.add(frame);
         
 //        try {
 ////            Mat m = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
@@ -56,12 +57,17 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
 //        }
         
         
-//        testI++;
-//        if (testI==300) {
-//            Mat m = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
-//            m.put(0, 0, frame);
-//            Highgui.imwrite("/sdcard/fd/test.jpg", m);
-//        }
+        if (testI==0) {
+            start_time = System.nanoTime();
+        } else if (testI==300) {
+            Log.i(TAG, String.format("%d time", (System.nanoTime()-start_time)));
+            start_time = System.nanoTime();
+            testI=0;
+            Mat m = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
+            m.put(0, 0, frame);
+            Highgui.imwrite("/sdcard/fd/test.jpg", m);
+        }
+        testI++;
         
         
 //        return mYuvFrameData.submat(0, mHeight, 0, mWidth);
@@ -91,9 +97,16 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
     }
 
     public boolean connectCamera(int width, int height) {
+//        mFrameWidth = 352;
+//        mFrameHeight = 288;
+//        mFrameWidth = 1280;
+//        mFrameHeight = 720;
         mFrameWidth = 640;
         mFrameHeight = 480;
         mCamera = Camera.open(1);
+//        mFrameWidth = 1280;
+//        mFrameHeight = 720;
+//        mCamera = Camera.open(0);
         Camera.Parameters params = mCamera.getParameters();
         params.setPreviewFormat(ImageFormat.NV21);
         params.setPreviewSize(mFrameWidth, mFrameHeight);

@@ -4,20 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfRect;
-import org.opencv.core.Scalar;
-import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
-import org.opencv.objdetect.CascadeClassifier;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -25,7 +18,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 
 public class FdActivity extends Activity {
 
@@ -36,9 +31,8 @@ public class FdActivity extends Activity {
 
     // native detector
     private OptFlow optFlow;
-    
-    public static volatile LinkedList<byte[]> buffer = new LinkedList<byte[]>();
-    
+    public static List<byte[]> frameList = Collections.synchronizedList(new LinkedList<byte[]>());
+
     public FdActivity() {
     }
 
@@ -85,22 +79,41 @@ public class FdActivity extends Activity {
         }
     };
 
-
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(TAG, "called onCreate");
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
         setContentView(R.layout.face_detect_surface_view);
+        
+        Button startButton = (Button) findViewById(R.id.cameraRecorderStartService);
+        startButton.setOnClickListener(
+            new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.i(TAG, "Staaart");
+                    Intent intent = new Intent(FdActivity.this, DummyService.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startService(intent);
+                }
+            }
+        );
+        Button stopButton = (Button) findViewById(R.id.cameraRecorderStopService);
+        stopButton.setOnClickListener(
+            new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.i(TAG, "Stooop");
+                    stopService(new Intent(FdActivity.this, DummyService.class));
+                }
+            }
+        );
+
     }
 
-    public void onPause()
-    {
+    public void onPause() {
         super.onPause();
     }
 
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
     }
