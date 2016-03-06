@@ -63,7 +63,7 @@ public class TemplateBased {
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
-    public void onCameraViewStarted(int width, int height) {
+    public void onCameraViewStarted() {
         mGray = new Mat();
         mRgba = new Mat();
     }
@@ -74,14 +74,14 @@ public class TemplateBased {
     }
 
     boolean initial = true;
-    public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
+    public Mat onCameraFrame(Mat mRgba, Mat mGray) {
 //        if (initial == true) {
 //            man_setup();
 //            initial = false;
 //        }
-        mRgba = inputFrame.rgba();
-        mGray = new Mat();
-        Imgproc.cvtColor(mRgba, mGray, Imgproc.COLOR_RGB2GRAY);
+//        mRgba = inputFrame.rgba();
+//        mGray = new Mat();
+//        Imgproc.cvtColor(mRgba, mGray, Imgproc.COLOR_RGB2GRAY);
         
         //mGray = inputFrame.gray();
         mRgba = manipulation(mRgba, mGray);

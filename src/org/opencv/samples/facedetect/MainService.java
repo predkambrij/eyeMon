@@ -14,6 +14,7 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.highgui.Highgui;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.samples.facedetect.R;
 
 import android.app.Notification;
@@ -122,6 +123,44 @@ public class MainService extends Service {
     }
 
     private class FrameProcessor implements Runnable {
+        static final int METHOD_TEMPLATE = 0;
+        static final int METHOD_OPTFLOW = 1;
+        int method = 0;
+        TemplateBased templateBased = null;
+
+        public FrameProcessor() {
+            this.method = 1;
+            switch (method) {
+            case METHOD_TEMPLATE:
+                this.templateBased = new TemplateBased();
+                this.templateBased.onCameraViewStarted();
+                break;
+            case METHOD_OPTFLOW:
+                break;
+            }
+        }
+
+        private void processFrame(byte[] frame) {
+            Mat gray = new Mat(widthHeight[1] + (widthHeight[1]/2), widthHeight[0], CvType.CV_8UC1);
+            gray.put(0, 0, frame);
+            Mat rgb = new Mat();
+            Imgproc.cvtColor(gray, rgb, Imgproc.COLOR_YUV2BGR_NV12, 4);
+            Log.i(TAG, "I have it!");
+
+            switch (method) {
+            case METHOD_TEMPLATE:
+                this.templateBased.onCameraFrame(rgb, gray);
+                // cleanup
+                this.templateBased.onCameraViewStopped();
+                break;
+            case METHOD_OPTFLOW:
+                Highgui.imwrite("/sdcard/fd/test0.jpg", gray);
+                optFlow.detect(gray, gray);
+                Highgui.imwrite("/sdcard/fd/test1.jpg", gray);
+                break;
+            }
+            rgb.release();
+        }
         public void run() {
             while (frameProcessorRunning == true) {
                 if (MainService.frameList.size() == 0) {
@@ -134,13 +173,7 @@ public class MainService extends Service {
                     }
                 } else {
                     byte[] frame = MainService.frameList.get(0);
-                    Mat m = new Mat(widthHeight[1] + (widthHeight[1]/2), widthHeight[0], CvType.CV_8UC1);
-                    m.put(0, 0, frame);
-                    Log.i(TAG, "I have it!");
-                    // TODO call optflow or other methods
-                    Highgui.imwrite("/sdcard/fd/test0.jpg", m);
-                    optFlow.detect(m, m);
-                    Highgui.imwrite("/sdcard/fd/test1.jpg", m);
+                    this.processFrame(frame);
                 }
             }
         }
