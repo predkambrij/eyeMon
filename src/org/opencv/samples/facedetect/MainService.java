@@ -129,7 +129,7 @@ public class MainService extends Service {
     private class FrameProcessor implements Runnable {
         static final int METHOD_OPTFLOW  = 0;
         static final int METHOD_TEMPLATE = 1;
-        int method = 1;
+        int method = 0;
 
         public FrameProcessor() {
             switch (this.method) {
@@ -155,8 +155,8 @@ public class MainService extends Service {
                 break;
             case METHOD_OPTFLOW:
                 Highgui.imwrite("/sdcard/fd/test_optflo1.jpg", gray);
-                optFlow.detect(gray, gray);
-                Highgui.imwrite("/sdcard/fd/test_optflo2.jpg", gray);
+                optFlow.detect(rgb, gray);
+                Highgui.imwrite("/sdcard/fd/test_optflo2.jpg", rgb);
                 break;
             }
             rgb.release();
@@ -168,6 +168,7 @@ public class MainService extends Service {
                 templateBased.onCameraViewStopped();
                 break;
             case METHOD_OPTFLOW:
+                optFlow.release();
                 break;
             }
         }

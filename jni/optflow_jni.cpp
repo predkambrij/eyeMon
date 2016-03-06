@@ -203,7 +203,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_FdActivity_optFlow(JNI
 OptFlow optf;
 
 JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowCreateObject
-                                                                (JNIEnv * jenv, jclass, jstring jCascadeFileName, jint faceSize) {
+                                                                (JNIEnv * jenv, jclass, jstring jCascadeFileName) {
     const char *cascadeFileName = (jenv)->GetStringUTFChars(jCascadeFileName, 0);
     optf.setup(cascadeFileName);
     (jenv)->ReleaseStringUTFChars(jCascadeFileName, cascadeFileName);
