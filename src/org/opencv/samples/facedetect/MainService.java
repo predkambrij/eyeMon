@@ -91,7 +91,7 @@ public class MainService extends Service {
 //        this.widthHeight = new int[]{352, 288};
 //        this.widthHeight = new int[]{1280, 720};
         this.widthHeight =  new int[]{640, 480};
-        this.mOpenCvCameraView.connectCamera(this.widthHeight, 0);
+        this.mOpenCvCameraView.connectCamera(this.widthHeight, 1);
         this.mOpenCvCameraView.setVisibility(1);
 
         // Start foreground service to avoid unexpected kill
@@ -127,12 +127,11 @@ public class MainService extends Service {
     }
 
     private class FrameProcessor implements Runnable {
-        static final int METHOD_TEMPLATE = 0;
-        static final int METHOD_OPTFLOW = 1;
-        int method = 0;
+        static final int METHOD_OPTFLOW  = 0;
+        static final int METHOD_TEMPLATE = 1;
+        int method = 1;
 
         public FrameProcessor() {
-            this.method = 1;
             switch (this.method) {
             case METHOD_TEMPLATE:
                 break;
@@ -150,18 +149,29 @@ public class MainService extends Service {
 
             switch (this.method) {
             case METHOD_TEMPLATE:
+                Highgui.imwrite("/sdcard/fd/test_tmpl1.jpg", rgb);
                 templateBased.onCameraFrame(rgb, gray);
-                // cleanup
-                templateBased.onCameraViewStopped();
+                Highgui.imwrite("/sdcard/fd/test_tmpl2.jpg", rgb);
                 break;
             case METHOD_OPTFLOW:
-                Highgui.imwrite("/sdcard/fd/test0.jpg", gray);
+                Highgui.imwrite("/sdcard/fd/test_optflo1.jpg", gray);
                 optFlow.detect(gray, gray);
-                Highgui.imwrite("/sdcard/fd/test1.jpg", gray);
+                Highgui.imwrite("/sdcard/fd/test_optflo2.jpg", gray);
                 break;
             }
             rgb.release();
         }
+
+        private void cleanup() {
+            switch (this.method) {
+            case METHOD_TEMPLATE:
+                templateBased.onCameraViewStopped();
+                break;
+            case METHOD_OPTFLOW:
+                break;
+            }
+        }
+
         public void run() {
             while (frameProcessorRunning == true) {
                 if (MainService.frameList.size() == 0) {
@@ -177,6 +187,7 @@ public class MainService extends Service {
                     this.processFrame(frame);
                 }
             }
+            this.cleanup();
         }
     }
 }

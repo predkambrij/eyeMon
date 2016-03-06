@@ -116,8 +116,8 @@ public class TemplateBased {
             
             MatOfRect eyes = new MatOfRect();
             
-            mJavaDetectorEyes.detectMultiScale(mGray, eyes, 1.1, 2, 2, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
-                    new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+//            mJavaDetectorEyes.detectMultiScale(mGray, eyes, 1.1, 2, 2, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
+//                    new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
             
             
             int ret = this.cleanEyes_(eyes, mGray);
