@@ -30,6 +30,7 @@ public class MainService extends Service {
     private CameraPreview mOpenCvCameraView;
     private OptFlow optFlow;
     private TemplateBased templateBased;
+    private TemplateBasedJNI templateBasedJni;
     public static List<byte[]> frameList = Collections.synchronizedList(new LinkedList<byte[]>());
     public static volatile boolean frameAdding = true;
     protected int[] widthHeight;
@@ -66,6 +67,7 @@ public class MainService extends Service {
                         optFlow = new OptFlow(mCascadeFile.getAbsolutePath());
                         templateBased = new TemplateBased();
                         templateBased.onCameraViewStarted();
+                        templateBasedJni = new TemplateBasedJNI(mCascadeFile.getAbsolutePath());
 
                         cascadeDir.delete();
                     } catch (IOException e) {
@@ -129,13 +131,16 @@ public class MainService extends Service {
     private class FrameProcessor implements Runnable {
         static final int METHOD_OPTFLOW  = 0;
         static final int METHOD_TEMPLATE = 1;
-        int method = 0;
+        static final int METHOD_TEMPLATE_JNI = 2;
+        int method = 2;
 
         public FrameProcessor() {
             switch (this.method) {
+            case METHOD_OPTFLOW:
+                break;
             case METHOD_TEMPLATE:
                 break;
-            case METHOD_OPTFLOW:
+            case METHOD_TEMPLATE_JNI:
                 break;
             }
         }
@@ -148,15 +153,20 @@ public class MainService extends Service {
             Log.i(TAG, "I have it!");
 
             switch (this.method) {
+            case METHOD_OPTFLOW:
+                Highgui.imwrite("/sdcard/fd/test_optflo1.jpg", gray);
+                optFlow.detect(rgb, gray);
+                Highgui.imwrite("/sdcard/fd/test_optflo2.jpg", rgb);
+                break;
             case METHOD_TEMPLATE:
                 Highgui.imwrite("/sdcard/fd/test_tmpl1.jpg", rgb);
                 templateBased.onCameraFrame(rgb, gray);
                 Highgui.imwrite("/sdcard/fd/test_tmpl2.jpg", rgb);
                 break;
-            case METHOD_OPTFLOW:
-                Highgui.imwrite("/sdcard/fd/test_optflo1.jpg", gray);
-                optFlow.detect(rgb, gray);
-                Highgui.imwrite("/sdcard/fd/test_optflo2.jpg", rgb);
+            case METHOD_TEMPLATE_JNI:
+                Highgui.imwrite("/sdcard/fd/test_tmpljni1.jpg", rgb);
+                templateBasedJni.detect(rgb, gray);
+                Highgui.imwrite("/sdcard/fd/test_tmpljni2.jpg", rgb);
                 break;
             }
             rgb.release();
@@ -164,11 +174,14 @@ public class MainService extends Service {
 
         private void cleanup() {
             switch (this.method) {
+            case METHOD_OPTFLOW:
+                optFlow.release();
+                break;
             case METHOD_TEMPLATE:
                 templateBased.onCameraViewStopped();
                 break;
-            case METHOD_OPTFLOW:
-                optFlow.release();
+            case METHOD_TEMPLATE_JNI:
+                templateBasedJni.release();
                 break;
             }
         }
