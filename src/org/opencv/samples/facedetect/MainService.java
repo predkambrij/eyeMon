@@ -155,8 +155,8 @@ public class MainService extends Service {
                 break;
             case METHOD_OPTFLOW:
                 Highgui.imwrite("/sdcard/fd/test_optflo1.jpg", gray);
-                optFlow.detect(rgb, gray);
-                Highgui.imwrite("/sdcard/fd/test_optflo2.jpg", rgb);
+                optFlow.detect(gray, gray);
+                Highgui.imwrite("/sdcard/fd/test_optflo2.jpg", gray);
                 break;
             }
             rgb.release();
