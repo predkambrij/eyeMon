@@ -29,6 +29,7 @@ public class MainService extends Service {
     private static final String TAG = "MainService";
     private CameraPreview mOpenCvCameraView;
     private OptFlow optFlow;
+    private TemplateBased templateBased;
     public static List<byte[]> frameList = Collections.synchronizedList(new LinkedList<byte[]>());
     public static volatile boolean frameAdding = true;
     protected int[] widthHeight;
@@ -63,6 +64,9 @@ public class MainService extends Service {
 
                         // native library wrapper
                         optFlow = new OptFlow(mCascadeFile.getAbsolutePath());
+                        templateBased = new TemplateBased();
+                        templateBased.onCameraViewStarted();
+
                         cascadeDir.delete();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -126,14 +130,11 @@ public class MainService extends Service {
         static final int METHOD_TEMPLATE = 0;
         static final int METHOD_OPTFLOW = 1;
         int method = 0;
-        TemplateBased templateBased = null;
 
         public FrameProcessor() {
             this.method = 1;
-            switch (method) {
+            switch (this.method) {
             case METHOD_TEMPLATE:
-                this.templateBased = new TemplateBased();
-                this.templateBased.onCameraViewStarted();
                 break;
             case METHOD_OPTFLOW:
                 break;
@@ -147,11 +148,11 @@ public class MainService extends Service {
             Imgproc.cvtColor(gray, rgb, Imgproc.COLOR_YUV2BGR_NV12, 4);
             Log.i(TAG, "I have it!");
 
-            switch (method) {
+            switch (this.method) {
             case METHOD_TEMPLATE:
-                this.templateBased.onCameraFrame(rgb, gray);
+                templateBased.onCameraFrame(rgb, gray);
                 // cleanup
-                this.templateBased.onCameraViewStopped();
+                templateBased.onCameraViewStopped();
                 break;
             case METHOD_OPTFLOW:
                 Highgui.imwrite("/sdcard/fd/test0.jpg", gray);
