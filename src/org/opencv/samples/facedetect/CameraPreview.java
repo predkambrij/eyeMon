@@ -33,6 +33,7 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
         if (MainService.frameAdding == true) {
             if (MainService.frameList.size() < CameraPreview.frameMaxSize) {
                 MainService.frameList.add(frame);
+                MainService.frameTime.add(System.nanoTime());
             } else {
                 MainService.frameAdding = false;
             }

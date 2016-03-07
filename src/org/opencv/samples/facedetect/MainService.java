@@ -32,6 +32,7 @@ public class MainService extends Service {
     private TemplateBased templateBased;
     private TemplateBasedJNI templateBasedJni;
     public static List<byte[]> frameList = Collections.synchronizedList(new LinkedList<byte[]>());
+    public static List<Long> frameTime = Collections.synchronizedList(new LinkedList<Long>());
     public static volatile boolean frameAdding = true;
     protected int[] widthHeight;
     private Thread frameProcessor;
@@ -129,10 +130,20 @@ public class MainService extends Service {
     }
 
     private class FrameProcessor implements Runnable {
-        static final int METHOD_OPTFLOW  = 0;
-        static final int METHOD_TEMPLATE = 1;
+        static final int METHOD_OPTFLOW      = 0;
+        static final int METHOD_TEMPLATE     = 1;
         static final int METHOD_TEMPLATE_JNI = 2;
-        int method = 2;
+        int method = 0;
+
+        long frameCount      = 0;
+        long timeStart       = 0;
+        long frameCountMax   = 100;
+        long totalTime       = 0;
+        long grayConvertTime = 0;
+        long releaseTime     = 0;
+        long methodCallTime  = 0;
+
+        int flSize = 0;
 
         public FrameProcessor() {
             switch (this.method) {
@@ -145,31 +156,60 @@ public class MainService extends Service {
             }
         }
 
-        private void processFrame(byte[] frame) {
+        private void processFrame(byte[] frame, long frameTime) {
+            int  debug = 0;
+            long start = System.nanoTime();
+
             Mat gray = new Mat(widthHeight[1] + (widthHeight[1]/2), widthHeight[0], CvType.CV_8UC1);
             gray.put(0, 0, frame);
-            Mat rgb = new Mat();
-            Imgproc.cvtColor(gray, rgb, Imgproc.COLOR_YUV2BGR_NV12, 4);
-            Log.i(TAG, "I have it!");
+            this.grayConvertTime += (System.nanoTime()-start);
+//            long rgbStart = System.nanoTime();
+//            Mat rgb = new Mat();
+//            Imgproc.cvtColor(gray, rgb, Imgproc.COLOR_YUV2BGR_NV12, 4);
+//            Log.i(TAG, String.format("processFrame rgb time: %d", (System.nanoTime()-rgbStart)/1000000));
 
+            if (debug >= 2) {
+                Highgui.imwrite("/sdcard/fd/gray_pre.jpg", gray);
+            }
+            long methodCall = System.nanoTime();
             switch (this.method) {
+            // rgb gray
             case METHOD_OPTFLOW:
-                Highgui.imwrite("/sdcard/fd/test_optflo1.jpg", gray);
-                optFlow.detect(rgb, gray);
-                Highgui.imwrite("/sdcard/fd/test_optflo2.jpg", rgb);
+                optFlow.detect(gray, gray);
                 break;
             case METHOD_TEMPLATE:
-                Highgui.imwrite("/sdcard/fd/test_tmpl1.jpg", rgb);
-                templateBased.onCameraFrame(rgb, gray);
-                Highgui.imwrite("/sdcard/fd/test_tmpl2.jpg", rgb);
+                templateBased.onCameraFrame(gray, gray);
                 break;
             case METHOD_TEMPLATE_JNI:
-                Highgui.imwrite("/sdcard/fd/test_tmpljni1.jpg", rgb);
-                templateBasedJni.detect(rgb, gray);
-                Highgui.imwrite("/sdcard/fd/test_tmpljni2.jpg", rgb);
+                templateBasedJni.detect(gray, gray);
                 break;
             }
-            rgb.release();
+            this.methodCallTime += (System.nanoTime()-methodCall);
+            if (debug >= 2) {
+                Highgui.imwrite("/sdcard/fd/gray_post.jpg", gray);
+            }
+
+            long startRel = System.nanoTime();
+//            rgb.release();
+            gray.release();
+            this.releaseTime += (System.nanoTime()-startRel);
+
+            this.totalTime += (System.nanoTime()-start);
+            this.frameCount++;
+            if (this.frameCount == this.frameCountMax) {
+                Log.i(TAG, "FL size: "+this.flSize);
+                Log.i(TAG, String.format("avg frame capture rate %d", (frameTime-this.timeStart)/1000000/this.frameCountMax));
+                Log.i(TAG, String.format("processFrame gray time: %d bytes %d", this.grayConvertTime/1000000/this.frameCountMax, frame.length));
+                Log.i(TAG, String.format("processFrame methodCall time: %d", this.methodCallTime/1000000/this.frameCountMax));
+                Log.i(TAG, String.format("processFrame release time: %d", this.releaseTime/1000000/this.frameCountMax));
+                Log.i(TAG, String.format("processFrame time: %d", this.totalTime/1000000/this.frameCountMax));
+                this.timeStart       = frameTime;
+                this.frameCount      = 0;
+                this.grayConvertTime = 0;
+                this.methodCallTime  = 0;
+                this.releaseTime     = 0;
+                this.totalTime       = 0;
+            }
         }
 
         private void cleanup() {
@@ -188,17 +228,19 @@ public class MainService extends Service {
 
         public void run() {
             while (frameProcessorRunning == true) {
-                if (MainService.frameList.size() == 0) {
+                this.flSize = MainService.frameList.size();
+                if (this.flSize == 0) {
                     if (MainService.frameAdding == false) {
                         MainService.frameAdding = true;
                     }
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(5000);
                     } catch (InterruptedException e) {
                     }
                 } else {
-                    byte[] frame = MainService.frameList.get(0);
-                    this.processFrame(frame);
+                    byte[] frame = MainService.frameList.remove(0);
+                    long frameTime = MainService.frameTime.remove(0);
+                    this.processFrame(frame, frameTime);
                 }
             }
             this.cleanup();
