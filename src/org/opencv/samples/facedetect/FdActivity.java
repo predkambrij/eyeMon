@@ -1,20 +1,27 @@
 package org.opencv.samples.facedetect;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 
 public class FdActivity extends Activity {
     private static final String TAG = "FdActivity";
 
     private MenuItem startService;
     private MenuItem stopService;
+    
+    private BroadcastReceiver receiver;
 
 
     public FdActivity() {
@@ -49,6 +56,7 @@ public class FdActivity extends Activity {
                 }
             }
         );
+        
     }
 
     public void onPause() {
@@ -62,7 +70,28 @@ public class FdActivity extends Activity {
     public void onDestroy() {
         super.onDestroy();
     }
+    @Override
+    protected void onStart() {
+        super.onStart();
 
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String s = intent.getStringExtra(MainService.IMAGE_UPDATE);
+                Log.i(TAG, "onREceive OMG OMG OMG OMG");
+//                ImageView image = (ImageView) findViewById(R.id.imageView1);
+            }
+        };
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(MainService.IMAGE_UPDATE_RESULT); 
+        registerReceiver(receiver, filter);
+    }
+
+    @Override
+    protected void onStop() {
+        unregisterReceiver(receiver);
+        super.onStop();
+    }
     public boolean onCreateOptionsMenu(Menu menu) {
         startService = menu.add("startService");
         stopService  = menu.add("stopService");

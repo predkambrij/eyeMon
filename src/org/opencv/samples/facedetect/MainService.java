@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.hardware.Camera;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.ImageView;
 
 public class MainService extends Service {
     private static final String TAG = "MainService";
@@ -37,6 +38,9 @@ public class MainService extends Service {
     protected int[] widthHeight;
     private Thread frameProcessor;
     private boolean frameProcessorRunning = true;
+
+    public static final String IMAGE_UPDATE        = "org.opencv.samples.facedetect.MainService.IMAGE_UPDATE";
+    public static final String IMAGE_UPDATE_RESULT = "org.opencv.samples.facedetect.MainService.IMAGE_UPDATE_RESULT";
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -128,6 +132,13 @@ public class MainService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
+    
+    private void sendBr(byte[] frame) {
+        Intent intent = new Intent();
+        intent.setAction(MainService.IMAGE_UPDATE_RESULT);
+        intent.putExtra(MainService.IMAGE_UPDATE, "abc");
+        this.sendBroadcast(intent);
+    }
 
     private class FrameProcessor implements Runnable {
         static final int METHOD_OPTFLOW      = 0;
@@ -157,9 +168,8 @@ public class MainService extends Service {
         }
 
         private void processFrame(byte[] frame, long frameTime) {
-            int  debug = 0;
+            int  debug = 1;
             long start = System.nanoTime();
-
             Mat gray = new Mat(widthHeight[1] + (widthHeight[1]/2), widthHeight[0], CvType.CV_8UC1);
             gray.put(0, 0, frame);
             this.grayConvertTime += (System.nanoTime()-start);
@@ -185,6 +195,9 @@ public class MainService extends Service {
                 break;
             }
             this.methodCallTime += (System.nanoTime()-methodCall);
+            if (debug >= 1) {
+                sendBr(frame);
+            }
             if (debug >= 2) {
                 Highgui.imwrite("/sdcard/fd/gray_post.jpg", gray);
             }
