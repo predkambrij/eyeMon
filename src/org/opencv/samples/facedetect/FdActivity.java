@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 public class FdActivity extends Activity {
     private static final String TAG = "FdActivity";
@@ -77,9 +78,11 @@ public class FdActivity extends Activity {
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                String s = intent.getStringExtra(MainService.IMAGE_UPDATE);
-                Log.i(TAG, "onREceive OMG OMG OMG OMG");
-//                ImageView image = (ImageView) findViewById(R.id.imageView1);
+                double frameRate = Double.parseDouble(intent.getStringExtra("lastFrameRate"));
+                ImageView image = (ImageView) findViewById(R.id.imageView1);
+                image.setImageBitmap(MainService.bitmapImage);
+                TextView tv = (TextView) findViewById(R.id.textView1);
+                tv.setText(String.format("Frame rate: %.2f", frameRate));
             }
         };
         IntentFilter filter = new IntentFilter();

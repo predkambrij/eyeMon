@@ -11,6 +11,7 @@ import java.util.List;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.highgui.Highgui;
@@ -21,6 +22,7 @@ import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.IBinder;
 import android.util.Log;
@@ -34,6 +36,7 @@ public class MainService extends Service {
     private TemplateBasedJNI templateBasedJni;
     public static List<byte[]> frameList = Collections.synchronizedList(new LinkedList<byte[]>());
     public static List<Long> frameTime = Collections.synchronizedList(new LinkedList<Long>());
+    public static Bitmap bitmapImage;
     public static volatile boolean frameAdding = true;
     protected int[] widthHeight;
     private Thread frameProcessor;
@@ -92,6 +95,7 @@ public class MainService extends Service {
     @Override
     public void onCreate() {
         this.frameProcessor = new Thread(new FrameProcessor());
+        this.frameProcessor.setPriority(Thread.MIN_PRIORITY);
         this.frameProcessor.start();
 
         this.mOpenCvCameraView = new CameraPreview(this);
@@ -133,10 +137,20 @@ public class MainService extends Service {
         return null;
     }
     
-    private void sendBr(byte[] frame) {
+    private void sendBr(double lastFrameRate, Mat gray, Mat rgb, boolean debugInRGB) {
+        Bitmap bmp = null;
+        if (debugInRGB == true) {
+            bmp = Bitmap.createBitmap(rgb.cols(), rgb.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(rgb, bmp);
+        } else {
+            bmp = Bitmap.createBitmap(gray.cols(), gray.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(gray, bmp);
+        }
+        MainService.bitmapImage = bmp;
+
         Intent intent = new Intent();
         intent.setAction(MainService.IMAGE_UPDATE_RESULT);
-        intent.putExtra(MainService.IMAGE_UPDATE, "abc");
+        intent.putExtra("lastFrameRate", lastFrameRate+"");
         this.sendBroadcast(intent);
     }
 
@@ -151,8 +165,10 @@ public class MainService extends Service {
         long frameCountMax   = 100;
         long totalTime       = 0;
         long grayConvertTime = 0;
+        long rgbConvertTime  = 0;
         long releaseTime     = 0;
         long methodCallTime  = 0;
+        double lastFrameRate = 0;
 
         int flSize = 0;
 
@@ -168,19 +184,31 @@ public class MainService extends Service {
         }
 
         private void processFrame(byte[] frame, long frameTime) {
-            int  debug = 1;
+            boolean debugInRGB = true;
+            boolean debugWriteImages = false;
+            boolean debugActivityUpdates = true;
+            Mat gray = null;
+            Mat rgb = null;
+            Mat tmp = null;
             long start = System.nanoTime();
-            Mat gray = new Mat(widthHeight[1] + (widthHeight[1]/2), widthHeight[0], CvType.CV_8UC1);
+
+            gray = new Mat(widthHeight[1], widthHeight[0], CvType.CV_8UC1);
             gray.put(0, 0, frame);
             this.grayConvertTime += (System.nanoTime()-start);
-//            long rgbStart = System.nanoTime();
-//            Mat rgb = new Mat();
-//            Imgproc.cvtColor(gray, rgb, Imgproc.COLOR_YUV2BGR_NV12, 4);
-//            Log.i(TAG, String.format("processFrame rgb time: %d", (System.nanoTime()-rgbStart)/1000000));
 
-            if (debug >= 2) {
+            if (debugInRGB == true) {
+                long rgbStart = System.nanoTime();
+                tmp = new Mat(widthHeight[1] + (widthHeight[1]/2), widthHeight[0], CvType.CV_8UC1);
+                tmp.put(0, 0, frame);
+                rgb = new Mat();
+                Imgproc.cvtColor(tmp, rgb, Imgproc.COLOR_YUV2BGR_NV12, 4);
+                this.rgbConvertTime += System.nanoTime()-rgbStart;
+            }
+
+            if (debugWriteImages == true) {
                 Highgui.imwrite("/sdcard/fd/gray_pre.jpg", gray);
             }
+
             long methodCall = System.nanoTime();
             switch (this.method) {
             // rgb gray
@@ -195,24 +223,34 @@ public class MainService extends Service {
                 break;
             }
             this.methodCallTime += (System.nanoTime()-methodCall);
-            if (debug >= 1) {
-                sendBr(frame);
-            }
-            if (debug >= 2) {
+
+            if (debugWriteImages == true) {
                 Highgui.imwrite("/sdcard/fd/gray_post.jpg", gray);
             }
 
+            if (debugActivityUpdates == true) {
+                sendBr(this.lastFrameRate, gray, rgb, debugInRGB);
+            }
+
+            if (debugInRGB == true) {
+                tmp.release();
+                rgb.release();
+            }
+
             long startRel = System.nanoTime();
-//            rgb.release();
             gray.release();
             this.releaseTime += (System.nanoTime()-startRel);
 
             this.totalTime += (System.nanoTime()-start);
             this.frameCount++;
+
             if (this.frameCount == this.frameCountMax) {
+                double avgFrameTime = (((frameTime-this.timeStart)/(double)this.frameCountMax)/(double)1000000000);
+                this.lastFrameRate = 1/avgFrameTime;
                 Log.i(TAG, "FL size: "+this.flSize);
-                Log.i(TAG, String.format("avg frame capture rate %d", (frameTime-this.timeStart)/1000000/this.frameCountMax));
+                Log.i(TAG, String.format("avg frame capture rate %.2f", this.lastFrameRate));
                 Log.i(TAG, String.format("processFrame gray time: %d bytes %d", this.grayConvertTime/1000000/this.frameCountMax, frame.length));
+                Log.i(TAG, String.format("processFrame rgb time: %d", this.rgbConvertTime/1000000/this.frameCountMax));
                 Log.i(TAG, String.format("processFrame methodCall time: %d", this.methodCallTime/1000000/this.frameCountMax));
                 Log.i(TAG, String.format("processFrame release time: %d", this.releaseTime/1000000/this.frameCountMax));
                 Log.i(TAG, String.format("processFrame time: %d", this.totalTime/1000000/this.frameCountMax));
