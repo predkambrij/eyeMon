@@ -94,9 +94,9 @@ public class MainService extends Service {
 
     @Override
     public void onCreate() {
-        this.frameProcessor = new Thread(new FrameProcessor());
-        this.frameProcessor.setPriority(Thread.MIN_PRIORITY);
-        this.frameProcessor.start();
+//        this.frameProcessor = new Thread(new FrameProcessor());
+//        this.frameProcessor.setPriority(Thread.MIN_PRIORITY);
+//        this.frameProcessor.start();
 
         this.mOpenCvCameraView = new CameraPreview(this);
 //        this.widthHeight = new int[]{352, 288};
@@ -158,7 +158,7 @@ public class MainService extends Service {
         static final int METHOD_OPTFLOW      = 0;
         static final int METHOD_TEMPLATE     = 1;
         static final int METHOD_TEMPLATE_JNI = 2;
-        int method = 0;
+        int method = 2;
 
         long frameCount      = 0;
         long timeStart       = 0;
@@ -168,6 +168,7 @@ public class MainService extends Service {
         long rgbConvertTime  = 0;
         long releaseTime     = 0;
         long methodCallTime  = 0;
+        long garbageCollect  = 0;
         double lastFrameRate = 0;
 
         int flSize = 0;
@@ -184,9 +185,9 @@ public class MainService extends Service {
         }
 
         private void processFrame(byte[] frame, long frameTime) {
-            boolean debugInRGB = true;
+            boolean debugInRGB = false;
             boolean debugWriteImages = false;
-            boolean debugActivityUpdates = true;
+            boolean debugActivityUpdates = false;
             Mat gray = null;
             Mat rgb = null;
             Mat tmp = null;
@@ -244,6 +245,10 @@ public class MainService extends Service {
             this.totalTime += (System.nanoTime()-start);
             this.frameCount++;
 
+            long startGC = System.nanoTime();
+            System.gc();
+            this.garbageCollect += (System.nanoTime()-startGC);
+
             if (this.frameCount == this.frameCountMax) {
                 double avgFrameTime = (((frameTime-this.timeStart)/(double)this.frameCountMax)/(double)1000000000);
                 this.lastFrameRate = 1/avgFrameTime;
@@ -253,13 +258,10 @@ public class MainService extends Service {
                 Log.i(TAG, String.format("processFrame rgb time: %d", this.rgbConvertTime/1000000/this.frameCountMax));
                 Log.i(TAG, String.format("processFrame methodCall time: %d", this.methodCallTime/1000000/this.frameCountMax));
                 Log.i(TAG, String.format("processFrame release time: %d", this.releaseTime/1000000/this.frameCountMax));
+                Log.i(TAG, String.format("processFrame gc time: %d", this.garbageCollect/1000000/this.frameCountMax));
                 Log.i(TAG, String.format("processFrame time: %d", this.totalTime/1000000/this.frameCountMax));
-                this.timeStart       = frameTime;
-                this.frameCount      = 0;
-                this.grayConvertTime = 0;
-                this.methodCallTime  = 0;
-                this.releaseTime     = 0;
-                this.totalTime       = 0;
+                this.timeStart = frameTime;
+                this.frameCount = this.grayConvertTime = this.methodCallTime = this.releaseTime = this.totalTime = this.garbageCollect = 0;
             }
         }
 
@@ -285,7 +287,7 @@ public class MainService extends Service {
                         MainService.frameAdding = true;
                     }
                     try {
-                        Thread.sleep(5000);
+                        Thread.sleep(100);
                     } catch (InterruptedException e) {
                     }
                 } else {
