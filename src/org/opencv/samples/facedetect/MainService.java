@@ -34,11 +34,17 @@ public class MainService extends Service {
     private OptFlow optFlow;
     private TemplateBased templateBased;
     private TemplateBasedJNI templateBasedJni;
-    public static List<byte[]> frameList = Collections.synchronizedList(new LinkedList<byte[]>());
-    public static List<Long> frameTime = Collections.synchronizedList(new LinkedList<Long>());
+//    public static List<Mat> frameList = Collections.synchronizedList(new LinkedList<Mat>());
+//    public static List<byte[]> frameList = Collections.synchronizedList(new LinkedList<byte[]>());
+    public static List<ObjCarrier> frameList = Collections.synchronizedList(new LinkedList<ObjCarrier>());
+//    public static List<Long> frameTime = Collections.synchronizedList(new LinkedList<Long>());
     public static Bitmap bitmapImage;
     public static volatile boolean frameAdding = true;
-    protected int[] widthHeight;
+//    public static int[] widthHeight =  new int[]{320, 240};
+    public static int[] widthHeight =  new int[]{640, 480};
+//    public static int[] widthHeight =  new int[]{352, 288};
+//    public static int[] widthHeight =  new int[]{1280, 720};
+
     private Thread frameProcessor;
     private boolean frameProcessorRunning = true;
 
@@ -72,15 +78,18 @@ public class MainService extends Service {
                         os.close();
 
                         // native library wrapper
-                        optFlow = new OptFlow(mCascadeFile.getAbsolutePath());
-                        templateBased = new TemplateBased();
-                        templateBased.onCameraViewStarted();
-                        templateBasedJni = new TemplateBasedJNI(mCascadeFile.getAbsolutePath());
+                        MainService.this.optFlow = new OptFlow(mCascadeFile.getAbsolutePath());
+                        MainService.this.templateBased = new TemplateBased();
+                        MainService.this.templateBased.onCameraViewStarted();
+                        MainService.this.templateBasedJni = new TemplateBasedJNI(mCascadeFile.getAbsolutePath());
 
-                        frameProcessor = new Thread(new FrameProcessor());
-                        frameProcessor.setPriority(Thread.MIN_PRIORITY);
-                        frameProcessor.start();
+                        MainService.this.frameProcessor = new Thread(new FrameProcessor());
+                        MainService.this.frameProcessor.setPriority(Thread.MIN_PRIORITY);
+                        MainService.this.frameProcessor.start();
 
+                        MainService.this.mOpenCvCameraView = new CameraPreview(MainService.this);
+                        MainService.this.mOpenCvCameraView.connectCamera(MainService.widthHeight, 1);
+                        MainService.this.mOpenCvCameraView.setVisibility(1);
 
                         cascadeDir.delete();
                     } catch (IOException e) {
@@ -99,12 +108,6 @@ public class MainService extends Service {
 
     @Override
     public void onCreate() {
-        this.mOpenCvCameraView = new CameraPreview(this);
-//        this.widthHeight = new int[]{352, 288};
-//        this.widthHeight = new int[]{1280, 720};
-        this.widthHeight =  new int[]{640, 480};
-        this.mOpenCvCameraView.connectCamera(this.widthHeight, 1);
-        this.mOpenCvCameraView.setVisibility(1);
 
         // Start foreground service to avoid unexpected kill
         Notification.Builder notificationB = new Notification.Builder(this)
@@ -185,26 +188,27 @@ public class MainService extends Service {
             }
         }
 
-        private void processFrame(byte[] frame, long frameTime) {
+//        private void processFrame(byte[] frame, long frameTime) {
+        private void processFrame(Mat gray, long frameTime) {
             boolean debugInRGB = false;
             boolean debugWriteImages = false;
             boolean debugActivityUpdates = false;
-            Mat gray = null;
+//            Mat gray = null;
             Mat rgb = null;
             Mat tmp = null;
             long start = System.nanoTime();
 
-            gray = new Mat(widthHeight[1], widthHeight[0], CvType.CV_8UC1);
-            gray.put(0, 0, frame);
-            this.grayConvertTime += (System.nanoTime()-start);
+//            gray = new Mat(widthHeight[1], widthHeight[0], CvType.CV_8UC1);
+//            gray.put(0, 0, frame);
+//            this.grayConvertTime += (System.nanoTime()-start);
 
             if (debugInRGB == true) {
-                long rgbStart = System.nanoTime();
-                tmp = new Mat(widthHeight[1] + (widthHeight[1]/2), widthHeight[0], CvType.CV_8UC1);
-                tmp.put(0, 0, frame);
-                rgb = new Mat();
-                Imgproc.cvtColor(tmp, rgb, Imgproc.COLOR_YUV2BGR_NV12, 4);
-                this.rgbConvertTime += System.nanoTime()-rgbStart;
+//                long rgbStart = System.nanoTime();
+//                tmp = new Mat(widthHeight[1] + (widthHeight[1]/2), widthHeight[0], CvType.CV_8UC1);
+//                tmp.put(0, 0, frame);
+//                rgb = new Mat();
+//                Imgproc.cvtColor(tmp, rgb, Imgproc.COLOR_YUV2BGR_NV12, 4);
+//                this.rgbConvertTime += System.nanoTime()-rgbStart;
             }
 
             if (debugWriteImages == true) {
@@ -255,8 +259,8 @@ public class MainService extends Service {
                 this.lastFrameRate = 1/avgFrameTime;
                 Log.i(TAG, "FL size: "+this.flSize);
                 Log.i(TAG, String.format("avg frame capture rate %.2f", this.lastFrameRate));
-                Log.i(TAG, String.format("processFrame gray time: %d bytes %d", this.grayConvertTime/1000000/this.frameCountMax, frame.length));
-                Log.i(TAG, String.format("processFrame rgb time: %d", this.rgbConvertTime/1000000/this.frameCountMax));
+//                Log.i(TAG, String.format("processFrame gray time: %d bytes %d", this.grayConvertTime/1000000/this.frameCountMax, frame.length));
+//                Log.i(TAG, String.format("processFrame rgb time: %d", this.rgbConvertTime/1000000/this.frameCountMax));
                 Log.i(TAG, String.format("processFrame methodCall time: %d", this.methodCallTime/1000000/this.frameCountMax));
                 Log.i(TAG, String.format("processFrame release time: %d", this.releaseTime/1000000/this.frameCountMax));
                 Log.i(TAG, String.format("processFrame gc time: %d", this.garbageCollect/1000000/this.frameCountMax));
@@ -292,9 +296,11 @@ public class MainService extends Service {
                     } catch (InterruptedException e) {
                     }
                 } else {
-                    byte[] frame = MainService.frameList.remove(0);
-                    long frameTime = MainService.frameTime.remove(0);
-                    this.processFrame(frame, frameTime);
+//                    byte[] frame = MainService.frameList.remove(0);
+//                    Mat frame = MainService.frameList.remove(0);
+//                    long frameTime = MainService.frameTime.remove(0);
+                    ObjCarrier frame = MainService.frameList.remove(0);
+                    this.processFrame(frame.gray, frame.time);
                 }
             }
             this.cleanup();

@@ -23,7 +23,7 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
     private Camera mCamera;
     private static final String TAG = "CameraPreview";
 //    private static int frameMaxSize = 30*60*10;
-    private static int frameMaxSize = 100;
+    private static int frameMaxSize = 900;
 
     public CameraPreview(Context context) {
         super(context);
@@ -33,11 +33,16 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
     public void onPreviewFrame(byte[] frame, Camera arg1) {
         if (MainService.frameAdding == true) {
             if (MainService.frameList.size() < CameraPreview.frameMaxSize) {
-                byte[] frameCopy = (byte[])frame.clone();
+                Mat gray = new Mat(MainService.widthHeight[1], MainService.widthHeight[0], CvType.CV_8UC1);
+                gray.put(0, 0, frame);
+                MainService.frameList.add(new ObjCarrier(gray, System.nanoTime()));
+
+//                byte[] frameCopy = (byte[])frame.clone();
 //                byte[] frameCopy = frame;
-                MainService.frameList.add(frameCopy);
-                MainService.frameTime.add(System.nanoTime());
-//                Log.i(TAG, "LENGTH "+MainService.frameList.size());
+//                MainService.frameList.add(frameCopy);
+//                MainService.frameList.add(gray);
+//                MainService.frameTime.add(System.nanoTime());
+                Log.i(TAG, "LENGTH "+MainService.frameList.size());
             } else {
                 MainService.frameAdding = false;
             }
