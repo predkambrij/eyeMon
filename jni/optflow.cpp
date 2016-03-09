@@ -293,8 +293,8 @@ class OptFlow {
         //process(rgb, grayx, rgb);
         process(gray, out);
 
-        cv::swap(prevLeft, left);
-        cv::swap(prevRight, right);
+        //cv::swap(prevLeft, left);
+        //cv::swap(prevRight, right);
         
         return 0;
     }

@@ -12,8 +12,6 @@
 #include <ctype.h>
 #include <chrono>
 
-#define DEBUG_TAG "NDK_AndroidNDK1SampleActivity"
-
 #include <optflow.cpp>
 
 using namespace cv;

@@ -4,12 +4,15 @@
 #include <chrono>
 
 #include <common.hpp>
+#ifdef IS_PHONE
+#include <android/log.h>
+#endif
 
 #ifdef IS_PHONE
 JNIEnv* env;
 #endif
 
-int PHONE = 0;
+int PHONE = 1;
 std::chrono::high_resolution_clock::time_point startx = std::chrono::high_resolution_clock::now();
 
 void diffclock(char const *title, clock_t clock2) {
@@ -34,24 +37,21 @@ void doLog(const char* text) {
         return;
     }
 #ifdef IS_PHONE
-/*
+    
     // malloc room for the resulting string
     char *szResult;
     szResult = (char*)malloc(sizeof(char)*500);
 
     auto end = std::chrono::high_resolution_clock::now();
-    unsigned long long int ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
+    unsigned long long int ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end-startx).count();
 
     // standard sprintf
-    sprintf(szResult, "res: %llu %s", ns, text);// szFormat sum CV_VERSION
+    sprintf(szResult, "res: %llu %s", ns, text);
 
-    // get an object string
-    jstring result = (env)->NewStringUTF(szResult);
-
-    __android_log_print(ANDROID_LOG_INFO, DEBUG_TAG, "NDK:OPTFLOF: [%s]", szResult);// szLogThis
+    __android_log_print(ANDROID_LOG_INFO, DEBUG_TAG, "NDK:OPTFLOF: [%s]", szResult);
 
     // cleanup
     free(szResult);
-*/
+    
 #endif
 }
