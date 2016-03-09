@@ -15,6 +15,9 @@ JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_TemplateBasedJNI_temp
                                                                 (JNIEnv * jenv, jclass, jstring jCascadeFileName) {
     const char *cascadeFileName = (jenv)->GetStringUTFChars(jCascadeFileName, 0);
     templBased.setup(cascadeFileName);
+#ifdef IS_PHONE
+    templBased.setJni(jenv);
+#endif
     (jenv)->ReleaseStringUTFChars(jCascadeFileName, cascadeFileName);
     jlong result = 0;
     return result;
@@ -29,7 +32,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_TemplateBasedJNI_templ
     Mat rgb = *((Mat*)imageRGB);
     Mat gray = *((Mat*)imageGray);
 
-    templBased.run(jenv, gray, rgb);
+    templBased.run(gray, rgb);
 }
 
 
