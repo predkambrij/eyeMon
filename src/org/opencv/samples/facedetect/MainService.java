@@ -77,6 +77,11 @@ public class MainService extends Service {
                         templateBased.onCameraViewStarted();
                         templateBasedJni = new TemplateBasedJNI(mCascadeFile.getAbsolutePath());
 
+                        frameProcessor = new Thread(new FrameProcessor());
+                        frameProcessor.setPriority(Thread.MIN_PRIORITY);
+                        frameProcessor.start();
+
+
                         cascadeDir.delete();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -94,10 +99,6 @@ public class MainService extends Service {
 
     @Override
     public void onCreate() {
-//        this.frameProcessor = new Thread(new FrameProcessor());
-//        this.frameProcessor.setPriority(Thread.MIN_PRIORITY);
-//        this.frameProcessor.start();
-
         this.mOpenCvCameraView = new CameraPreview(this);
 //        this.widthHeight = new int[]{352, 288};
 //        this.widthHeight = new int[]{1280, 720};
@@ -245,9 +246,9 @@ public class MainService extends Service {
             this.totalTime += (System.nanoTime()-start);
             this.frameCount++;
 
-            long startGC = System.nanoTime();
-            System.gc();
-            this.garbageCollect += (System.nanoTime()-startGC);
+//            long startGC = System.nanoTime();
+//            System.gc();
+//            this.garbageCollect += (System.nanoTime()-startGC);
 
             if (this.frameCount == this.frameCountMax) {
                 double avgFrameTime = (((frameTime-this.timeStart)/(double)this.frameCountMax)/(double)1000000000);
