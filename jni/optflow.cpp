@@ -160,7 +160,7 @@ int flg=0;
 vector<Point2f> points[2];
 Mat pleft, pright;
 int firstLoopProcs = 1;
-int process(Mat frame, Mat gray, Mat out) {
+int process(Mat gray, Mat out) {
     clock_t start;
     cv::Rect face, leftEyeRegion, rightEyeRegion;
     cv::Point leftPupil, rightPupil;
@@ -288,10 +288,10 @@ class OptFlow {
     public: int setJni(JNIEnv* jenv) {
     }
 #endif
-    public: int run(Mat rgb, Mat grayo) {
+    public: int run(Mat gray, Mat out) {
         //cvtColor(rgb, grayx, COLOR_BGR2GRAY);
         //process(rgb, grayx, rgb);
-        process(rgb, grayo, rgb);
+        process(gray, out);
 
         cv::swap(prevLeft, left);
         cv::swap(prevRight, right);

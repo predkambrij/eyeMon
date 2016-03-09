@@ -19,7 +19,11 @@ class TemplateBased {
         }
         return 0;
     }
-    public: int run(JNIEnv * jenv, Mat gray, Mat out) {
+#ifdef IS_PHONE
+    public: int setJni(JNIEnv* jenv) {
+    }
+#endif
+    public: int run(Mat gray, Mat out) {
     }
 
 }; // end of TemplateBased class definition

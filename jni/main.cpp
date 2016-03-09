@@ -61,7 +61,7 @@ int main() {
         diffclock("getGray", start);
 
         start = clock();
-        process(frame, gray, frame);
+        process(gray, frame);
         diffclock("process", start);
 
         // flow control
