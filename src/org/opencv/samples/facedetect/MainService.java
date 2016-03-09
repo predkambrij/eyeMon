@@ -192,7 +192,7 @@ public class MainService extends Service {
         private void processFrame(Mat gray, long frameTime) {
             boolean debugInRGB = false;
             boolean debugWriteImages = false;
-            boolean debugActivityUpdates = false;
+            boolean debugActivityUpdates = true;
 //            Mat gray = null;
             Mat rgb = null;
             Mat tmp = null;
