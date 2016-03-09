@@ -9,6 +9,12 @@ void doLogClock(const char* format, const char* title, double diffms);
 
 #define DEBUG_LEVEL 3
 
+//#define IS_PHONE
+
+#ifdef IS_PHONE
+extern JNIEnv* env;
+#endif
+
 extern int PHONE;
 extern std::chrono::high_resolution_clock::time_point startx;
 

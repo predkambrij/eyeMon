@@ -27,6 +27,9 @@ JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowCreate
                                                                 (JNIEnv * jenv, jclass, jstring jCascadeFileName) {
     const char *cascadeFileName = (jenv)->GetStringUTFChars(jCascadeFileName, 0);
     optf.setup(cascadeFileName);
+#ifdef IS_PHONE
+    optf.setJni(jenv);
+#endif
     (jenv)->ReleaseStringUTFChars(jCascadeFileName, cascadeFileName);
     jlong result = 0;
     return result;
@@ -41,7 +44,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowDetect
     Mat rgb = *((Mat*)imageRGB);
     Mat gray = *((Mat*)imageGray);
 
-    optf.run(jenv, rgb, gray);
+    optf.run(rgb, gray);
 }
 
 

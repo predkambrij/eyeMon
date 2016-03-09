@@ -1,2 +1,2 @@
 cd jni
-bash ~/other/cpp_code/eyelikei "eyelike/findEyeCorner.cpp eyelike/findEyeCenter.cpp eyelike/helpers.cpp farneb.cpp" ../el && ../el
+bash ~/other/cpp_code/eyelikei "eyelike/findEyeCorner.cpp eyelike/findEyeCenter.cpp eyelike/helpers.cpp common.cpp main.cpp" ../el && ../el

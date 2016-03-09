@@ -5,6 +5,10 @@
 
 #include <common.hpp>
 
+#ifdef IS_PHONE
+JNIEnv* env;
+#endif
+
 int PHONE = 0;
 std::chrono::high_resolution_clock::time_point startx = std::chrono::high_resolution_clock::now();
 
@@ -29,7 +33,8 @@ void doLog(const char* text) {
         printf("%s\n", text);
         return;
     }
-    /*
+#ifdef IS_PHONE
+/*
     // malloc room for the resulting string
     char *szResult;
     szResult = (char*)malloc(sizeof(char)*500);
@@ -46,5 +51,7 @@ void doLog(const char* text) {
     __android_log_print(ANDROID_LOG_INFO, DEBUG_TAG, "NDK:OPTFLOF: [%s]", szResult);// szLogThis
 
     // cleanup
-    free(szResult);*/
+    free(szResult);
+*/
+#endif
 }
