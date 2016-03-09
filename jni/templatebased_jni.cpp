@@ -29,7 +29,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_TemplateBasedJNI_templ
     Mat rgb = *((Mat*)imageRGB);
     Mat gray = *((Mat*)imageGray);
 
-    templBased.run(jenv, rgb, gray);
+    templBased.run(jenv, gray, rgb);
 }
 
 

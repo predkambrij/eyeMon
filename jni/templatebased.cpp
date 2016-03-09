@@ -5,9 +5,6 @@
 using namespace cv;
 using namespace std;
 
-
-
-
 class TemplateBased {
     cv::CascadeClassifier face_cascade;
 
@@ -22,7 +19,7 @@ class TemplateBased {
         }
         return 0;
     }
-    public: int run(JNIEnv * jenv, Mat rgb, Mat grayo) {
+    public: int run(JNIEnv * jenv, Mat gray, Mat out) {
     }
 
 }; // end of TemplateBased class definition

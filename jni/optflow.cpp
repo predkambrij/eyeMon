@@ -23,27 +23,9 @@
 using namespace cv;
 using namespace std;
 
-//// farneb code
-#define DEBUG_LEVEL 3
-//#define PHONE 0
-
 //JNIEnv* env;
 int farne = 0;
-void doLogClock(const char* format, const char* title, double diffms) {
-    if (PHONE != 1) {
-        printf(format, title, diffms);
-        printf("\n");
-        return;
-    }
-}
 
-void diffclock(char const *title, clock_t clock2) {
-    clock_t clock1 = clock();
-    double diffticks = 1000.0 * (clock1 - clock2);
-    double diffms    = diffticks / CLOCKS_PER_SEC;
-
-    doLogClock("%s: %f", title, diffms);
-}
 int leftXOffset=200, leftYOffset=130, leftCols=100, leftRows=100;
 int rightXOffset=350, rightYOffset=130, rightCols=100, rightRows=100;
 
@@ -360,7 +342,7 @@ int main() {
 
 ///
 
-auto startx = std::chrono::high_resolution_clock::now();
+
 
 class OptFlow {
     Mat rgb, grayx, left, right, prevLeft, prevRight;

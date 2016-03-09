@@ -1,10 +1,15 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-extern int PHONE;
+#include <chrono>
 
 void doLog(const char* text);
+void diffclock(char const *title, clock_t clock2);
+void doLogClock(const char* format, const char* title, double diffms);
 
-#endif /* !GRANDPARENT_H */
+#define DEBUG_LEVEL 3
 
+extern int PHONE;
+extern std::chrono::high_resolution_clock::time_point startx;
 
+#endif
