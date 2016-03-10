@@ -76,7 +76,7 @@ void doProcessing() {
     }
 
     // controls
-    int pause = 0, firstLoop = 1;
+    int pause = 0;
     std::chrono::time_point<std::chrono::steady_clock> t1 = std::chrono::steady_clock::now();
     std::chrono::time_point<std::chrono::steady_clock> t2;
     Mat frame, gray, cflow;
@@ -98,12 +98,27 @@ void doProcessing() {
         std::chrono::time_point<std::chrono::steady_clock> timestamp = fc.timestamp;
 
         t2 = std::chrono::steady_clock::now();
-        getGray(frame, &gray);
+        switch (method) {
+            case METHOD_OPTFLOW:
+            case METHOD_TEMPLATE_BASED:
+            getGray(frame, &gray);
+            break;
+            case METHOD_BLACK_PIXELS:
+            break;
+        }
         difftime("T2 getGray", t2);
 
         t2 = std::chrono::steady_clock::now();
-        process(gray, frame);
-        difftime("T2 getGray", t2);
+        switch (method) {
+            case METHOD_OPTFLOW:
+            process(gray, frame);
+            break;
+            case METHOD_TEMPLATE_BASED:
+            break;
+            case METHOD_BLACK_PIXELS:
+            break;
+        }
+        difftime("T2 process", t2);
 
         if (debug_show_img == true) {
             // flow control

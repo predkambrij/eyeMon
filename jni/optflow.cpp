@@ -136,7 +136,7 @@ int showResult(Mat cflow, cv::Rect face, Mat faceROI, cv::Rect leftEyeRegion, cv
     // circle(cflow, leftPupil, 3, Scalar(0,255,0), -1, 8);
 
     // draw eye centers
-    if (DEBUG_LEVEL >= 1 && PHONE == 0) {
+    if (debug_show_img == true && PHONE == 0) {
         imshow("main", cflow);
     }
 }
@@ -170,7 +170,7 @@ int process(Mat gray, Mat out) {
 
     start = clock();
     if (faceDetect(gray, &face) != 0) {
-        if (DEBUG_LEVEL >= 1 && PHONE == 0) {
+        if (debug_show_img == true && PHONE == 0) {
             imshow("main", out);
         }
         return -1;
@@ -205,7 +205,7 @@ int process(Mat gray, Mat out) {
         drawOptFlowMap(flowRight, out, 10, Scalar(0, 255, 0), 1);
         diffclock("- drawOptFlowMap", start);
 
-        if (DEBUG_LEVEL >= 2 && PHONE == 0) {
+        if (debug_show_img_optfl_eyes == true && PHONE == 0) {
             imshow("left", left);
             imshow("right", right);
         }
