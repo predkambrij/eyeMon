@@ -7,6 +7,8 @@ using namespace std;
 
 class TemplateBased {
     cv::CascadeClassifier face_cascade;
+    Mat leftTemplate, rightTemplate;
+    int haveTemplate = 0;
 
     public: int setup(const char* cascadeFileName) {
         try {
@@ -28,6 +30,7 @@ class TemplateBased {
         cv::Rect face, leftEyeRegion, rightEyeRegion;
         Mat faceROI;
         Mat left, right;
+        Mat leftResult, rightResult;
         Mat flowLeft, flowRight;
 
         t1 = std::chrono::steady_clock::now();
@@ -43,20 +46,43 @@ class TemplateBased {
             faceROI = gray(face);
             imshow("face", faceROI);
         }
-        int rowsO = faceROI.rows/5;
-        int colsO = faceROI.cols/5;
-        int rows2 = faceROI.rows/3;
-        int cols2 = faceROI.cols/3;
+        if (this->haveTemplate == false) {
+            int rowsO = faceROI.rows/5;
+            int colsO = faceROI.cols/5;
+            int rows2 = faceROI.rows/3;
+            int cols2 = faceROI.cols/3;
 
-        cv::Rect leftE(colsO, rowsO, cols2, rows2);
-        cv::Rect rightE(faceROI.cols-colsO-rows2, rowsO, cols2, rows2);
+            cv::Rect leftE(colsO, rowsO, cols2, rows2);
+            cv::Rect rightE(faceROI.cols-colsO-rows2, rowsO, cols2, rows2);
 
-        left = faceROI(leftE);
-        right = faceROI(rightE);
+            left  = faceROI(leftE);
+            right = faceROI(rightE);
+            left.copyTo(leftTemplate);
+            right.copyTo(rightTemplate);
 
-        imshow("left", left);
-        imshow("right", right);
-
+            imshow("left", leftTemplate);
+            imshow("right", rightTemplate);
+            this->haveTemplate = true;
+        } else {
+            double minValL, maxValL, minValR, maxValR;
+            Point  minLocL, maxLocL, matchLocL, minLocR, maxLocR, matchLocR;
+            t1 = std::chrono::steady_clock::now();
+            matchTemplate(gray, leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
+            matchTemplate(gray, rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
+            difftime("Templ match", t1);
+            imshow("leftR", leftResult);
+            imshow("rightR", rightResult);
+            normalize(leftResult, leftResult, 0, 1, cv::NORM_MINMAX, -1, Mat());
+            normalize(rightResult, rightResult, 0, 1, cv::NORM_MINMAX, -1, Mat());
+            minMaxLoc(leftResult, &minValL, &maxValL, &minLocL, &maxLocL, Mat());
+            minMaxLoc(rightResult, &minValR, &maxValR, &minLocR, &maxLocR, Mat());
+            matchLocL = minLocL;
+            matchLocR = minLocR;
+            circle(out, Point2f((float)matchLocL.x, (float)matchLocL.y), 10, Scalar(0,255,0), -1, 8);
+            rectangle(out, matchLocL, Point(matchLocL.x + leftTemplate.cols , matchLocL.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
+            circle(out, Point2f((float)matchLocR.x, (float)matchLocR.y), 10, Scalar(0,255,0), -1, 8);
+            rectangle(out, matchLocR, Point(matchLocR.x + leftTemplate.cols , matchLocR.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
+        }
     }
     public: int faceDetect(Mat gray, cv::Rect *face) {
         std::vector<cv::Rect> faces;

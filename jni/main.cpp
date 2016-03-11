@@ -18,7 +18,7 @@ class FrameCarrier {
 };
 
 std::list<FrameCarrier> frameList;
-int maxSize = 20;
+int maxSize = 30;
 bool canAdd = true;
 
 void captureFrames() {
@@ -77,6 +77,8 @@ void doProcessing() {
         cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 10, 100);
         cv::namedWindow("left",CV_WINDOW_NORMAL); cv::moveWindow("left", 10, 500);
         cv::namedWindow("right",CV_WINDOW_NORMAL); cv::moveWindow("right", 200, 500);
+        cv::namedWindow("leftR",CV_WINDOW_NORMAL); cv::moveWindow("leftR", 10, 500);
+        cv::namedWindow("rightR",CV_WINDOW_NORMAL); cv::moveWindow("rightR", 200, 500);
         // cv::namedWindow("Right Eye",CV_WINDOW_NORMAL); cv::moveWindow("Right Eye", 10, 600);
         // cv::namedWindow("Left Eye",CV_WINDOW_NORMAL); cv::moveWindow("Left Eye", 10, 800);
         // createCornerKernels(), at the end // releaseCornerKernels(); // ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2), 43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);
