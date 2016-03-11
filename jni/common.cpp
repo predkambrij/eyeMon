@@ -12,6 +12,7 @@
 JNIEnv* env;
 #endif
 
+bool debug_print_when_queue_full = true;
 bool debug_show_img = true;
 bool debug_show_img_face = true;
 bool debug_show_img_optfl_eyes = true;

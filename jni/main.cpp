@@ -18,7 +18,7 @@ class FrameCarrier {
 };
 
 std::list<FrameCarrier> frameList;
-int maxSize = 30;
+int maxSize = 3000000000;
 bool canAdd = true;
 
 void captureFrames() {
@@ -31,9 +31,9 @@ void captureFrames() {
     // char fileName[200] = "/home/developer/other/test_videos/yellow_close.mp4";
     // char fileName[200] = "/home/developer/other/test_videos/very_dark.mp4";
     // char fileName[100] = "/opt/docker_volumes/mag/home_developer/other/posnetki/o4_29.mp4";
-    //VideoCapture stream1(fileName);   //0 is the id of video device.0 if you have only one camera
+    VideoCapture stream1(fileName);   //0 is the id of video device.0 if you have only one camera
 
-    VideoCapture stream1(0);
+    //VideoCapture stream1(0);
     if (!stream1.isOpened()) {
         CV_Assert("T1 cam open failed");
     }
@@ -51,13 +51,19 @@ void captureFrames() {
             doLog("T1 --(!) No captured frame -- Break!");
             return;
         }
-        difftime("T1 frame capture:", t1);
-        t1 = std::chrono::steady_clock::now();
+        if (debug_print_when_queue_full == true) {
+            difftime("T1 frame capture:", t1);
+            t1 = std::chrono::steady_clock::now();
+        }
 
         long unsigned int listSize = frameList.size();
-        printf("size %ld\n", frameList.size());
+        if (debug_print_when_queue_full == true) {
+            printf("size %ld\n", frameList.size());
+        }
         if (listSize >= maxSize) {
-            printf("T1 reached max size %d\n", maxSize);
+            if (debug_print_when_queue_full == true) {
+                printf("T1 reached max size %d\n", maxSize);
+            }
             canAdd = false;
         } else {
             if (canAdd == true) {
@@ -75,10 +81,14 @@ void doProcessing() {
         //cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
         cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 10, 100); resizeWindow("main",1280, 960);
         cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 10, 100);
+        /*
         cv::namedWindow("left",CV_WINDOW_NORMAL); cv::moveWindow("left", 10, 500);
         cv::namedWindow("right",CV_WINDOW_NORMAL); cv::moveWindow("right", 200, 500);
         cv::namedWindow("leftR",CV_WINDOW_NORMAL); cv::moveWindow("leftR", 10, 500);
         cv::namedWindow("rightR",CV_WINDOW_NORMAL); cv::moveWindow("rightR", 200, 500);
+        cv::namedWindow("leftR1",CV_WINDOW_NORMAL); cv::moveWindow("leftR1", 10, 800);
+        cv::namedWindow("rightR1",CV_WINDOW_NORMAL); cv::moveWindow("rightR1", 200, 800);
+        */
         // cv::namedWindow("Right Eye",CV_WINDOW_NORMAL); cv::moveWindow("Right Eye", 10, 600);
         // cv::namedWindow("Left Eye",CV_WINDOW_NORMAL); cv::moveWindow("Left Eye", 10, 800);
         // createCornerKernels(), at the end // releaseCornerKernels(); // ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2), 43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);

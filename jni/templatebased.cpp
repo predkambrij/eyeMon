@@ -72,16 +72,22 @@ class TemplateBased {
             difftime("Templ match", t1);
             imshow("leftR", leftResult);
             imshow("rightR", rightResult);
-            normalize(leftResult, leftResult, 0, 1, cv::NORM_MINMAX, -1, Mat());
-            normalize(rightResult, rightResult, 0, 1, cv::NORM_MINMAX, -1, Mat());
+            //normalize(leftResult, leftResult, 0, 1, cv::NORM_MINMAX, -1, Mat());
+            //normalize(rightResult, rightResult, 0, 1, cv::NORM_MINMAX, -1, Mat());
+            //imshow("leftR1", leftResult);
+            //imshow("rightR1", rightResult);
             minMaxLoc(leftResult, &minValL, &maxValL, &minLocL, &maxLocL, Mat());
             minMaxLoc(rightResult, &minValR, &maxValR, &minLocR, &maxLocR, Mat());
+            //printf("lcor %lf rcor %lf\n", minValL, minValR);
+            printf("lcor %lf rcor %lf\n", maxValL, maxValR);
+            //cout << minLocL << endl;
             matchLocL = minLocL;
             matchLocR = minLocR;
             circle(out, Point2f((float)matchLocL.x, (float)matchLocL.y), 10, Scalar(0,255,0), -1, 8);
             rectangle(out, matchLocL, Point(matchLocL.x + leftTemplate.cols , matchLocL.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
             circle(out, Point2f((float)matchLocR.x, (float)matchLocR.y), 10, Scalar(0,255,0), -1, 8);
             rectangle(out, matchLocR, Point(matchLocR.x + leftTemplate.cols , matchLocR.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
+            //printf("lcor %lf rcor %lf\n", maxValL, maxValR);
         }
     }
     public: int faceDetect(Mat gray, cv::Rect *face) {
