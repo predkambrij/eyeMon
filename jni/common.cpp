@@ -13,6 +13,7 @@ JNIEnv* env;
 #endif
 
 bool debug_show_img = true;
+bool debug_show_img_face = true;
 bool debug_show_img_optfl_eyes = true;
 
 //int method = METHOD_OPTFLOW;

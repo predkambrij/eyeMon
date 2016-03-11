@@ -18,7 +18,7 @@ class FrameCarrier {
 };
 
 std::list<FrameCarrier> frameList;
-int maxSize = 900;
+int maxSize = 20;
 bool canAdd = true;
 
 void captureFrames() {
@@ -38,6 +38,7 @@ void captureFrames() {
         CV_Assert("T1 cam open failed");
     }
     // resolutions 320, 240; 800, 448; 640, 480
+    //stream1.set(CV_CAP_PROP_FRAME_WIDTH, 320); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 240);
     stream1.set(CV_CAP_PROP_FRAME_WIDTH, 640); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
     //stream1.set(CV_CAP_PROP_FRAME_WIDTH, 1280); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
 
@@ -71,8 +72,11 @@ TemplateBased templ;
 
 void doProcessing() {
     if (debug_show_img == true) {
-        cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
+        //cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
         cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 10, 100); resizeWindow("main",1280, 960);
+        cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 10, 100);
+        cv::namedWindow("left",CV_WINDOW_NORMAL); cv::moveWindow("left", 10, 500);
+        cv::namedWindow("right",CV_WINDOW_NORMAL); cv::moveWindow("right", 200, 500);
         // cv::namedWindow("Right Eye",CV_WINDOW_NORMAL); cv::moveWindow("Right Eye", 10, 600);
         // cv::namedWindow("Left Eye",CV_WINDOW_NORMAL); cv::moveWindow("Left Eye", 10, 800);
         // createCornerKernels(), at the end // releaseCornerKernels(); // ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2), 43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);

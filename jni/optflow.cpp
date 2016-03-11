@@ -151,8 +151,8 @@ Mat pleft, pright;
 int firstLoopProcs = 1;
 int process(Mat gray, Mat out) {
     clock_t start;
-    cv::Rect face, leftEyeRegion, rightEyeRegion;
     cv::Point leftPupil, rightPupil;
+    cv::Rect face, leftEyeRegion, rightEyeRegion;
     Mat faceROI;
     Mat left, right;
     Mat flowLeft, flowRight;
