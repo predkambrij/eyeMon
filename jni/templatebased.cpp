@@ -24,6 +24,11 @@ class TemplateBased {
     }
 #endif
     public: int run(Mat gray, Mat out) {
+#ifndef IS_PHONE
+        if (debug_show_img == true && PHONE == 0) {
+            imshow("main", out);
+        }
+#endif
     }
 
 }; // end of TemplateBased class definition

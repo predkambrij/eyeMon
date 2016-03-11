@@ -141,17 +141,6 @@ int showResult(Mat cflow, cv::Rect face, Mat faceROI, cv::Rect leftEyeRegion, cv
     }
 }
 
-int setUp(const char* cascadePath) {
-    try {
-        if(!face_cascade.load(cascadePath)) {
-            throw "--(!)Error loading face cascade, please change face_cascade_name in source code.\n";
-        }
-    } catch (const char* msg) {
-        doLog(msg);
-        throw;
-    }
-}
-
 TermCriteria termcrit;
 Size subPixWinSize, winSize;
 const int MAX_COUNT = 500;
@@ -281,7 +270,14 @@ class OptFlow {
         
     }
     public: int setup(const char* cascadeFileName) {
-        setUp(cascadeFileName);
+        try {
+            if(!face_cascade.load(cascadeFileName)) {
+                throw "--(!)Error loading face cascade, please change face_cascade_name in source code.\n";
+            }
+        } catch (const char* msg) {
+            doLog(msg);
+            throw;
+        }
         return 0;
     }
 #ifdef IS_PHONE

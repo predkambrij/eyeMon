@@ -4,6 +4,7 @@
 
 
 #include <optflow.cpp>
+#include <templatebased.cpp>
 
 class FrameCarrier {
     public: Mat frame;
@@ -65,6 +66,8 @@ void captureFrames() {
         }
     }
 }
+OptFlow optf;
+TemplateBased templ;
 
 void doProcessing() {
     if (debug_show_img == true) {
@@ -111,14 +114,15 @@ void doProcessing() {
         t2 = std::chrono::steady_clock::now();
         switch (method) {
             case METHOD_OPTFLOW:
-            process(gray, frame);
+            optf.run(gray, frame);
             break;
             case METHOD_TEMPLATE_BASED:
+            templ.run(gray, frame);
             break;
             case METHOD_BLACK_PIXELS:
             break;
         }
-        difftime("T2 process", t2);
+        difftime("T2 run", t2);
 
         if (debug_show_img == true) {
             // flow control
@@ -151,7 +155,16 @@ int main() {
     PHONE = 0; farne = 0;
 
     char faceDetector[200] = "/home/developer/other/android_deps/OpenCV-2.4.10-android-sdk/samples/optical-flow/res/raw/lbpcascade_frontalface.xml";
-    setUp(faceDetector);
+    switch (method) {
+        case METHOD_OPTFLOW:
+        optf.setup(faceDetector);
+        break;
+        case METHOD_TEMPLATE_BASED:
+        templ.setup(faceDetector);
+        break;
+        case METHOD_BLACK_PIXELS:
+        break;
+    }
 
     thread t1(captureFrames);
     thread t2(doProcessing);

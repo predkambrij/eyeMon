@@ -42,7 +42,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowDetect
     Mat rgb = *((Mat*)imageRGB);
     Mat gray = *((Mat*)imageGray);
 
-    optf.run(rgb, gray);
+    optf.run(gray, rgb);
 }
 
 

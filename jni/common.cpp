@@ -15,7 +15,8 @@ JNIEnv* env;
 bool debug_show_img = true;
 bool debug_show_img_optfl_eyes = true;
 
-int method = METHOD_OPTFLOW;
+//int method = METHOD_OPTFLOW;
+int method = METHOD_TEMPLATE_BASED;
 
 int PHONE = 1;
 std::chrono::high_resolution_clock::time_point startx = std::chrono::high_resolution_clock::now();
