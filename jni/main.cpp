@@ -88,6 +88,7 @@ void captureFrames() {
         }
     }
 }
+
 OptFlow optf;
 TemplateBased templ;
 
@@ -109,8 +110,6 @@ void doProcessing() {
         // createCornerKernels(), at the end // releaseCornerKernels(); // ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2), 43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);
     }
 
-    // controls
-    int pause = 0;
     std::chrono::time_point<std::chrono::steady_clock> t1 = std::chrono::steady_clock::now();
     std::chrono::time_point<std::chrono::steady_clock> t2;
     Mat frame, gray, cflow;
@@ -155,6 +154,10 @@ void doProcessing() {
             break;
         }
         difftime("T2 run", t2);
+
+        t2 = std::chrono::steady_clock::now();
+        //measureBlinks();
+        difftime("T2 BlinkMeasure", t2);
 
         if (debug_show_img == true) {
             // flow control

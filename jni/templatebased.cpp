@@ -95,6 +95,10 @@ class TemplateBased {
             double lcor = 1-minValL;
             double rcor = 1-minValR;
             printf("lcor %lf rcor %lf\n", lcor, rcor);
+
+            BlinkMeasure bm(timestamp, lcor, rcor);
+            blinkMeasure.push_back(bm);
+
             this->appendStatistics(timestamp, lcor, rcor);
             //printf("lcor %lf rcor %lf\n", maxValL, maxValR);
             //cout << minLocL << endl;

@@ -8,6 +8,15 @@ void diffclock(char const *title, clock_t clock2);
 void difftime(char const *title, std::chrono::time_point<std::chrono::steady_clock> t2);
 void doLogClock(const char* format, const char* title, double diffms);
 void doLogClock1(const char* format, const char* title, long int diffms);
+void measureBlinks();
+
+class BlinkMeasure {
+    public:
+        double timestamp;
+        double lcor;
+        double rcor;
+        BlinkMeasure(double timestamp, double lcor, double rcor);
+};
 
 #define DEBUG_LEVEL 3
 #define DEBUG_TAG "NDK_AndroidNDK1SampleActivity"
@@ -30,10 +39,19 @@ extern JNIEnv* env;
 extern int PHONE;
 extern std::chrono::high_resolution_clock::time_point startx;
 extern int method;
+extern int pause;
 
 extern bool debug_print_when_queue_full;
 extern bool debug_show_img;
 extern bool debug_show_img_face;
 extern bool debug_show_img_optfl_eyes;
+
+// optical flow
+extern int flg;
+///
+
+
+extern std::list<BlinkMeasure> blinkMeasure;
+extern std::list<BlinkMeasure> blinkMeasureShort;
 
 #endif

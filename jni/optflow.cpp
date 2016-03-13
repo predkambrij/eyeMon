@@ -145,7 +145,6 @@ TermCriteria termcrit;
 Size subPixWinSize, winSize;
 const int MAX_COUNT = 500;
 bool addRemovePtx = false;
-int flg=0;
 vector<Point2f> points[2];
 Mat pleft, pright;
 int firstLoopProcs = 1;
