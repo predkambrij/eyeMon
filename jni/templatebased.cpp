@@ -25,19 +25,33 @@ class TemplateBased {
     public: int setJni(JNIEnv* jenv) {
     }
 #endif
-    public: int process(Mat gray, Mat out) {
+    public: int appendStatistics(double t, double lv, double rv) {
+        FILE * pFile;
+        pFile = fopen("/home/developer/other/resources/statistics/statistics.txt","a");
+        fprintf(pFile, "%lf\t%lf\t%lf\n", t, lv, rv);
+        fclose(pFile);
+    }
+    public: int appendEmpty(double t) {
+        FILE * pFile;
+        pFile = fopen("/home/developer/other/resources/statistics/statistics.txt","a");
+        fprintf(pFile, "%lf\t\t\n", t);
+        fclose(pFile);
+    }
+    public: int process(Mat gray, Mat out, double timestamp) {
         std::chrono::time_point<std::chrono::steady_clock> t1;
         cv::Rect face, leftEyeRegion, rightEyeRegion;
         Mat faceROI;
         Mat left, right;
         Mat leftResult, rightResult;
         Mat flowLeft, flowRight;
+        GaussianBlur(gray, gray, Size(5,5), 3.0);
 
         t1 = std::chrono::steady_clock::now();
         if (this->faceDetect(gray, &face) != 0) {
             if (debug_show_img == true && PHONE == 0) {
                 imshow("main", out);
             }
+            this->appendEmpty(timestamp);
             return -1;
         }
         difftime("Face detect", t1);
@@ -47,10 +61,10 @@ class TemplateBased {
             imshow("face", faceROI);
         }
         if (this->haveTemplate == false) {
-            int rowsO = faceROI.rows/5;
-            int colsO = faceROI.cols/5;
-            int rows2 = faceROI.rows/3;
-            int cols2 = faceROI.cols/3;
+            int rowsO = faceROI.rows/4.3;
+            int colsO = faceROI.cols/7;
+            int rows2 = faceROI.rows/4;
+            int cols2 = faceROI.cols/4;
 
             cv::Rect leftE(colsO, rowsO, cols2, rows2);
             cv::Rect rightE(faceROI.cols-colsO-rows2, rowsO, cols2, rows2);
@@ -78,8 +92,11 @@ class TemplateBased {
             //imshow("rightR1", rightResult);
             minMaxLoc(leftResult, &minValL, &maxValL, &minLocL, &maxLocL, Mat());
             minMaxLoc(rightResult, &minValR, &maxValR, &minLocR, &maxLocR, Mat());
-            //printf("lcor %lf rcor %lf\n", minValL, minValR);
-            printf("lcor %lf rcor %lf\n", maxValL, maxValR);
+            double lcor = 1-minValL;
+            double rcor = 1-minValR;
+            printf("lcor %lf rcor %lf\n", lcor, rcor);
+            this->appendStatistics(timestamp, lcor, rcor);
+            //printf("lcor %lf rcor %lf\n", maxValL, maxValR);
             //cout << minLocL << endl;
             matchLocL = minLocL;
             matchLocR = minLocR;
@@ -99,8 +116,8 @@ class TemplateBased {
         *face = faces[0];
         return 0;
     }
-    public: int run(Mat gray, Mat out) {
-        this->process(gray, out);
+    public: int run(Mat gray, Mat out, double timestamp) {
+        this->process(gray, out, timestamp);
 #ifndef IS_PHONE
         if (debug_show_img == true && PHONE == 0) {
             imshow("main", out);

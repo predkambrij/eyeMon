@@ -8,9 +8,9 @@
 
 class FrameCarrier {
     public: Mat frame;
-    public: std::chrono::time_point<std::chrono::steady_clock> timestamp;
+    public: double timestamp;
 
-    public: FrameCarrier(Mat frame, std::chrono::time_point<std::chrono::steady_clock> timestamp) {
+    public: FrameCarrier(Mat frame, double timestamp) {
         this->frame     = frame;
         this->timestamp = timestamp;
 
@@ -18,20 +18,25 @@ class FrameCarrier {
 };
 
 std::list<FrameCarrier> frameList;
-int maxSize = 3000000000;
+int maxSize = 300;
 bool canAdd = true;
 
 void captureFrames() {
     // test videos
     // char fileName[100] = "/home/developer/other/posnetki/o4_29.mp4";
     // char fileName[100] = "/home/developer/other/posnetki/o4_30.mp4";
-    char fileName[100] = "/home/developer/other/posnetki/o4_31.mp4";
+    //char fileName[100] = "/home/developer/other/posnetki/o4_31.mp4";
     // char fileName[200] = "/home/developer/other/test_videos/crnc1.mp4";
     // char fileName[200] = "/home/developer/other/test_videos/indian_close.mp4";
     // char fileName[200] = "/home/developer/other/test_videos/yellow_close.mp4";
     // char fileName[200] = "/home/developer/other/test_videos/very_dark.mp4";
     // char fileName[100] = "/opt/docker_volumes/mag/home_developer/other/posnetki/o4_29.mp4";
+    char fileName[100] = "/home/developer/other/posnetki/o4_44.mp4";
     VideoCapture stream1(fileName);   //0 is the id of video device.0 if you have only one camera
+    bool isVideoCapture = true;
+    if (isVideoCapture) {
+        maxSize = 3000000000;
+    }
 
     //VideoCapture stream1(0);
     if (!stream1.isOpened()) {
@@ -43,6 +48,8 @@ void captureFrames() {
     //stream1.set(CV_CAP_PROP_FRAME_WIDTH, 1280); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
 
     printf("T1 video capture %f %f %f\n", stream1.get(CV_CAP_PROP_FRAME_WIDTH), stream1.get(CV_CAP_PROP_FRAME_HEIGHT), stream1.get(CV_CAP_PROP_FPS));
+    printf("CAP_PROP_FPS %f\n", stream1.get(CV_CAP_PROP_FPS));
+    printf("CAP_PROP_FRAME_COUNT %f\n", stream1.get(CV_CAP_PROP_FRAME_COUNT));
 
     Mat frame;
     std::chrono::time_point<std::chrono::steady_clock> t1 = std::chrono::steady_clock::now();
@@ -51,6 +58,7 @@ void captureFrames() {
             doLog("T1 --(!) No captured frame -- Break!");
             return;
         }
+
         if (debug_print_when_queue_full == true) {
             difftime("T1 frame capture:", t1);
             t1 = std::chrono::steady_clock::now();
@@ -67,7 +75,14 @@ void captureFrames() {
             canAdd = false;
         } else {
             if (canAdd == true) {
-                FrameCarrier fc(frame.clone(), t1);
+                double frameTimeMs;
+                if (isVideoCapture == true) {
+                    frameTimeMs = (double) stream1.get(CV_CAP_PROP_POS_MSEC);
+                } else {
+                    long int ft = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
+                    frameTimeMs = (double) ft;
+                }
+                FrameCarrier fc(frame.clone(), frameTimeMs);
                 frameList.push_back(fc);
             }
         }
@@ -79,13 +94,13 @@ TemplateBased templ;
 void doProcessing() {
     if (debug_show_img == true) {
         //cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
-        cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 10, 100); resizeWindow("main",1280, 960);
-        cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 10, 100);
+        cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 400, 100); resizeWindow("main",1280, 960);
+        cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 400, 100);
+        cv::namedWindow("left",CV_WINDOW_NORMAL); cv::moveWindow("left", 1300, 500);
+        cv::namedWindow("right",CV_WINDOW_NORMAL); cv::moveWindow("right", 1600, 500);
+        cv::namedWindow("leftR",CV_WINDOW_NORMAL); cv::moveWindow("leftR", 1300, 800);
+        cv::namedWindow("rightR",CV_WINDOW_NORMAL); cv::moveWindow("rightR", 1600, 800);
         /*
-        cv::namedWindow("left",CV_WINDOW_NORMAL); cv::moveWindow("left", 10, 500);
-        cv::namedWindow("right",CV_WINDOW_NORMAL); cv::moveWindow("right", 200, 500);
-        cv::namedWindow("leftR",CV_WINDOW_NORMAL); cv::moveWindow("leftR", 10, 500);
-        cv::namedWindow("rightR",CV_WINDOW_NORMAL); cv::moveWindow("rightR", 200, 500);
         cv::namedWindow("leftR1",CV_WINDOW_NORMAL); cv::moveWindow("leftR1", 10, 800);
         cv::namedWindow("rightR1",CV_WINDOW_NORMAL); cv::moveWindow("rightR1", 200, 800);
         */
@@ -114,7 +129,8 @@ void doProcessing() {
         frameList.pop_front();
         Mat frame = fc.frame;
         // cv::flip(frame, frame, 1);
-        std::chrono::time_point<std::chrono::steady_clock> timestamp = fc.timestamp;
+        double timestamp = fc.timestamp;
+        printf("T2 frame time:%lf\n", timestamp);
 
         t2 = std::chrono::steady_clock::now();
         switch (method) {
@@ -133,7 +149,7 @@ void doProcessing() {
             optf.run(gray, frame);
             break;
             case METHOD_TEMPLATE_BASED:
-            templ.run(gray, frame);
+            templ.run(gray, frame, timestamp);
             break;
             case METHOD_BLACK_PIXELS:
             break;

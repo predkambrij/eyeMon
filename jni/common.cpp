@@ -12,7 +12,7 @@
 JNIEnv* env;
 #endif
 
-bool debug_print_when_queue_full = true;
+bool debug_print_when_queue_full = false;
 bool debug_show_img = true;
 bool debug_show_img_face = true;
 bool debug_show_img_optfl_eyes = true;
@@ -43,7 +43,7 @@ void diffclock(char const *title, clock_t clock2) {
  */
 void difftime(char const *title, std::chrono::time_point<std::chrono::steady_clock> t1) {
     std::chrono::time_point<std::chrono::steady_clock> t2 = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+    std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
 
     doLogClock1("%s: %ld", title, duration.count());
 }
