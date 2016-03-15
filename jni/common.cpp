@@ -15,10 +15,12 @@
 JNIEnv* env;
 #endif
 
-bool debug_print_when_queue_full = false;
 bool debug_show_img = true;
 bool debug_show_img_face = true;
-bool debug_show_img_optfl_eyes = true;
+bool debug_show_img_optfl_eyes = false;
+bool debug_t1_log = false;
+bool debug_t2_log = false;
+bool debug_tmpl_log = false;
 
 //int method = METHOD_OPTFLOW;
 int method = METHOD_TEMPLATE_BASED;

@@ -62,7 +62,7 @@ void BlinkMeasure::measureBlinks() {
     }
 
     int shortBmSize = blinkMeasureShort.size();
-    if (shortBmSize < 90) {
+    if (shortBmSize < 30) {
         printf("shortBmSize is less than X %d\n", shortBmSize);
         return;
     }

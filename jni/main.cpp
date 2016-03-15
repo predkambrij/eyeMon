@@ -18,7 +18,7 @@ class FrameCarrier {
 };
 
 std::list<FrameCarrier> frameList;
-int maxSize = 300;
+int maxSize = 3;
 bool canAdd = true;
 
 void captureFrames() {
@@ -32,13 +32,13 @@ void captureFrames() {
     // char fileName[200] = "/home/developer/other/test_videos/very_dark.mp4";
     // char fileName[100] = "/opt/docker_volumes/mag/home_developer/other/posnetki/o4_29.mp4";
     char fileName[100] = "/home/developer/other/posnetki/o4_44.mp4";
-    VideoCapture stream1(fileName);   //0 is the id of video device.0 if you have only one camera
-    bool isVideoCapture = true;
+    //VideoCapture stream1(fileName);   //0 is the id of video device.0 if you have only one camera
+    bool isVideoCapture = false;
     if (isVideoCapture) {
         maxSize = 3000000000;
     }
 
-    //VideoCapture stream1(0);
+    VideoCapture stream1(0);
     if (!stream1.isOpened()) {
         CV_Assert("T1 cam open failed");
     }
@@ -47,29 +47,33 @@ void captureFrames() {
     stream1.set(CV_CAP_PROP_FRAME_WIDTH, 640); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
     //stream1.set(CV_CAP_PROP_FRAME_WIDTH, 1280); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
 
-    printf("T1 video capture %f %f %f\n", stream1.get(CV_CAP_PROP_FRAME_WIDTH), stream1.get(CV_CAP_PROP_FRAME_HEIGHT), stream1.get(CV_CAP_PROP_FPS));
-    printf("CAP_PROP_FPS %f\n", stream1.get(CV_CAP_PROP_FPS));
-    printf("CAP_PROP_FRAME_COUNT %f\n", stream1.get(CV_CAP_PROP_FRAME_COUNT));
+    if (debug_t1_log == true) {
+        printf("T1 video capture %f %f %f\n", stream1.get(CV_CAP_PROP_FRAME_WIDTH), stream1.get(CV_CAP_PROP_FRAME_HEIGHT), stream1.get(CV_CAP_PROP_FPS));
+        printf("CAP_PROP_FPS %f\n", stream1.get(CV_CAP_PROP_FPS));
+        printf("CAP_PROP_FRAME_COUNT %f\n", stream1.get(CV_CAP_PROP_FRAME_COUNT));
+    }
 
     Mat frame;
     std::chrono::time_point<std::chrono::steady_clock> t1 = std::chrono::steady_clock::now();
     while (true) {
         if(!(stream1.read(frame))) {
-            doLog("T1 --(!) No captured frame -- Break!");
+            if (debug_t1_log == true) {
+                doLog("T1 --(!) No captured frame -- Break!");
+            }
             return;
         }
 
-        if (debug_print_when_queue_full == true) {
+        if (debug_t1_log == true) {
             difftime("T1 frame capture:", t1);
             t1 = std::chrono::steady_clock::now();
         }
 
         long unsigned int listSize = frameList.size();
-        if (debug_print_when_queue_full == true) {
+        if (debug_t1_log == true) {
             printf("size %ld\n", frameList.size());
         }
         if (listSize >= maxSize) {
-            if (debug_print_when_queue_full == true) {
+            if (debug_t1_log == true) {
                 printf("T1 reached max size %d\n", maxSize);
             }
             canAdd = false;
@@ -129,7 +133,9 @@ void doProcessing() {
         Mat frame = fc.frame;
         // cv::flip(frame, frame, 1);
         double timestamp = fc.timestamp;
-        printf("T2 frame time:%lf\n", timestamp);
+        if (debug_t2_log == true) {
+            printf("T2 frame time:%lf\n", timestamp);
+        }
 
         t2 = std::chrono::steady_clock::now();
         switch (method) {
@@ -140,7 +146,9 @@ void doProcessing() {
             case METHOD_BLACK_PIXELS:
             break;
         }
-        difftime("T2 getGray", t2);
+        if (debug_t2_log == true) {
+            difftime("T2 getGray", t2);
+        }
 
         t2 = std::chrono::steady_clock::now();
         switch (method) {
@@ -153,7 +161,9 @@ void doProcessing() {
             case METHOD_BLACK_PIXELS:
             break;
         }
-        difftime("T2 run", t2);
+        if (debug_t2_log == true) {
+            difftime("T2 run", t2);
+        }
 
         if (debug_show_img == true) {
             // flow control
@@ -177,7 +187,9 @@ void doProcessing() {
                 }
             }
         }
-        difftime("T2 whole loop:", t1);
+        if (debug_t2_log == true) {
+            difftime("T2 whole loop:", t1);
+        }
         t1 = std::chrono::steady_clock::now();
     }
 }

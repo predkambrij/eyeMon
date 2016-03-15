@@ -56,7 +56,9 @@ class TemplateBased {
             this->appendEmpty(timestamp);
             return -1;
         }
-        difftime("Face detect", t1);
+        if (debug_tmpl_log == true) {
+            difftime("Face detect", t1);
+        }
 
         if (debug_show_img_face == true && PHONE == 0) {
             faceROI = gray(face);
@@ -85,7 +87,9 @@ class TemplateBased {
             t1 = std::chrono::steady_clock::now();
             matchTemplate(gray, leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
             matchTemplate(gray, rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
-            difftime("Templ match", t1);
+            if (debug_tmpl_log == true) {
+                difftime("Templ match", t1);
+            }
             imshow("leftR", leftResult);
             imshow("rightR", rightResult);
             //normalize(leftResult, leftResult, 0, 1, cv::NORM_MINMAX, -1, Mat());
@@ -96,7 +100,9 @@ class TemplateBased {
             minMaxLoc(rightResult, &minValR, &maxValR, &minLocR, &maxLocR, Mat());
             double lcor = 1-minValL;
             double rcor = 1-minValR;
-            printf("lcor %lf rcor %lf\n", lcor, rcor);
+            if (debug_tmpl_log == true) {
+                printf("lcor %lf rcor %lf\n", lcor, rcor);
+            }
 
             BlinkMeasure bm(timestamp, lcor, rcor);
             blinkMeasure.push_back(bm);

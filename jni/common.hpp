@@ -34,11 +34,12 @@ extern std::chrono::high_resolution_clock::time_point startx;
 extern int method;
 extern int pause;
 
-extern bool debug_print_when_queue_full;
 extern bool debug_show_img;
 extern bool debug_show_img_face;
 extern bool debug_show_img_optfl_eyes;
-
+extern bool debug_t1_log;
+extern bool debug_t2_log;
+extern bool debug_tmpl_log;
 // optical flow
 extern int flg;
 ///
