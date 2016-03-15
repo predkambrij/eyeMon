@@ -155,10 +155,6 @@ void doProcessing() {
         }
         difftime("T2 run", t2);
 
-        t2 = std::chrono::steady_clock::now();
-        //measureBlinks();
-        difftime("T2 BlinkMeasure", t2);
-
         if (debug_show_img == true) {
             // flow control
             int c = cv::waitKey(10);

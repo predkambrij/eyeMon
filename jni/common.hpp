@@ -2,21 +2,14 @@
 #define COMMON_H
 
 #include <chrono>
+#include <list>
+#include <blinkmeasure.hpp>
 
 void doLog(const char* text);
 void diffclock(char const *title, clock_t clock2);
 void difftime(char const *title, std::chrono::time_point<std::chrono::steady_clock> t2);
 void doLogClock(const char* format, const char* title, double diffms);
 void doLogClock1(const char* format, const char* title, long int diffms);
-void measureBlinks();
-
-class BlinkMeasure {
-    public:
-        double timestamp;
-        double lcor;
-        double rcor;
-        BlinkMeasure(double timestamp, double lcor, double rcor);
-};
 
 #define DEBUG_LEVEL 3
 #define DEBUG_TAG "NDK_AndroidNDK1SampleActivity"

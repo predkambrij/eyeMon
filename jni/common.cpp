@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <chrono>
-#include <list>
 
 #include <opencv2/objdetect/objdetect.hpp>
 
@@ -34,48 +33,6 @@ int pause = 0;
 
 int PHONE = 1;
 std::chrono::high_resolution_clock::time_point startx = std::chrono::high_resolution_clock::now();
-
-BlinkMeasure::BlinkMeasure(double timestamp, double lcor, double rcor) {
-    this->timestamp = timestamp;
-    this->lcor = lcor;
-    this->rcor = rcor;
-};
-
-void measureBlinks() {
-    long unsigned int blinkMeasureSize = blinkMeasure.size();
-    if (blinkMeasureSize == 0) {
-        return;
-    }
-
-    BlinkMeasure bm = blinkMeasure.front();
-    blinkMeasureShort.push_back(bm);
-    while (true) {
-        BlinkMeasure oldestBm = blinkMeasureShort.front();
-        if (oldestBm.timestamp < (bm.timestamp - 30000)) {
-            blinkMeasureShort.pop_front();
-        } else {
-            break;
-        }
-    }
-
-    int shortBmSize = blinkMeasureShort.size();
-    if (shortBmSize < 100) {
-        return;
-    }
-
-    double lavg = 0;
-    double ravg = 0;
-    std::list<BlinkMeasure>::iterator iter = blinkMeasureShort.begin();
-    while(iter != blinkMeasureShort.end()) {
-        BlinkMeasure& bm = *iter;
-        lavg += bm.lcor;
-        ravg += bm.rcor;
-        iter++;
-    }
-    lavg = lavg/shortBmSize;
-    ravg = ravg/shortBmSize;
-    printf("sbm lavg:%.2lf ravg:%.2lf\n", lavg, ravg);
-}
 
 /**
  * CPU time

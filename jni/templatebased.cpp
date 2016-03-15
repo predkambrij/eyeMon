@@ -1,6 +1,7 @@
 #include <opencv2/objdetect/objdetect.hpp>
 
 #include <common.hpp>
+#include <blinkmeasure.hpp>
 
 using namespace cv;
 using namespace std;
@@ -44,7 +45,8 @@ class TemplateBased {
         Mat left, right;
         Mat leftResult, rightResult;
         Mat flowLeft, flowRight;
-        GaussianBlur(gray, gray, Size(5,5), 3.0);
+        //GaussianBlur(gray, gray, Size(5,5), 3.0);
+        GaussianBlur(gray, gray, Size(5,5), 0);
 
         t1 = std::chrono::steady_clock::now();
         if (this->faceDetect(gray, &face) != 0) {
@@ -111,6 +113,9 @@ class TemplateBased {
             //printf("lcor %lf rcor %lf\n", maxValL, maxValR);
         }
     }
+    public: int measureBlinks() {
+        BlinkMeasure::measureBlinks();
+    }
     public: int faceDetect(Mat gray, cv::Rect *face) {
         std::vector<cv::Rect> faces;
         face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
@@ -123,6 +128,7 @@ class TemplateBased {
     public: int run(Mat gray, Mat out, double timestamp) {
         this->process(gray, out, timestamp);
 #ifndef IS_PHONE
+        this->measureBlinks();
         if (debug_show_img == true && PHONE == 0) {
             imshow("main", out);
         }
