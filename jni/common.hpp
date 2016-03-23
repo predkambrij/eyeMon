@@ -23,7 +23,7 @@ void imshowWrapper(const char* name, cv::Mat mat, bool shouldShow);
 #define METHOD_BLACK_PIXELS 2
 
 
-//#define IS_PHONE
+#define IS_PHONE
 
 #ifdef IS_PHONE
 #include <jni.h>

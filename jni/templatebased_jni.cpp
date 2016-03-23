@@ -31,8 +31,8 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_TemplateBasedJNI_templ
                                                                 (JNIEnv * jenv, jclass, jlong imageRGB, jlong imageGray) {
     Mat rgb = *((Mat*)imageRGB);
     Mat gray = *((Mat*)imageGray);
-
-    templBased.run(gray, rgb);
+    long int tstp = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
+    templBased.run(gray, rgb, tstp);
 }
 
 

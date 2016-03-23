@@ -1,4 +1,5 @@
 #include <opencv2/objdetect/objdetect.hpp>
+#include "opencv2/imgproc/imgproc.hpp"
 
 #include <common.hpp>
 #include <blinkmeasure.hpp>
@@ -55,7 +56,6 @@ class TemplateBased {
         Mat flowLeft, flowRight;
 
         t1 = std::chrono::steady_clock::now();
-        //GaussianBlur(gray, gray, Size(5,5), 3.0);
         GaussianBlur(gray, gray, Size(5,5), 0);
         difftime("GaussianBlur", t1, debug_tmpl_perf1);
 
@@ -95,8 +95,8 @@ class TemplateBased {
             Point  minLocL, maxLocL, matchLocL, minLocR, maxLocR, matchLocR;
 
             t1 = std::chrono::steady_clock::now();
-            matchTemplate(gray, leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
-            matchTemplate(gray, rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
+            cv::matchTemplate(gray, leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
+            cv::matchTemplate(gray, rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
             difftime("matchTemplate (2x)", t1, debug_tmpl_perf2);
 
             imshowWrapper("leftR", leftResult, debug_show_img_templ_eyes_cor);
@@ -124,6 +124,7 @@ class TemplateBased {
             if (debug_show_img_main == true) {
                 matchLocL = minLocL;
                 matchLocR = minLocR;
+
                 circle(out, Point2f((float)matchLocL.x, (float)matchLocL.y), 10, Scalar(0,255,0), -1, 8);
                 rectangle(out, matchLocL, Point(matchLocL.x + leftTemplate.cols , matchLocL.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
                 circle(out, Point2f((float)matchLocR.x, (float)matchLocR.y), 10, Scalar(0,255,0), -1, 8);
