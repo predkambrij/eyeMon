@@ -45,25 +45,38 @@ class TemplateBased {
         Mat left, right;
         Mat leftResult, rightResult;
         Mat flowLeft, flowRight;
-        //GaussianBlur(gray, gray, Size(5,5), 3.0);
-        GaussianBlur(gray, gray, Size(5,5), 0);
 
         t1 = std::chrono::steady_clock::now();
-        if (this->faceDetect(gray, &face) != 0) {
+        //GaussianBlur(gray, gray, Size(5,5), 3.0);
+        GaussianBlur(gray, gray, Size(5,5), 0);
+        if (debug_tmpl_perf1 == true) {
+            difftime("GaussianBlur", t1);
+        }
+
+        t1 = std::chrono::steady_clock::now();
+        int fdRes = this->faceDetect(gray, &face);
+        if (debug_tmpl_perf2 == true) {
+            difftime("Face detect", t1);
+        }
+
+        if (fdRes != 0) {
             if (debug_show_img_main == true && PHONE == 0) {
                 imshow("main", out);
             }
             this->appendEmpty(timestamp);
             return -1;
         }
-        if (debug_tmpl_log == true) {
-            difftime("Face detect", t1);
+
+        t1 = std::chrono::steady_clock::now();
+        faceROI = gray(face);
+        if (debug_tmpl_perf1 == true) {
+            difftime("face gray", t1);
         }
 
-        faceROI = gray(face);
         if (debug_show_img_face == true && PHONE == 0) {
             imshow("face", faceROI);
         }
+
         if (this->haveTemplate == false) {
             int rowsO = faceROI.rows/4.3;
             int colsO = faceROI.cols/7;
@@ -89,8 +102,8 @@ class TemplateBased {
             t1 = std::chrono::steady_clock::now();
             matchTemplate(gray, leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
             matchTemplate(gray, rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
-            if (debug_tmpl_log == true) {
-                difftime("Templ match", t1);
+            if (debug_tmpl_perf2 == true) {
+                difftime("matchTemplate (2x)", t1);
             }
             if (debug_show_img_templ_eyes_cor == true && PHONE == 0) {
                 imshow("leftR", leftResult);
@@ -116,11 +129,13 @@ class TemplateBased {
             //cout << minLocL << endl;
             matchLocL = minLocL;
             matchLocR = minLocR;
-            circle(out, Point2f((float)matchLocL.x, (float)matchLocL.y), 10, Scalar(0,255,0), -1, 8);
-            rectangle(out, matchLocL, Point(matchLocL.x + leftTemplate.cols , matchLocL.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
-            circle(out, Point2f((float)matchLocR.x, (float)matchLocR.y), 10, Scalar(0,255,0), -1, 8);
-            rectangle(out, matchLocR, Point(matchLocR.x + leftTemplate.cols , matchLocR.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
-            //printf("lcor %lf rcor %lf\n", maxValL, maxValR);
+            if (debug_show_img_main == true) {
+                circle(out, Point2f((float)matchLocL.x, (float)matchLocL.y), 10, Scalar(0,255,0), -1, 8);
+                rectangle(out, matchLocL, Point(matchLocL.x + leftTemplate.cols , matchLocL.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
+                circle(out, Point2f((float)matchLocR.x, (float)matchLocR.y), 10, Scalar(0,255,0), -1, 8);
+                rectangle(out, matchLocR, Point(matchLocR.x + leftTemplate.cols , matchLocR.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
+                //printf("lcor %lf rcor %lf\n", maxValL, maxValR);
+            }
         }
     }
     public: int measureBlinks() {
@@ -136,9 +151,18 @@ class TemplateBased {
         return 0;
     }
     public: int run(Mat gray, Mat out, double timestamp) {
+        std::chrono::time_point<std::chrono::steady_clock> t1;
+        t1 = std::chrono::steady_clock::now();
         this->process(gray, out, timestamp);
-#ifndef IS_PHONE
+        if (debug_tmpl_perf2 == true) {
+            difftime("-- process", t1);
+        }
+        t1 = std::chrono::steady_clock::now();
         this->measureBlinks();
+        if (debug_tmpl_perf2 == true) {
+            difftime("-- measureBlinks", t1);
+        }
+#ifndef IS_PHONE
         if (debug_show_img_main == true && PHONE == 0) {
             imshow("main", out);
         }

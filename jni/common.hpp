@@ -41,7 +41,13 @@ extern bool debug_show_img_templ_eyes_cor;
 extern bool debug_show_img_templ_eyes_tmpl;
 extern bool debug_t1_log;
 extern bool debug_t2_log;
+extern bool debug_t2_perf_method;
+extern bool debug_t2_perf_whole;
 extern bool debug_tmpl_log;
+extern bool debug_tmpl_perf1;
+extern bool debug_tmpl_perf2;
+extern bool debug_blinks_d1;
+extern bool debug_blinks_d2;
 // optical flow
 extern int flg;
 ///

@@ -21,7 +21,9 @@ void BlinkMeasure::measureBlinksAVG(int shortBmSize, double *lavg, double *ravg)
     }
     *lavg = *lavg/shortBmSize;
     *ravg = *ravg/shortBmSize;
-    printf("sbm2 lavg:%.8lf ravg:%.8lf\n", *lavg, *ravg);
+    if (debug_blinks_d1 == true) {
+        printf("sbm2 lavg:%.8lf ravg:%.8lf\n", *lavg, *ravg);
+    }
 };
 
 void BlinkMeasure::measureBlinksSD(int shortBmSize, double lavg, double ravg, double *lSD, double *rSD, double *lsd1, double *rsd1, double *lsd2, double *rsd2) {
@@ -38,13 +40,17 @@ void BlinkMeasure::measureBlinksSD(int shortBmSize, double lavg, double ravg, do
     *rsd1 = ravg-(1*(*rSD));
     *lsd2 = lavg-(2*(*lSD));
     *rsd2 = ravg-(2*(*rSD));
-    printf("lSD %lf, rSD %lf, lsd1 %lf, rsd1 %lf, lsd2 %lf, rsd2 %lf\n", *lSD, *rSD, *lsd1, *rsd1, *lsd2, *rsd2);
+    if (debug_blinks_d1 == true) {
+        printf("lSD %lf, rSD %lf, lsd1 %lf, rsd1 %lf, lsd2 %lf, rsd2 %lf\n", *lSD, *rSD, *lsd1, *rsd1, *lsd2, *rsd2);
+    }
 };
 
 void BlinkMeasure::measureBlinks() {
     long unsigned int blinkMeasureSize = blinkMeasure.size();
     if (blinkMeasureSize == 0) {
-        printf("blinkMeasureSize is zero\n");
+        if (debug_blinks_d1 == true) {
+            printf("blinkMeasureSize is zero\n");
+        }
         return;
     }
 
@@ -63,7 +69,9 @@ void BlinkMeasure::measureBlinks() {
 
     int shortBmSize = blinkMeasureShort.size();
     if (shortBmSize < 30) {
-        printf("shortBmSize is less than X %d\n", shortBmSize);
+        if (debug_blinks_d1 == true) {
+            printf("shortBmSize is less than X %d\n", shortBmSize);
+        }
         return;
     }
 
@@ -79,10 +87,14 @@ void BlinkMeasure::measureBlinks() {
     BlinkMeasure::measureBlinksSD(shortBmSize, lavg, ravg, &lSD, &rSD, &lsd1, &rsd1, &lsd2, &rsd2);
 
     if (bm.lcor < lsd1) {
-        printf("BLINK timestamp %.2lf L %lf LAVG %lf\n", bm.timestamp, bm.lcor, lsd1);
+        if (debug_blinks_d2 == true) {
+            printf("BLINK timestamp %.2lf L %lf SD1 %lf SD2 %lf\n", bm.timestamp, bm.lcor, lsd1, lsd2);
+        }
     }
     if (bm.rcor < rsd1) {
-        printf("BLINK timestamp %.2lf R %lf RAVG %lf\n", bm.timestamp, bm.rcor, rsd1);
+        if (debug_blinks_d2 == true) {
+            printf("BLINK timestamp %.2lf R %lf SD1 %lf SD2 %lf\n", bm.timestamp, bm.rcor, rsd1, rsd2);
+        }
     }
 
 }

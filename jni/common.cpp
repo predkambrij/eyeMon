@@ -22,7 +22,13 @@ bool debug_show_img_templ_eyes_cor = false;
 bool debug_show_img_templ_eyes_tmpl = false;
 bool debug_t1_log = false;
 bool debug_t2_log = false;
+bool debug_t2_perf_method = true;
+bool debug_t2_perf_whole = true;
 bool debug_tmpl_log = false;
+bool debug_tmpl_perf1 = false;
+bool debug_tmpl_perf2 = true;
+bool debug_blinks_d1 = false;
+bool debug_blinks_d2 = true;
 
 //int method = METHOD_OPTFLOW;
 int method = METHOD_TEMPLATE_BASED;
@@ -60,7 +66,7 @@ void difftime(char const *title, std::chrono::time_point<std::chrono::steady_clo
     std::chrono::time_point<std::chrono::steady_clock> t2 = std::chrono::steady_clock::now();
     std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
 
-    doLogClock1("%s: %ld", title, duration.count());
+    doLogClock1("PERF %s: %ld", title, duration.count());
 }
 
 void doLogClock(const char* format, const char* title, double diffms) {

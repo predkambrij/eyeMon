@@ -18,7 +18,7 @@ class FrameCarrier {
 };
 
 std::list<FrameCarrier> frameList;
-int maxSize = 3;
+int maxSize = 300;
 bool canAdd = true;
 
 void captureFrames() {
@@ -167,7 +167,7 @@ void doProcessing() {
             case METHOD_BLACK_PIXELS:
             break;
         }
-        if (debug_t2_log == true) {
+        if (debug_t2_perf_method == true) {
             difftime("T2 run", t2);
         }
 
@@ -193,7 +193,7 @@ void doProcessing() {
                 }
             }
         }
-        if (debug_t2_log == true) {
+        if (debug_t2_perf_whole == true) {
             difftime("T2 whole loop:", t1);
         }
         t1 = std::chrono::steady_clock::now();
