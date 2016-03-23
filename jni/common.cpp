@@ -15,9 +15,11 @@
 JNIEnv* env;
 #endif
 
-bool debug_show_img = true;
-bool debug_show_img_face = true;
+bool debug_show_img_main = false;
+bool debug_show_img_face = false;
 bool debug_show_img_optfl_eyes = false;
+bool debug_show_img_templ_eyes_cor = false;
+bool debug_show_img_templ_eyes_tmpl = false;
 bool debug_t1_log = false;
 bool debug_t2_log = false;
 bool debug_tmpl_log = false;

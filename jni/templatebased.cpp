@@ -50,7 +50,7 @@ class TemplateBased {
 
         t1 = std::chrono::steady_clock::now();
         if (this->faceDetect(gray, &face) != 0) {
-            if (debug_show_img == true && PHONE == 0) {
+            if (debug_show_img_main == true && PHONE == 0) {
                 imshow("main", out);
             }
             this->appendEmpty(timestamp);
@@ -60,8 +60,8 @@ class TemplateBased {
             difftime("Face detect", t1);
         }
 
+        faceROI = gray(face);
         if (debug_show_img_face == true && PHONE == 0) {
-            faceROI = gray(face);
             imshow("face", faceROI);
         }
         if (this->haveTemplate == false) {
@@ -78,8 +78,10 @@ class TemplateBased {
             left.copyTo(leftTemplate);
             right.copyTo(rightTemplate);
 
-            imshow("left", leftTemplate);
-            imshow("right", rightTemplate);
+            if (debug_show_img_templ_eyes_tmpl == true && PHONE == 0) {
+                imshow("left", leftTemplate);
+                imshow("right", rightTemplate);
+            }
             this->haveTemplate = true;
         } else {
             double minValL, maxValL, minValR, maxValR;
@@ -90,8 +92,10 @@ class TemplateBased {
             if (debug_tmpl_log == true) {
                 difftime("Templ match", t1);
             }
-            imshow("leftR", leftResult);
-            imshow("rightR", rightResult);
+            if (debug_show_img_templ_eyes_cor == true && PHONE == 0) {
+                imshow("leftR", leftResult);
+                imshow("rightR", rightResult);
+            }
             //normalize(leftResult, leftResult, 0, 1, cv::NORM_MINMAX, -1, Mat());
             //normalize(rightResult, rightResult, 0, 1, cv::NORM_MINMAX, -1, Mat());
             //imshow("leftR1", leftResult);
@@ -135,7 +139,7 @@ class TemplateBased {
         this->process(gray, out, timestamp);
 #ifndef IS_PHONE
         this->measureBlinks();
-        if (debug_show_img == true && PHONE == 0) {
+        if (debug_show_img_main == true && PHONE == 0) {
             imshow("main", out);
         }
 #endif
