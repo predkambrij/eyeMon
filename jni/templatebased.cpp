@@ -22,22 +22,30 @@ class TemplateBased {
         }
         return 0;
     }
+
 #ifdef IS_PHONE
     public: int setJni(JNIEnv* jenv) {
     }
 #endif
+
     public: int appendStatistics(double t, double lv, double rv) {
+#ifndef IS_PHONE
         FILE * pFile;
         pFile = fopen("/home/developer/other/resources/statistics/statistics.txt","a");
         fprintf(pFile, "%lf\t%lf\t%lf\n", t, lv, rv);
         fclose(pFile);
+#endif
     }
+
     public: int appendEmpty(double t) {
+#ifndef IS_PHONE
         FILE * pFile;
         pFile = fopen("/home/developer/other/resources/statistics/statistics.txt","a");
         fprintf(pFile, "%lf\t\t\n", t);
         fclose(pFile);
+#endif
     }
+
     public: int process(Mat gray, Mat out, double timestamp) {
         std::chrono::time_point<std::chrono::steady_clock> t1;
         cv::Rect face, leftEyeRegion, rightEyeRegion;
@@ -56,56 +64,48 @@ class TemplateBased {
         difftime("Face detect", t1, debug_tmpl_perf2);
 
         if (fdRes != 0) {
-            if (debug_show_img_main == true && PHONE == 0) {
-                imshow("main", out);
-            }
             this->appendEmpty(timestamp);
+            imshowWrapper("main", out, debug_show_img_main);
             return -1;
         }
 
-        t1 = std::chrono::steady_clock::now();
-        faceROI = gray(face);
-        difftime("face gray", t1, debug_tmpl_perf1);
-
-        if (debug_show_img_face == true && PHONE == 0) {
-            imshow("face", faceROI);
-        }
-
         if (this->haveTemplate == false) {
-            int rowsO = faceROI.rows/4.3;
-            int colsO = faceROI.cols/7;
-            int rows2 = faceROI.rows/4;
-            int cols2 = faceROI.cols/4;
+            imshowWrapper("face", faceROI, debug_show_img_face);
+            faceROI = gray(face);
+
+            int rowsO = face.height/4.3;
+            int colsO = face.width/7;
+            int rows2 = face.height/4;
+            int cols2 = face.width/4;
 
             cv::Rect leftE(colsO, rowsO, cols2, rows2);
-            cv::Rect rightE(faceROI.cols-colsO-rows2, rowsO, cols2, rows2);
+            cv::Rect rightE(face.width-colsO-rows2, rowsO, cols2, rows2);
 
             left  = faceROI(leftE);
             right = faceROI(rightE);
             left.copyTo(leftTemplate);
             right.copyTo(rightTemplate);
 
-            if (debug_show_img_templ_eyes_tmpl == true && PHONE == 0) {
-                imshow("left", leftTemplate);
-                imshow("right", rightTemplate);
-            }
+            imshowWrapper("left", leftTemplate, debug_show_img_templ_eyes_tmpl);
+            imshowWrapper("right", rightTemplate, debug_show_img_templ_eyes_tmpl);
+
             this->haveTemplate = true;
         } else {
             double minValL, maxValL, minValR, maxValR;
             Point  minLocL, maxLocL, matchLocL, minLocR, maxLocR, matchLocR;
+
             t1 = std::chrono::steady_clock::now();
             matchTemplate(gray, leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
             matchTemplate(gray, rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
             difftime("matchTemplate (2x)", t1, debug_tmpl_perf2);
 
-            if (debug_show_img_templ_eyes_cor == true && PHONE == 0) {
-                imshow("leftR", leftResult);
-                imshow("rightR", rightResult);
-            }
+            imshowWrapper("leftR", leftResult, debug_show_img_templ_eyes_cor);
+            imshowWrapper("rightR", rightResult, debug_show_img_templ_eyes_cor);
+
             //normalize(leftResult, leftResult, 0, 1, cv::NORM_MINMAX, -1, Mat());
             //normalize(rightResult, rightResult, 0, 1, cv::NORM_MINMAX, -1, Mat());
-            //imshow("leftR1", leftResult);
-            //imshow("rightR1", rightResult);
+            //imshowWrapper("leftR1", leftResult);
+            //imshowWrapper("rightR1", rightResult);
             minMaxLoc(leftResult, &minValL, &maxValL, &minLocL, &maxLocL, Mat());
             minMaxLoc(rightResult, &minValR, &maxValR, &minLocR, &maxLocR, Mat());
             double lcor = 1-minValL;
@@ -114,20 +114,20 @@ class TemplateBased {
                 printf("lcor %lf rcor %lf\n", lcor, rcor);
             }
 
+            // blink measure
             BlinkMeasure bm(timestamp, lcor, rcor);
             blinkMeasure.push_back(bm);
 
+            // correlation log
             this->appendStatistics(timestamp, lcor, rcor);
-            //printf("lcor %lf rcor %lf\n", maxValL, maxValR);
-            //cout << minLocL << endl;
-            matchLocL = minLocL;
-            matchLocR = minLocR;
+
             if (debug_show_img_main == true) {
+                matchLocL = minLocL;
+                matchLocR = minLocR;
                 circle(out, Point2f((float)matchLocL.x, (float)matchLocL.y), 10, Scalar(0,255,0), -1, 8);
                 rectangle(out, matchLocL, Point(matchLocL.x + leftTemplate.cols , matchLocL.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
                 circle(out, Point2f((float)matchLocR.x, (float)matchLocR.y), 10, Scalar(0,255,0), -1, 8);
                 rectangle(out, matchLocR, Point(matchLocR.x + leftTemplate.cols , matchLocR.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
-                //printf("lcor %lf rcor %lf\n", maxValL, maxValR);
             }
         }
     }
@@ -153,11 +153,7 @@ class TemplateBased {
         this->measureBlinks();
         difftime("-- measureBlinks", t1, debug_tmpl_perf2);
 
-#ifndef IS_PHONE
-        if (debug_show_img_main == true && PHONE == 0) {
-            imshow("main", out);
-        }
-#endif
+        imshowWrapper("main", out, debug_show_img_main);
     }
 
 }; // end of TemplateBased class definition

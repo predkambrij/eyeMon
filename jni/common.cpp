@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include <opencv2/objdetect/objdetect.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 #include <common.hpp>
 
@@ -15,7 +16,7 @@
 JNIEnv* env;
 #endif
 
-bool debug_show_img_main = false;
+bool debug_show_img_main = true;
 bool debug_show_img_face = false;
 bool debug_show_img_optfl_eyes = false;
 bool debug_show_img_templ_eyes_cor = false;
@@ -110,5 +111,13 @@ void doLog(const char* text) {
     // cleanup
     free(szResult);
     
+#endif
+}
+
+void imshowWrapper(const char* name, cv::Mat mat, bool shouldShow) {
+#ifndef IS_PHONE
+    if (shouldShow == true) {
+        imshow(name, mat);
+    }
 #endif
 }

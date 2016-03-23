@@ -3,6 +3,9 @@
 
 #include <chrono>
 #include <list>
+
+#include <opencv2/core/core.hpp>
+
 #include <blinkmeasure.hpp>
 
 void doLog(const char* text);
@@ -10,6 +13,7 @@ void diffclock(char const *title, clock_t clock2);
 void difftime(char const *title, std::chrono::time_point<std::chrono::steady_clock> t2, bool shouldExecute);
 void doLogClock(const char* format, const char* title, double diffms);
 void doLogClock1(const char* format, const char* title, long int diffms);
+void imshowWrapper(const char* name, cv::Mat mat, bool shouldShow);
 
 #define DEBUG_LEVEL 3
 #define DEBUG_TAG "NDK_AndroidNDK1SampleActivity"
