@@ -18,7 +18,7 @@ class TemplateBased {
                 throw "--(!)Error loading face cascade, please change face_cascade_name in source code.\n";
             }
         } catch (const char* msg) {
-            doLog(msg);
+            doLog(true, msg);
             throw;
         }
         return 0;
@@ -110,9 +110,7 @@ class TemplateBased {
             minMaxLoc(rightResult, &minValR, &maxValR, &minLocR, &maxLocR, Mat());
             double lcor = 1-minValL;
             double rcor = 1-minValR;
-            if (debug_tmpl_log == true) {
-                printf("lcor %lf rcor %lf\n", lcor, rcor);
-            }
+            doLog(debug_tmpl_log, "lcor %lf rcor %lf\n", lcor, rcor);
 
             // blink measure
             BlinkMeasure bm(timestamp, lcor, rcor);

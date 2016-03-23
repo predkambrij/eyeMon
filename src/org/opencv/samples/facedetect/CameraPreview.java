@@ -23,7 +23,7 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
     private Camera mCamera;
     private static final String TAG = "CameraPreview";
 //    private static int frameMaxSize = 30*60*10;
-    private static int frameMaxSize = 1;
+    private static int frameMaxSize = 900;
 
     public CameraPreview(Context context) {
         super(context);

@@ -1,7 +1,9 @@
-
 #include <string.h>
+#include <iostream>
 #include <stdio.h>
 #include <chrono>
+
+#include <stdarg.h>  // For va_start, etc.
 
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -16,7 +18,7 @@
 JNIEnv* env;
 #endif
 
-bool debug_show_img_main = true;
+bool debug_show_img_main = false;
 bool debug_show_img_face = false;
 bool debug_show_img_optfl_eyes = false;
 bool debug_show_img_templ_eyes_cor = false;
@@ -28,7 +30,7 @@ bool debug_t2_perf_whole = true;
 bool debug_tmpl_log = false;
 bool debug_tmpl_perf1 = false;
 bool debug_tmpl_perf2 = true;
-bool debug_blinks_d1 = false;
+bool debug_blinks_d1 = true;
 bool debug_blinks_d2 = true;
 
 //int method = METHOD_OPTFLOW;
@@ -74,31 +76,44 @@ void difftime(char const *title, std::chrono::time_point<std::chrono::steady_clo
 }
 
 void doLogClock(const char* format, const char* title, double diffms) {
-    if (PHONE != 1) {
-        printf(format, title, diffms);
-        printf("\n");
-        return;
-    }
+    doLog(true, format, title, diffms);
 }
 
 void doLogClock1(const char* format, const char* title, long int diffms) {
-    if (PHONE != 1) {
-        printf(format, title, diffms);
-        printf("\n");
-        return;
-    }
+    doLog(true, format, title, diffms);
 }
 
-void doLog(const char* text) {
-    if (PHONE != 1) {
-        printf("%s\n", text);
+void doLog(bool shouldPrint, const std::string fmt, ...) {
+    if (shouldPrint != true) {
         return;
     }
-#ifdef IS_PHONE
-    
+    int size = ((int)fmt.size()) * 2 + 50;   // Use a rubric appropriate for your code
+    std::string str;
+    va_list ap;
+    while (1) {     // Maximum two passes on a POSIX system...
+        str.resize(size);
+        va_start(ap, fmt);
+        int n = vsnprintf((char *)str.data(), size, fmt.c_str(), ap);
+        va_end(ap);
+        if (n > -1 && n < size) {  // Everything worked
+            str.resize(n);
+            break;
+        }
+        if (n > -1)  // Needed size returned
+            size = n + 1;   // For null char
+        else
+            size *= 2;      // Guess at a larger size (OS specific)
+    }
+
+#ifndef IS_PHONE
+    std::cout << str << std::endl ;
+#else
+    char text[str.size()+1];//as 1 char space for null is also required
+    strcpy(text, str.c_str());
+
     // malloc room for the resulting string
     char *szResult;
-    szResult = (char*)malloc(sizeof(char)*500);
+    szResult = (char*)malloc(sizeof(char)*(str.size()+100));
 
     auto end = std::chrono::high_resolution_clock::now();
     unsigned long long int ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end-startx).count();
@@ -110,7 +125,6 @@ void doLog(const char* text) {
 
     // cleanup
     free(szResult);
-    
 #endif
 }
 

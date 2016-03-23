@@ -58,7 +58,7 @@ void captureFrames() {
     while (true) {
         if(!(stream1.read(frame))) {
             if (debug_t1_log == true) {
-                doLog("T1 --(!) No captured frame -- Break!");
+                doLog(true, "T1 --(!) No captured frame -- Break!");
             }
             return;
         }

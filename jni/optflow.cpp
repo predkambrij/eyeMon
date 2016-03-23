@@ -274,7 +274,7 @@ class OptFlow {
                 throw "--(!)Error loading face cascade, please change face_cascade_name in source code.\n";
             }
         } catch (const char* msg) {
-            doLog(msg);
+            doLog(true, msg);
             throw;
         }
         return 0;
