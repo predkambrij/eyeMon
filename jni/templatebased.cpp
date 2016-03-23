@@ -49,15 +49,11 @@ class TemplateBased {
         t1 = std::chrono::steady_clock::now();
         //GaussianBlur(gray, gray, Size(5,5), 3.0);
         GaussianBlur(gray, gray, Size(5,5), 0);
-        if (debug_tmpl_perf1 == true) {
-            difftime("GaussianBlur", t1);
-        }
+        difftime("GaussianBlur", t1, debug_tmpl_perf1);
 
         t1 = std::chrono::steady_clock::now();
         int fdRes = this->faceDetect(gray, &face);
-        if (debug_tmpl_perf2 == true) {
-            difftime("Face detect", t1);
-        }
+        difftime("Face detect", t1, debug_tmpl_perf2);
 
         if (fdRes != 0) {
             if (debug_show_img_main == true && PHONE == 0) {
@@ -69,9 +65,7 @@ class TemplateBased {
 
         t1 = std::chrono::steady_clock::now();
         faceROI = gray(face);
-        if (debug_tmpl_perf1 == true) {
-            difftime("face gray", t1);
-        }
+        difftime("face gray", t1, debug_tmpl_perf1);
 
         if (debug_show_img_face == true && PHONE == 0) {
             imshow("face", faceROI);
@@ -102,9 +96,8 @@ class TemplateBased {
             t1 = std::chrono::steady_clock::now();
             matchTemplate(gray, leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
             matchTemplate(gray, rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
-            if (debug_tmpl_perf2 == true) {
-                difftime("matchTemplate (2x)", t1);
-            }
+            difftime("matchTemplate (2x)", t1, debug_tmpl_perf2);
+
             if (debug_show_img_templ_eyes_cor == true && PHONE == 0) {
                 imshow("leftR", leftResult);
                 imshow("rightR", rightResult);
@@ -154,14 +147,12 @@ class TemplateBased {
         std::chrono::time_point<std::chrono::steady_clock> t1;
         t1 = std::chrono::steady_clock::now();
         this->process(gray, out, timestamp);
-        if (debug_tmpl_perf2 == true) {
-            difftime("-- process", t1);
-        }
+        difftime("-- process", t1, debug_tmpl_perf2);
+
         t1 = std::chrono::steady_clock::now();
         this->measureBlinks();
-        if (debug_tmpl_perf2 == true) {
-            difftime("-- measureBlinks", t1);
-        }
+        difftime("-- measureBlinks", t1, debug_tmpl_perf2);
+
 #ifndef IS_PHONE
         if (debug_show_img_main == true && PHONE == 0) {
             imshow("main", out);

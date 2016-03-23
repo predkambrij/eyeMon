@@ -62,7 +62,10 @@ void diffclock(char const *title, clock_t clock2) {
  * std::chrono::time_point<std::chrono::steady_clock> start1 = std::chrono::steady_clock::now();
  * difftime("frame capture:", loopStart);
  */
-void difftime(char const *title, std::chrono::time_point<std::chrono::steady_clock> t1) {
+void difftime(char const *title, std::chrono::time_point<std::chrono::steady_clock> t1, bool shouldExecute) {
+    if (shouldExecute != true) {
+        return;
+    }
     std::chrono::time_point<std::chrono::steady_clock> t2 = std::chrono::steady_clock::now();
     std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
 

@@ -63,10 +63,8 @@ void captureFrames() {
             return;
         }
 
-        if (debug_t1_log == true) {
-            difftime("T1 frame capture:", t1);
-            t1 = std::chrono::steady_clock::now();
-        }
+        difftime("T1 frame capture:", t1, debug_t1_log);
+        t1 = std::chrono::steady_clock::now();
 
         long unsigned int listSize = frameList.size();
         if (debug_t1_log == true) {
@@ -152,9 +150,7 @@ void doProcessing() {
             case METHOD_BLACK_PIXELS:
             break;
         }
-        if (debug_t2_log == true) {
-            difftime("T2 getGray", t2);
-        }
+        difftime("T2 getGray", t2, debug_t2_log);
 
         t2 = std::chrono::steady_clock::now();
         switch (method) {
@@ -167,9 +163,8 @@ void doProcessing() {
             case METHOD_BLACK_PIXELS:
             break;
         }
-        if (debug_t2_perf_method == true) {
-            difftime("T2 run", t2);
-        }
+        difftime("T2 run", t2, debug_t2_perf_method);
+
 
         if (debug_show_img_main == true) {
             // flow control
@@ -193,9 +188,7 @@ void doProcessing() {
                 }
             }
         }
-        if (debug_t2_perf_whole == true) {
-            difftime("T2 whole loop:", t1);
-        }
+        difftime("T2 whole loop:", t1, debug_t2_perf_whole);
         t1 = std::chrono::steady_clock::now();
     }
 }
