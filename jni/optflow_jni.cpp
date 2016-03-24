@@ -21,7 +21,7 @@ extern "C" {
 
 OptFlow optf;
 
-JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowCreateObject
+JNIEXPORT jlong JNICALL Java_org_blatnik_eyemon_OptFlow_optFlowCreateObject
                                                                 (JNIEnv * jenv, jclass, jstring jCascadeFileName) {
     const char *cascadeFileName = (jenv)->GetStringUTFChars(jCascadeFileName, 0);
     optf.setup(cascadeFileName);
@@ -33,11 +33,11 @@ JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowCreate
     return result;
 }
 
-JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowDestroyObject(JNIEnv * jenv, jclass, jlong thiz) {
+JNIEXPORT void JNICALL Java_org_blatnik_eyemon_OptFlow_optFlowDestroyObject(JNIEnv * jenv, jclass, jlong thiz) {
 }
 
 
-JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_OptFlow_optFlowDetect
+JNIEXPORT void JNICALL Java_org_blatnik_eyemon_OptFlow_optFlowDetect
                                                                 (JNIEnv * jenv, jclass, jlong imageRGB, jlong imageGray) {
     Mat rgb = *((Mat*)imageRGB);
     Mat gray = *((Mat*)imageGray);

@@ -11,7 +11,7 @@ extern "C" {
 
 TemplateBased templBased;
 
-JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_TemplateBasedJNI_templateBasedCreateObject
+JNIEXPORT jlong JNICALL Java_org_blatnik_eyemon_TemplateBasedJNI_templateBasedCreateObject
                                                                 (JNIEnv * jenv, jclass, jstring jCascadeFileName) {
     const char *cascadeFileName = (jenv)->GetStringUTFChars(jCascadeFileName, 0);
     templBased.setup(cascadeFileName);
@@ -23,11 +23,11 @@ JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_TemplateBasedJNI_temp
     return result;
 }
 
-JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_TemplateBasedJNI_templateBasedDestroyObject(JNIEnv * jenv, jclass, jlong thiz) {
+JNIEXPORT void JNICALL Java_org_blatnik_eyemon_TemplateBasedJNI_templateBasedDestroyObject(JNIEnv * jenv, jclass, jlong thiz) {
 }
 
 
-JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_TemplateBasedJNI_templateBasedDetect
+JNIEXPORT void JNICALL Java_org_blatnik_eyemon_TemplateBasedJNI_templateBasedDetect
                                                                 (JNIEnv * jenv, jclass, jlong imageRGB, jlong imageGray) {
     Mat rgb = *((Mat*)imageRGB);
     Mat gray = *((Mat*)imageGray);

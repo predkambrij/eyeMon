@@ -1,4 +1,6 @@
-package org.opencv.samples.facedetect;
+package org.blatnik.eyemon;
+
+import org.blatnik.eyemon.R;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;

@@ -1,4 +1,4 @@
-package org.opencv.samples.facedetect;
+package org.blatnik.eyemon;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,7 +16,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.samples.facedetect.R;
+import org.blatnik.eyemon.R;
 
 import android.app.Notification;
 import android.app.Service;
@@ -48,8 +48,8 @@ public class MainService extends Service {
     private Thread frameProcessor;
     private boolean frameProcessorRunning = true;
 
-    public static final String IMAGE_UPDATE        = "org.opencv.samples.facedetect.MainService.IMAGE_UPDATE";
-    public static final String IMAGE_UPDATE_RESULT = "org.opencv.samples.facedetect.MainService.IMAGE_UPDATE_RESULT";
+    public static final String IMAGE_UPDATE        = "org.blatnik.eyemon.MainService.IMAGE_UPDATE";
+    public static final String IMAGE_UPDATE_RESULT = "org.blatnik.eyemon.MainService.IMAGE_UPDATE_RESULT";
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override

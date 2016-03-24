@@ -1,4 +1,4 @@
-package org.opencv.samples.facedetect;
+package org.blatnik.eyemon;
 
 import java.io.File;
 import java.util.LinkedList;
@@ -329,7 +329,7 @@ public class TemplateBased {
         
         // vecje -> ratuje vse temno
         // manjse -> ratuje bolj svetlo
-        // 30 -> ve��er
+        // 30 -> ve??????er
         
         // ce se da sm pr uckih bi blo cool
         // TODO: count number of pixels, if an average is lower than X, increase thold value and vice versa

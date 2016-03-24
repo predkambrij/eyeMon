@@ -1,4 +1,4 @@
-package org.opencv.samples.facedetect;
+package org.blatnik.eyemon;
 
 import java.io.IOException;
 
