@@ -18,7 +18,7 @@
 JNIEnv* env;
 #endif
 
-bool debug_show_img_main = false;
+bool debug_show_img_main = true;
 bool debug_show_img_face = false;
 bool debug_show_img_optfl_eyes = false;
 bool debug_show_img_templ_eyes_cor = false;
@@ -32,6 +32,7 @@ bool debug_tmpl_perf1 = false;
 bool debug_tmpl_perf2 = true;
 bool debug_blinks_d1 = true;
 bool debug_blinks_d2 = true;
+bool debug_blinks_d3 = true;
 
 //int method = METHOD_OPTFLOW;
 int method = METHOD_TEMPLATE_BASED;
@@ -42,6 +43,8 @@ int flg=0;
 
 std::list<BlinkMeasure> blinkMeasure;
 std::list<BlinkMeasure> blinkMeasureShort;
+std::list<Blink> lBlinkChunks;
+std::list<Blink> rBlinkChunks;
 int pause = 0;
 
 int PHONE = 1;

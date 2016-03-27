@@ -23,7 +23,7 @@ void imshowWrapper(const char* name, cv::Mat mat, bool shouldShow);
 #define METHOD_BLACK_PIXELS 2
 
 
-#define IS_PHONE
+//#define IS_PHONE
 
 #ifdef IS_PHONE
 #include <jni.h>
@@ -52,6 +52,7 @@ extern bool debug_tmpl_perf1;
 extern bool debug_tmpl_perf2;
 extern bool debug_blinks_d1;
 extern bool debug_blinks_d2;
+extern bool debug_blinks_d3;
 // optical flow
 extern int flg;
 ///
@@ -59,5 +60,7 @@ extern int flg;
 
 extern std::list<BlinkMeasure> blinkMeasure;
 extern std::list<BlinkMeasure> blinkMeasureShort;
+extern std::list<Blink> lBlinkChunks;
+extern std::list<Blink> rBlinkChunks;
 
 #endif
