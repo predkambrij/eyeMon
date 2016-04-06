@@ -63,7 +63,7 @@ void BlinkMeasure::measureBlinks() {
     }
 
     int shortBmSize = blinkMeasureShort.size();
-    if (shortBmSize < 30) {
+    if (shortBmSize < 15) {
         doLog(debug_blinks_d1, "BM: shortBmSize is less than X %d\n", shortBmSize);
         return;
     }

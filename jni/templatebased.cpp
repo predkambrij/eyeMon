@@ -31,19 +31,19 @@ class TemplateBased {
 
     public: int appendStatistics(double t, double lv, double rv) {
 #ifndef IS_PHONE
-        FILE * pFile;
-        pFile = fopen("/home/developer/other/resources/statistics/statistics.txt","a");
-        fprintf(pFile, "%lf\t%lf\t%lf\n", t, lv, rv);
-        fclose(pFile);
+        //FILE * pFile;
+        //pFile = fopen("/home/developer/other/resources/statistics/statistics.txt","a");
+        //fprintf(pFile, "%lf\t%lf\t%lf\n", t, lv, rv);
+        //fclose(pFile);
 #endif
     }
 
     public: int appendEmpty(double t) {
 #ifndef IS_PHONE
-        FILE * pFile;
-        pFile = fopen("/home/developer/other/resources/statistics/statistics.txt","a");
-        fprintf(pFile, "%lf\t\t\n", t);
-        fclose(pFile);
+        //FILE * pFile;
+        //pFile = fopen("/home/developer/other/resources/statistics/statistics.txt","a");
+        //fprintf(pFile, "%lf\t\t\n", t);
+        //fclose(pFile);
 #endif
     }
 
