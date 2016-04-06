@@ -23,6 +23,11 @@ void printStatus();
 #define METHOD_TEMPLATE_BASED 1
 #define METHOD_BLACK_PIXELS 2
 
+//#include <isPhone.hpp>
+#ifndef IS_PHONE
+//#define IS_PHONE
+#endif
+
 
 #ifdef IS_PHONE
 #include <jni.h>

@@ -9,14 +9,8 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include <common.hpp>
-//#include <isPhone.hpp>
-#ifndef IS_PHONE
-#define IS_PHONE
-#endif
-
 
 #ifdef IS_PHONE
-#include <jni.h>
 #include <android/log.h>
 #endif
 
