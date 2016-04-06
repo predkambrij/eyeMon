@@ -36,7 +36,7 @@ void captureFrames() {
     //char fileName[100] = "/home/developer/other/posnetki/o4_65.mp4"; // 640x480
     //char fileName[100] = "/home/developer/other/posnetki/o4_66.mp4"; // 320x240
     //VideoCapture stream1(fileName);   //0 is the id of video device.0 if you have only one camera
-    bool isVideoCapture = false;
+    bool isVideoCapture = true;
     if (isVideoCapture) {
         maxSize = 3000000000;
     }
@@ -141,7 +141,7 @@ void doProcessing() {
         // cv::flip(frame, frame, 1);
         double timestamp = fc.timestamp;
         if (debug_t2_log == true) {
-            printf("T2 frame time:%lf\n", timestamp);
+            printf("T2 frame time: %lf\n", timestamp);
         }
 
         t2 = std::chrono::steady_clock::now();
@@ -187,6 +187,10 @@ void doProcessing() {
                         break;
                     } else if((char)c == 'n') {
                         break;
+                    } else if((char)c == 's') {
+                        // status
+                        printStatus();
+                        break;
                     }
                 }
             }
@@ -195,8 +199,35 @@ void doProcessing() {
         t1 = std::chrono::steady_clock::now();
     }
 }
+///
+char* getCmdOption(char** begin, char** end, const std::string& option) {
+    char** itr = std::find(begin, end, option);
+    if (itr != end && ++itr != end) {
+        return *itr;
+    }
 
-int main() {
+    return 0;
+}
+
+bool cmdOptionExists(char** begin, char** end, const std::string& option) {
+    return std::find(begin, end, option) != end;
+}
+///
+void processOptions(int argc, char* argv[]) {
+    /*
+    if(cmdOptionExists(argv, argv+argc, "-h")) {
+        // Do stuff
+    }
+    */
+    char* filename = getCmdOption(argv, argv + argc, "--debug_show_img_main");
+    if (filename) {
+        // Do interesting things
+    }
+}
+
+int main(int argc, char * argv[]) {
+    //processOptions(argc, argv);
+    //return 0;
     PHONE = 0; farne = 0;
 
     char faceDetector[200] = "/home/developer/other/android_deps/OpenCV-2.4.10-android-sdk/samples/optical-flow/res/raw/lbpcascade_frontalface.xml";

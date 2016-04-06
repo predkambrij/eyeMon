@@ -24,18 +24,20 @@ bool debug_show_img_optfl_eyes = false;
 bool debug_show_img_templ_eyes_cor = false;
 bool debug_show_img_templ_eyes_tmpl = false;
 bool debug_t1_log = false;
-bool debug_t2_log = false;
+bool debug_t2_log = true;
 bool debug_t2_perf_method = true;
 bool debug_t2_perf_whole = true;
 bool debug_tmpl_log = false;
 bool debug_tmpl_perf1 = false;
 bool debug_tmpl_perf2 = true;
+bool debug_notifications_log1 = true;
 bool debug_blinks_d1 = true;
 bool debug_blinks_d2 = true;
 bool debug_blinks_d3 = true;
 
 //int method = METHOD_OPTFLOW;
 int method = METHOD_TEMPLATE_BASED;
+double previousFrameTime = -1;
 
 // optical flow
 int flg=0;
@@ -45,10 +47,16 @@ std::list<BlinkMeasure> blinkMeasure;
 std::list<BlinkMeasure> blinkMeasureShort;
 std::list<Blink> lBlinkChunks;
 std::list<Blink> rBlinkChunks;
+std::list<Blink> lBlinkTimeframeChunks;
+std::list<Blink> rBlinkTimeframeChunks;
 int pause = 0;
 
 int PHONE = 1;
 std::chrono::high_resolution_clock::time_point startx = std::chrono::high_resolution_clock::now();
+
+void printStatus() {
+
+}
 
 /**
  * CPU time

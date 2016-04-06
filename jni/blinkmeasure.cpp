@@ -120,9 +120,10 @@ void BlinkMeasure::makeChunk(bool isLeft, double timestamp, bool isBlink) {
                     BlinkMeasure::lLastNonBlinkT = timestamp;
                 } else {
                     if (BlinkMeasure::lLastNonBlinkT < (timestamp-BlinkMeasure::maxNonBlinkT)) {
-                        Blink b(BlinkMeasure::lFirstBlinkT, BlinkMeasure::lLastNonBlinkT);
+                        Blink b(BlinkMeasure::lFirstBlinkT, BlinkMeasure::lLastNonBlinkT, 0);
                         lBlinkChunks.push_back(b);
                         doLog(debug_blinks_d3, "BM: adding lBlinkChunks start %.2lf end %lf duration %lf\n", BlinkMeasure::lFirstBlinkT, BlinkMeasure::lLastNonBlinkT, BlinkMeasure::lLastNonBlinkT-BlinkMeasure::lFirstBlinkT);
+                        BlinkMeasure::makeNotification(true);
                         BlinkMeasure::lAdding = false;
                     }
                 }
@@ -142,9 +143,10 @@ void BlinkMeasure::makeChunk(bool isLeft, double timestamp, bool isBlink) {
                     BlinkMeasure::rLastNonBlinkT = timestamp;
                 } else {
                     if (BlinkMeasure::rLastNonBlinkT < (timestamp-BlinkMeasure::maxNonBlinkT)) {
-                        Blink b(BlinkMeasure::rFirstBlinkT, BlinkMeasure::rLastNonBlinkT);
+                        Blink b(BlinkMeasure::rFirstBlinkT, BlinkMeasure::rLastNonBlinkT, 0);
                         rBlinkChunks.push_back(b);
                         doLog(debug_blinks_d3, "BM: adding rBlinkChunks start %.2lf end %lf duration %lf\n", BlinkMeasure::rFirstBlinkT, BlinkMeasure::rLastNonBlinkT, BlinkMeasure::rLastNonBlinkT-BlinkMeasure::rFirstBlinkT);
+                        BlinkMeasure::makeNotification(false);
                         BlinkMeasure::rAdding = false;
                     }
                 }
@@ -153,7 +155,15 @@ void BlinkMeasure::makeChunk(bool isLeft, double timestamp, bool isBlink) {
     }
 };
 
-Blink::Blink(double timestampStart, double timestampEnd) {
+Blink::Blink(double timestampStart, double timestampEnd, int eventType) {
     this->timestampStart = timestampStart;
     this->timestampEnd   = timestampEnd;
-}
+    this->eventType      = eventType;
+};
+
+void BlinkMeasure::makeNotification(bool isLeft) {
+    if (isLeft == true) {
+    } else {
+        // right
+    }
+};

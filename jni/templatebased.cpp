@@ -133,6 +133,51 @@ class TemplateBased {
     public: int measureBlinks() {
         BlinkMeasure::measureBlinks();
     }
+    public: void checkNotificationStatus(double timestamp) {
+        while (lBlinkChunks.size() > 0) {
+            Blink b = lBlinkChunks.front();
+            lBlinkChunks.pop_front();
+            lBlinkTimeframeChunks.push_back(b);
+            doLog(debug_notifications_log1, "NOTIFS: Moving left blink %lf\n", b.timestampStart);
+        }
+        while (rBlinkChunks.size() > 0) {
+            Blink b = rBlinkChunks.front();
+            rBlinkChunks.pop_front();
+            rBlinkTimeframeChunks.push_back(b);
+            doLog(debug_notifications_log1, "NOTIFS: Moving right blink %lf\n", b.timestampStart);
+        }
+        int timeFrameWindowLength = 60000;
+        while (lBlinkTimeframeChunks.size() > 0) {
+            Blink oldestB = lBlinkTimeframeChunks.front();
+            if (oldestB.timestampStart > (timestamp - timeFrameWindowLength)) {
+                break;
+            } else {
+                lBlinkTimeframeChunks.pop_front();
+            }
+        }
+        while (rBlinkTimeframeChunks.size() > 0) {
+            Blink oldestB = rBlinkTimeframeChunks.front();
+            if (oldestB.timestampStart > (timestamp - timeFrameWindowLength)) {
+                break;
+            } else {
+                rBlinkTimeframeChunks.pop_front();
+            }
+        }
+
+    }
+    public: void frameTimeProcessing(double timestamp) {
+        if (previousFrameTime == -1) {
+            previousFrameTime = timestamp;
+            return;
+        }
+        if (previousFrameTime < (timestamp-1000)) {
+            Blink lb(previousFrameTime, timestamp, 1);
+            lBlinkChunks.push_back(lb);
+            Blink rb(previousFrameTime, timestamp, 1);
+            rBlinkChunks.push_back(rb);
+        }
+        previousFrameTime = timestamp;
+    }
     public: int faceDetect(Mat gray, cv::Rect *face) {
         std::vector<cv::Rect> faces;
         face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
@@ -144,6 +189,12 @@ class TemplateBased {
     }
     public: int run(Mat gray, Mat out, double timestamp) {
         std::chrono::time_point<std::chrono::steady_clock> t1;
+
+        t1 = std::chrono::steady_clock::now();
+        this->frameTimeProcessing(timestamp);
+        this->checkNotificationStatus(timestamp);
+        difftime("-- frameTimeProcessing and checkNotificationStatus", t1, debug_tmpl_perf1);
+
         t1 = std::chrono::steady_clock::now();
         this->process(gray, out, timestamp);
         difftime("-- process", t1, debug_tmpl_perf2);

@@ -23,14 +23,16 @@ class BlinkMeasure {
         static void measureBlinksAVG(int shortBmSize, double *lavg, double *ravg);
         static void measureBlinksSD(int shortBmSize, double lavg, double ravg, double *lSD, double *rSD, double *lsd1, double *rsd1, double *lsd2, double *rsd2);
         static void makeChunk(bool isLeft, double timestamp, bool isBlink);
+        static void makeNotification(bool isLeft);
 };
 
 class Blink {
     public:
         double timestampStart;
         double timestampEnd;
+        int eventType;
         //double corAvg;
-        Blink(double timestampStart, double timestampEnd);
+        Blink(double timestampStart, double timestampEnd, int eventType);
 };
 
 #endif
