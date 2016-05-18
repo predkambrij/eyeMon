@@ -82,10 +82,10 @@ void captureFrames() {
             if (canAdd == true) {
                 double frameTimeMs;
                 if (isVideoCapture == true) {
-                    frameTimeMs = (double) stream1.get(CV_CAP_PROP_POS_MSEC);
-                } else {
                     long int ft = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
                     frameTimeMs = (double) ft;
+                } else {
+                    frameTimeMs = (double) stream1.get(CV_CAP_PROP_POS_MSEC);
                 }
                 FrameCarrier fc(frame.clone(), frameTimeMs);
                 frameList.push_back(fc);
