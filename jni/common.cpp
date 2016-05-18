@@ -1,5 +1,6 @@
 #include <string.h>
 #include <iostream>
+#include <fstream>
 #include <stdio.h>
 #include <chrono>
 
@@ -27,7 +28,7 @@ bool debug_show_img_templ_eyes_tmpl = false;
 bool debug_t1_log = false;
 bool debug_t2_log = false;
 bool debug_t2_perf_method = false;
-bool debug_t2_perf_whole = false;
+bool debug_t2_perf_whole = true;
 bool debug_tmpl_log = false;
 bool debug_tmpl_perf1 = false;
 bool debug_tmpl_perf2 = false;
@@ -118,7 +119,13 @@ void doLog(bool shouldPrint, const std::string fmt, ...) {
     }
 
 #ifndef IS_PHONE
-    std::cout << str << std::endl ;
+    std::ofstream myfile;
+    myfile.open("/tmp/testlog.txt", std::fstream::app);
+    //myfile << "Writing this to a file.\n";
+    myfile << str << std::endl ;
+    myfile.close();// does at destruction
+    //myfile.flush();
+    //std::cout << str << std::endl ;
 #else
     char text[str.size()+1];//as 1 char space for null is also required
     strcpy(text, str.c_str());

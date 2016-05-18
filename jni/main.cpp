@@ -51,9 +51,9 @@ void captureFrames() {
     //stream1.set(CV_CAP_PROP_FRAME_WIDTH, 1280); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
 
     if (debug_t1_log == true) {
-        printf("T1 video capture %f %f %f\n", stream1.get(CV_CAP_PROP_FRAME_WIDTH), stream1.get(CV_CAP_PROP_FRAME_HEIGHT), stream1.get(CV_CAP_PROP_FPS));
-        printf("CAP_PROP_FPS %f\n", stream1.get(CV_CAP_PROP_FPS));
-        printf("CAP_PROP_FRAME_COUNT %f\n", stream1.get(CV_CAP_PROP_FRAME_COUNT));
+        doLog(true, "T1 video capture %f %f %f\n", stream1.get(CV_CAP_PROP_FRAME_WIDTH), stream1.get(CV_CAP_PROP_FRAME_HEIGHT), stream1.get(CV_CAP_PROP_FPS));
+        doLog(true, "CAP_PROP_FPS %f\n", stream1.get(CV_CAP_PROP_FPS));
+        doLog(true, "CAP_PROP_FRAME_COUNT %f\n", stream1.get(CV_CAP_PROP_FRAME_COUNT));
     }
 
     Mat frame;
@@ -71,11 +71,11 @@ void captureFrames() {
 
         long unsigned int listSize = frameList.size();
         if (debug_t1_log == true) {
-            printf("size %ld\n", frameList.size());
+            doLog(true, "size %ld\n", frameList.size());
         }
         if (listSize >= maxSize) {
             if (debug_t1_log == true) {
-                printf("T1 reached max size %d\n", maxSize);
+                doLog(true, "T1 reached max size %d\n", maxSize);
             }
             canAdd = false;
         } else {
@@ -141,7 +141,7 @@ void doProcessing() {
         // cv::flip(frame, frame, 1);
         double timestamp = fc.timestamp;
         if (debug_t2_log == true) {
-            printf("T2 frame time: %lf\n", timestamp);
+            doLog(true, "T2 frame time: %lf\n", timestamp);
         }
 
         t2 = std::chrono::steady_clock::now();
