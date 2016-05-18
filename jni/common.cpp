@@ -18,7 +18,7 @@
 #ifdef IS_PHONE
 JNIEnv* env;
 #endif
-
+/*
 // TODO this could be done using macros (at all places is used ifdef)
 bool debug_show_img_main = false;
 bool debug_show_img_face = false;
@@ -44,6 +44,7 @@ double previousFrameTime = -1;
 // optical flow
 int flg=0;
 ///
+*/
 
 std::list<BlinkMeasure> blinkMeasure;
 std::list<BlinkMeasure> blinkMeasureShort;
