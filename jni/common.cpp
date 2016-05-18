@@ -11,7 +11,6 @@
 
 #include <common.hpp>
 
-#include <isPhone.hpp>
 #ifdef IS_PHONE
 #include <android/log.h>
 #endif

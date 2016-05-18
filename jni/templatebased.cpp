@@ -2,7 +2,6 @@
 #include "opencv2/imgproc/imgproc.hpp"
 
 #include <common.hpp>
-#include <isPhone.hpp>
 
 #include <blinkmeasure.hpp>
 
