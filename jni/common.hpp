@@ -25,7 +25,7 @@ void printStatus();
 
 //#include <isPhone.hpp>
 #ifndef IS_PHONE
-//#define IS_PHONE
+#define IS_PHONE
 #endif
 
 
