@@ -11,13 +11,11 @@
 
 #include <common.hpp>
 
+#include <isPhone.hpp>
 #ifdef IS_PHONE
 #include <android/log.h>
 #endif
 
-#ifdef IS_PHONE
-JNIEnv* env;
-#endif
 /*
 // TODO this could be done using macros (at all places is used ifdef)
 bool debug_show_img_main = false;

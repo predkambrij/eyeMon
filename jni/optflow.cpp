@@ -23,6 +23,7 @@
 #include <eyelike/main.cpp>
 
 #include <common.hpp>
+#include <isPhone.hpp>
 
 using namespace cv;
 using namespace std;

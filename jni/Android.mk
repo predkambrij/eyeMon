@@ -9,11 +9,11 @@ include $(CLEAR_VARS)
 include ../../../OpenCV-2.4.10-android-sdk/sdk/native/jni/OpenCV.mk
 #include ../../../OpenCV-android-sdk-2-4-11/sdk/native/jni/OpenCV.mk
 
-LOCAL_SRC_FILES  := isPhone.cpp common.cpp common_settings_phone.cpp blinkmeasure.cpp optflow_jni.cpp templatebased_jni.cpp eyelike/findEyeCorner.cpp eyelike/findEyeCenter.cpp eyelike/helpers.cpp
+LOCAL_SRC_FILES  := common_settings_phone.cpp common.cpp blinkmeasure.cpp optflow_jni.cpp templatebased_jni.cpp eyelike/findEyeCorner.cpp eyelike/findEyeCenter.cpp eyelike/helpers.cpp
 LOCAL_C_INCLUDES += $(LOCAL_PATH)
 LOCAL_LDLIBS     += -llog -ldl
 
-LOCAL_CFLAGS += -std=c++11
+LOCAL_CFLAGS += -std=c++11 -DIS_PHONE
 
 LOCAL_MODULE     := eyemon
 

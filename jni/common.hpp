@@ -23,20 +23,6 @@ void printStatus();
 #define METHOD_TEMPLATE_BASED 1
 #define METHOD_BLACK_PIXELS 2
 
-//#include <isPhone.hpp>
-#ifndef IS_PHONE
-#define IS_PHONE
-#endif
-
-
-#ifdef IS_PHONE
-#include <jni.h>
-#endif
-
-#ifdef IS_PHONE
-extern JNIEnv* env;
-#endif
-
 extern int PHONE;
 extern std::chrono::high_resolution_clock::time_point startx;
 extern int method;
