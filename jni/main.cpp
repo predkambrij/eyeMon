@@ -19,14 +19,9 @@ class FrameCarrier {
 };
 
 std::list<FrameCarrier> frameList;
-int maxSize = 300;
 bool canAdd = true;
 
 void captureFrames() {
-    if (isVideoCapture) {
-        maxSize = 3000000000;
-    }
-
     if (!stream1.isOpened()) {
         CV_Assert("T1 cam open failed");
     }
@@ -58,7 +53,7 @@ void captureFrames() {
         if (debug_t1_log == true) {
             doLog(true, "size %ld\n", frameList.size());
         }
-        if (listSize >= maxSize) {
+        if (listSize >= maxSize && disable_max_size != false) {
             if (debug_t1_log == true) {
                 doLog(true, "T1 reached max size %d\n", maxSize);
             }

@@ -17,6 +17,7 @@ bool debug_notifications_log1 = false;
 bool debug_blinks_d1 = false;
 bool debug_blinks_d2 = false;
 bool debug_blinks_d3 = false;
+bool debug_blinks_d4 = false;
 
 //int method = METHOD_OPTFLOW;
 int method = METHOD_TEMPLATE_BASED;

@@ -120,7 +120,8 @@ void doLog(bool shouldPrint, const std::string fmt, ...) {
     std::ofstream myfile;
     myfile.open("/tmp/testlog.txt", std::fstream::app);
     //myfile << "Writing this to a file.\n";
-    myfile << str << std::endl ;
+    //myfile << str << std::endl ;
+    myfile << str;
     myfile.close();// does at destruction
     //myfile.flush();
     //std::cout << str << std::endl ;
