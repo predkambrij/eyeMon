@@ -1,21 +1,27 @@
 function compile() {
-    g++ -std=c++11 -Werror $1 -o $2 -I. $(pkg-config --cflags --libs opencv)
+    test_macro=""
+    if [ $is_test -eq 1 ]; then
+        test_macro="-DIS_TEST"
+    fi
+    g++ $test_macro -std=c++11 -Werror $1 -o $2 -I. $(pkg-config --cflags --libs opencv)
 }
 function compile_settings() {
     cd jni
     compile "eyelike/findEyeCorner.cpp eyelike/findEyeCenter.cpp eyelike/helpers.cpp common.cpp main.cpp blinkmeasure.cpp $1" ../el
 }
 
+is_test=0
 should_run=1
-settings_file="common_settings_comp.cpp"
+settings_file="common_settings_comp.cpp main_settings.cpp"
 
 if [ "$1" == co ]; then
     should_run=0
 elif [ "$1" == test ]; then
-    settings_file="common_settings_test.cpp"
+    settings_file="common_settings_test.cpp main_settings_test.cpp"
+    is_test=1
 fi
 
-compile_settings $settings_file
+compile_settings "$settings_file"
 
 if [ $? -eq 0 ] && [ $should_run -eq 1 ]; then
     ../el

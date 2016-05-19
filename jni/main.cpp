@@ -5,7 +5,8 @@
 
 #include <optflow.cpp>
 #include <templatebased.cpp>
-#include <main_settings.cpp>
+
+#include <main_settings.hpp>
 
 class FrameCarrier {
     public: Mat frame;
