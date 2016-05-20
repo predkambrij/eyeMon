@@ -22,6 +22,7 @@ class FrameCarrier {
 std::list<FrameCarrier> frameList;
 bool canAdd = true;
 bool finished = false;
+bool grabbing = true;
 
 void captureFrames() {
     if (!stream1.isOpened()) {
@@ -43,7 +44,7 @@ void captureFrames() {
 
     Mat frame;
     std::chrono::time_point<std::chrono::steady_clock> t1 = std::chrono::steady_clock::now();
-    while (true) {
+    while (grabbing) {
         if(!(stream1.read(frame))) {
             if (debug_t1_log == true) {
                 doLog(true, "T1 --(!) No captured frame -- Break!\n");
@@ -164,6 +165,7 @@ void doProcessing() {
             // flow control
             int c = cv::waitKey(10);
             if((char)c == 'q') {
+                grabbing = false;
                 break;
             } else if((char)c == 'p') {
                 pause = 1;
