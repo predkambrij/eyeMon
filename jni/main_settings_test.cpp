@@ -18,4 +18,5 @@ cv::VideoCapture stream1(fileName);
 bool isVideoCapture = false;
 bool disable_max_size = true;
 
+// it can load the whole file in seconds and make huge memory consumption
 int maxSize = 300;

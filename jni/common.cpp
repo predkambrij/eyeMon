@@ -3,6 +3,7 @@
 #include <fstream>
 #include <stdio.h>
 #include <chrono>
+#include <mutex>
 
 #include <stdarg.h>  // For va_start, etc.
 
@@ -54,6 +55,8 @@ int pause = 0;
 int PHONE = 1;
 std::chrono::high_resolution_clock::time_point startx = std::chrono::high_resolution_clock::now();
 
+std::mutex logMutex;
+
 void printStatus() {
 
 }
@@ -68,7 +71,7 @@ void diffclock(char const *title, clock_t clock2) {
     double diffticks = double(clock1 - clock2);
     double diffms    = diffticks * 1000.0 / CLOCKS_PER_SEC;
 
-    doLogClock("%s: %f", title, diffms);
+    doLogClock("%s: %f\n", title, diffms);
 }
 
 /**
@@ -83,15 +86,15 @@ void difftime(char const *title, std::chrono::time_point<std::chrono::steady_clo
     std::chrono::time_point<std::chrono::steady_clock> t2 = std::chrono::steady_clock::now();
     std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
 
-    doLogClock1("PERF %s: %ld", title, duration.count());
+    doLogClock1("PERF %s: %ld\n", title, duration.count());
 }
 
 void doLogClock(const char* format, const char* title, double diffms) {
-    doLog(true, format, title, diffms);
+    doLog(true, format, title, diffms);// TODO newline?
 }
 
 void doLogClock1(const char* format, const char* title, long int diffms) {
-    doLog(true, format, title, diffms);
+    doLog(true, format, title, diffms);// TODO newline?
 }
 
 void doLog(bool shouldPrint, const std::string fmt, ...) {
@@ -117,6 +120,7 @@ void doLog(bool shouldPrint, const std::string fmt, ...) {
     }
 
 #ifndef IS_PHONE
+    logMutex.lock();
     std::ofstream myfile;
     myfile.open("/tmp/testlog.txt", std::fstream::app);
     //myfile << "Writing this to a file.\n";
@@ -125,6 +129,7 @@ void doLog(bool shouldPrint, const std::string fmt, ...) {
     myfile.close();// does at destruction
     //myfile.flush();
     //std::cout << str << std::endl ;
+    logMutex.unlock();
 #else
     char text[str.size()+1];//as 1 char space for null is also required
     strcpy(text, str.c_str());

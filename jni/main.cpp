@@ -21,17 +21,21 @@ class FrameCarrier {
 
 std::list<FrameCarrier> frameList;
 bool canAdd = true;
+bool finished = false;
 
 void captureFrames() {
     if (!stream1.isOpened()) {
         CV_Assert("T1 cam open failed");
     }
-    // resolutions 320, 240; 800, 448; 640, 480
-    //stream1.set(CV_CAP_PROP_FRAME_WIDTH, 320); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 240);
-    stream1.set(CV_CAP_PROP_FRAME_WIDTH, 640); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
-    //stream1.set(CV_CAP_PROP_FRAME_WIDTH, 1280); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
 
-    if (debug_t1_log == true) {
+    if (isVideoCapture == true) {
+        // resolutions 320, 240; 800, 448; 640, 480
+        //stream1.set(CV_CAP_PROP_FRAME_WIDTH, 320); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 240);
+        stream1.set(CV_CAP_PROP_FRAME_WIDTH, 640); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+        //stream1.set(CV_CAP_PROP_FRAME_WIDTH, 1280); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
+    }
+
+    if (debug_t1_log == true && isVideoCapture == false) {
         doLog(true, "T1 video capture %f %f %f\n", stream1.get(CV_CAP_PROP_FRAME_WIDTH), stream1.get(CV_CAP_PROP_FRAME_HEIGHT), stream1.get(CV_CAP_PROP_FPS));
         doLog(true, "CAP_PROP_FPS %f\n", stream1.get(CV_CAP_PROP_FPS));
         doLog(true, "CAP_PROP_FRAME_COUNT %f\n", stream1.get(CV_CAP_PROP_FRAME_COUNT));
@@ -42,8 +46,9 @@ void captureFrames() {
     while (true) {
         if(!(stream1.read(frame))) {
             if (debug_t1_log == true) {
-                doLog(true, "T1 --(!) No captured frame -- Break!");
+                doLog(true, "T1 --(!) No captured frame -- Break!\n");
             }
+            finished = true;
             return;
         }
 
@@ -73,6 +78,7 @@ void captureFrames() {
             }
         }
     }
+
 }
 
 OptFlow optf;
@@ -109,6 +115,10 @@ void doProcessing() {
     while (true) {
         long unsigned int listSize = frameList.size();
         if (listSize == 0) {
+            if (finished == true) {
+                doLog(true, "exiting\n");
+                break;
+            }
             if (canAdd == false) {
                 canAdd = true;
             }
