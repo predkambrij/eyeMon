@@ -22,7 +22,6 @@ void BlinkMeasure::measureBlinksAVG(int shortBmSize, double *lavg, double *ravg)
     }
     *lavg = *lavg/shortBmSize;
     *ravg = *ravg/shortBmSize;
-    doLog(debug_blinks_d1, "debug_blinks_d1: lavg %.8lf ravg %.8lf\n", *lavg, *ravg);
 };
 
 void BlinkMeasure::measureBlinksSD(int shortBmSize, double lavg, double ravg, double *lSD, double *rSD, double *lsd1, double *rsd1, double *lsd2, double *rsd2) {
@@ -39,7 +38,6 @@ void BlinkMeasure::measureBlinksSD(int shortBmSize, double lavg, double ravg, do
     *rsd1 = ravg-(1*(*rSD));
     *lsd2 = lavg-(2*(*lSD));
     *rsd2 = ravg-(2*(*rSD));
-    doLog(debug_blinks_d1, "debug_blinks_d1: lSD %lf rSD %lf lsd1 %lf rsd1 %lf lsd2 %lf rsd2 %lf\n", *lSD, *rSD, *lsd1, *rsd1, *lsd2, *rsd2);
 };
 
 void BlinkMeasure::measureBlinks() {
@@ -55,7 +53,7 @@ void BlinkMeasure::measureBlinks() {
     blinkMeasureShort.push_back(bm);
     while (true) {
         BlinkMeasure oldestBm = blinkMeasureShort.front();
-        if (oldestBm.timestamp > (bm.timestamp - 5000)) {
+        if (oldestBm.timestamp > (bm.timestamp - 10000)) {
             break;
         } else {
             blinkMeasureShort.pop_front();
@@ -63,9 +61,11 @@ void BlinkMeasure::measureBlinks() {
     }
 
     int shortBmSize = blinkMeasureShort.size();
-    if (shortBmSize < 15) {
+    if (shortBmSize < 90) {
         doLog(debug_blinks_d1, "debug_blinks_d1: shortBmSize is less than X %d\n", shortBmSize);
         return;
+    } else {
+        doLog(debug_blinks_d1, "debug_blinks_d1: shortBmSize is %d\n", shortBmSize);
     }
 
     double lavg = 0;
@@ -78,8 +78,8 @@ void BlinkMeasure::measureBlinks() {
     double lsd2 = 0;
     double rsd2 = 0;
     BlinkMeasure::measureBlinksSD(shortBmSize, lavg, ravg, &lSD, &rSD, &lsd1, &rsd1, &lsd2, &rsd2);
-
-    doLog(debug_blinks_d2, "debug_blinks_d2: last T %.2lf L %lf R %lf\n", bm.timestamp, bm.lcor, bm.rcor);
+    doLog(debug_blinks_d1, "debug_blinks_d1: lastT %.2lf La %lf %.8lf Ra %lf %.8lf lSD12 %lf %lf %lf rSD12 %lf %lf %lf\n",
+        bm.timestamp, bm.lcor, lavg, bm.rcor, ravg, lSD, lsd1, lsd2, rSD, rsd1, rsd2);
 
     if (bm.lcor < lsd1) {
         doLog(debug_blinks_d3, "debug_blinks_d3: BLINK T %.2lf L %lf SD1 %lf SD2 %lf\n", bm.timestamp, bm.lcor, lsd1, lsd2);

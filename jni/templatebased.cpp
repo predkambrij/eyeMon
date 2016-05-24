@@ -111,7 +111,7 @@ class TemplateBased {
             minMaxLoc(rightResult, &minValR, &maxValR, &minLocR, &maxLocR, Mat());
             double lcor = 1-minValL;
             double rcor = 1-minValR;
-            doLog(debug_tmpl_log, "lcor %lf rcor %lf\n", lcor, rcor);
+            doLog(debug_tmpl_log, "debug_tmpl_log: lcor %lf rcor %lf\n", lcor, rcor);
 
             // blink measure
             BlinkMeasure bm(timestamp, lcor, rcor);
