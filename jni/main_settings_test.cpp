@@ -14,9 +14,10 @@
 #include <opencv2/highgui/highgui.hpp>
 
 char fileName[100] = "/home/developer/other/posnetki/o4_44.mp4";
+//char fileName[100] = "/home/developer/other/posnetki/o4_82.mp4";
 cv::VideoCapture stream1(fileName);
 bool isVideoCapture = false;
-bool disable_max_size = true;
+bool disable_max_size = false;
 
 // it can load the whole file in seconds and make huge memory consumption
 int maxSize = 300;

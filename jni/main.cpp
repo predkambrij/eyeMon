@@ -36,34 +36,27 @@ void captureFrames() {
         //stream1.set(CV_CAP_PROP_FRAME_WIDTH, 1280); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
     }
 
-    if (debug_t1_log == true && isVideoCapture == false) {
-        doLog(true, "T1 video capture %f %f %f\n", stream1.get(CV_CAP_PROP_FRAME_WIDTH), stream1.get(CV_CAP_PROP_FRAME_HEIGHT), stream1.get(CV_CAP_PROP_FPS));
-        doLog(true, "CAP_PROP_FPS %f\n", stream1.get(CV_CAP_PROP_FPS));
-        doLog(true, "CAP_PROP_FRAME_COUNT %f\n", stream1.get(CV_CAP_PROP_FRAME_COUNT));
+    if (isVideoCapture == false) {
+        doLog(debug_t1_log, "debug_t1_log: T1 video capture %f %f %f\n", stream1.get(CV_CAP_PROP_FRAME_WIDTH), stream1.get(CV_CAP_PROP_FRAME_HEIGHT), stream1.get(CV_CAP_PROP_FPS));
+        doLog(debug_t1_log, "debug_t1_log: CAP_PROP_FPS %f\n", stream1.get(CV_CAP_PROP_FPS));
+        doLog(debug_t1_log, "debug_t1_log: CAP_PROP_FRAME_COUNT %f\n", stream1.get(CV_CAP_PROP_FRAME_COUNT));
     }
 
     Mat frame;
     std::chrono::time_point<std::chrono::steady_clock> t1 = std::chrono::steady_clock::now();
+    double prevFrameMs = 0;
     while (grabbing) {
         if(!(stream1.read(frame))) {
-            if (debug_t1_log == true) {
-                doLog(true, "T1 --(!) No captured frame -- Break!\n");
-            }
+            doLog(debug_t1_log, "debug_t1_log: No captured frame, exiting!\n");
             finished = true;
             return;
         }
 
-        difftime("T1 frame capture:", t1, debug_t1_log);
-        t1 = std::chrono::steady_clock::now();
-
         long unsigned int listSize = frameList.size();
-        if (debug_t1_log == true) {
-            doLog(true, "size %ld\n", frameList.size());
-        }
-        if (listSize >= maxSize && disable_max_size != false) {
-            if (debug_t1_log == true) {
-                doLog(true, "T1 reached max size %d\n", maxSize);
-            }
+        doLog(debug_t1_log, "size %ld\n", frameList.size());
+
+        if (listSize >= maxSize && disable_max_size != true) {
+            doLog(debug_t1_log, "T1 reached max size %d\n", maxSize);
             canAdd = false;
         } else {
             if (canAdd == true) {
@@ -76,10 +69,11 @@ void captureFrames() {
                 }
                 FrameCarrier fc(frame.clone(), frameTimeMs);
                 frameList.push_back(fc);
+                doLog(debug_t1_log, "debug_t1_log: frameTime %lf diff %lf\n", frameTimeMs, frameTimeMs-prevFrameMs);
+                prevFrameMs = frameTimeMs;
             }
         }
     }
-
 }
 
 OptFlow optf;
@@ -165,6 +159,7 @@ void doProcessing() {
             // flow control
             int c = cv::waitKey(10);
             if((char)c == 'q') {
+                doLog(true, "exiting\n");
                 grabbing = false;
                 break;
             } else if((char)c == 'p') {
