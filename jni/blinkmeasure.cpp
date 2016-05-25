@@ -81,14 +81,14 @@ void BlinkMeasure::measureBlinks() {
     doLog(debug_blinks_d1, "debug_blinks_d1: lastT %.2lf La %lf %.8lf Ra %lf %.8lf lSD12 %lf %lf %lf rSD12 %lf %lf %lf\n",
         bm.timestamp, bm.lcor, lavg, bm.rcor, ravg, lSD, lsd1, lsd2, rSD, rsd1, rsd2);
 
-    if (bm.lcor < lsd1) {
+    if (bm.lcor < lsd2) {
         doLog(debug_blinks_d3, "debug_blinks_d3: BLINK T %.2lf L %lf SD1 %lf SD2 %lf\n", bm.timestamp, bm.lcor, lsd1, lsd2);
         // check whether we can create a new blink (chunk)
         BlinkMeasure::makeChunk(true, (double)bm.timestamp, true);
     } else {
         BlinkMeasure::makeChunk(true, (double)bm.timestamp, false);
     }
-    if (bm.rcor < rsd1) {
+    if (bm.rcor < rsd2) {
         doLog(debug_blinks_d3, "debug_blinks_d3: BLINK T %.2lf R %lf SD1 %lf SD2 %lf\n", bm.timestamp, bm.rcor, rsd1, rsd2);
         // check whether we can create a new blink (chunk)
         BlinkMeasure::makeChunk(false, (double)bm.timestamp, true);

@@ -12,8 +12,9 @@ bool debug_t1_loop_loop_log = false;
 bool debug_t2_loop_log = true;
 bool debug_t2_show_img_main = true;
 
-char fileName[100] = "/home/developer/other/posnetki/o4_44.mp4";
+//char fileName[100] = "/home/developer/other/posnetki/o4_44.mp4"; // doma
 //char fileName[100] = "/home/developer/other/posnetki/o4_87.mp4"; // na zacetku gledal na sredi ekrana, pol premikal glavo
+char fileName[100] = "/home/developer/other/posnetki/o4_89.mp4"; // knjiznica
 
 class FrameCarrier {
     public: cv::Mat frame;

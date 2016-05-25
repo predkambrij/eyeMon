@@ -13,11 +13,11 @@
 
 #include <opencv2/highgui/highgui.hpp>
 
-//char fileName[100] = "/home/developer/other/posnetki/o4_44.mp4";
+char fileName[100] = "/home/developer/other/posnetki/o4_89.mp4"; // knjiznica
 //char fileName[100] = "/home/developer/other/posnetki/o4_83.mp4";
 //char fileName[100] = "/home/developer/other/posnetki/o4_85.mp4"; // pri miru, niso rukal mize
 //char fileName[100] = "/home/developer/other/posnetki/o4_86.mp4"; // na zacetku gledal na sredi ekrana
-char fileName[100] = "/home/developer/other/posnetki/o4_87.mp4"; // na zacetku gledal na sredi ekrana, pol premikal glavo
+//char fileName[100] = "/home/developer/other/posnetki/o4_87.mp4"; // na zacetku gledal na sredi ekrana, pol premikal glavo
 cv::VideoCapture stream1(fileName);
 bool isVideoCapture = false;
 bool disable_max_size = false;
