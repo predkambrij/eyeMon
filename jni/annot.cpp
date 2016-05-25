@@ -7,7 +7,8 @@
 
 
 bool debug_t1_start_log = true;
-bool debug_t1_loop_log = false;
+bool debug_t1_loop_log = true;
+bool debug_t1_loop_loop_log = true;
 bool debug_t2_loop_log = true;
 bool debug_t2_show_img_main = true;
 
@@ -25,10 +26,12 @@ class FrameCarrier {
 };
 
 std::list<FrameCarrier> frameList;
-long unsigned int listSize = 0;
 
-bool finished = false;
 bool grabbing = true;
+long int startPos = 0;
+long int grabPos = -1;
+long int pos = -1;
+
 void doLog(bool shouldPrint, const std::string fmt, ...) {
     if (shouldPrint != true) {
         return;
@@ -77,16 +80,14 @@ int frameGrabber() {
         double frameTimeMs = (double) stream1.get(CV_CAP_PROP_POS_MSEC);
         FrameCarrier fc(frame.clone(), frameTimeMs);
         frameList.push_back(fc);
-        listSize++;
+        grabPos++;
+        doLog(debug_t1_loop_log, "debug_t1_loop_log: frame %d frameTime %lf\n", grabPos, frameTimeMs);
 
-        doLog(debug_t1_loop_log, "debug_t1_loop_log: frameTime %lf\n", frameTimeMs);
-        // TODO if size > X sleep for a while
-        if (listSize > (5*30)) {
-            finished = true;
-            break;
+        while ((pos + 300) < grabPos) {
+            doLog(debug_t1_loop_loop_log, "debug_t1_loop_loop_log: sleeping\n");
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
-    finished = true;
 
     return 0;
 }
@@ -96,19 +97,43 @@ int frameProcessor() {
     if (debug_t2_show_img_main == true) {
         cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 400, 100); cv::resizeWindow("main",1280, 960);
     }
+
+    cv::Mat frame;
     double frameTimeMs = 0, prevFrameMs = 0;
     std::list<FrameCarrier>::iterator iter = frameList.begin();
-    while(iter != frameList.end()) {
-        FrameCarrier& fc = *iter;
-        cv::Mat frame    = fc.frame;
-        frameTimeMs = fc.timestamp;
-        if (forward == true) {
-            iter++;
+    FrameCarrier& fc = *iter;
+
+    while(true) {
+        if (iter != frameList.end()) {
+            fc          = *iter;
+            frame       = fc.frame;
+            frameTimeMs = fc.timestamp;
         } else {
-            iter--;
+            doLog(true, "it's end\n");
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        // TODO delete old frame from the list
+        if (forward == true) {
+            doLog(true, "pos %d grabPos %d\n", pos, grabPos);
+            if (pos <= grabPos) {
+                iter++;
+                pos++;
+            } else {
+                doLog(true, "the end\n");
+            }
+        } else {
+            if (startPos < pos) {
+                iter--;
+                pos--;
+            }
+        }
+
+        // delete frames which are far behind
+        if ((startPos + 300) < pos) {
+            frameList.pop_front();
+            startPos++;
+        }
+
         doLog(debug_t2_loop_log, "debug_t2_loop_log: t %d:%02d.%03d frameTime %lf diff %lf\n", ((int)frameTimeMs)/60000, ((int)frameTimeMs/1000)%60, ((int)frameTimeMs)%1000, frameTimeMs, frameTimeMs-prevFrameMs);
         prevFrameMs = frameTimeMs;
 
