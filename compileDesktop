@@ -19,6 +19,13 @@ if [ "$1" == co ]; then
 elif [ "$1" == test ]; then
     settings_file="common_settings_test.cpp main_settings_test.cpp"
     is_test=1
+elif [ "$1" == annot ]; then
+    cd jni
+    compile "annot.cpp" ../annot
+    if [ $? -eq 0 ]; then
+        ../annot
+    fi
+    exit $?
 fi
 
 compile_settings "$settings_file"
