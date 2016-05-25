@@ -7,12 +7,13 @@
 
 
 bool debug_t1_start_log = true;
-bool debug_t1_loop_log = true;
-bool debug_t1_loop_loop_log = true;
+bool debug_t1_loop_log = false;
+bool debug_t1_loop_loop_log = false;
 bool debug_t2_loop_log = true;
 bool debug_t2_show_img_main = true;
 
-char fileName[100] = "/home/developer/other/posnetki/o4_87.mp4"; // na zacetku gledal na sredi ekrana, pol premikal glavo
+char fileName[100] = "/home/developer/other/posnetki/o4_44.mp4";
+//char fileName[100] = "/home/developer/other/posnetki/o4_87.mp4"; // na zacetku gledal na sredi ekrana, pol premikal glavo
 
 class FrameCarrier {
     public: cv::Mat frame;
@@ -83,7 +84,7 @@ int frameGrabber() {
         grabPos++;
         doLog(debug_t1_loop_log, "debug_t1_loop_log: frame %d frameTime %lf\n", grabPos, frameTimeMs);
 
-        while ((pos + 300) < grabPos) {
+        while ((pos + 300) < grabPos && grabbing) {
             doLog(debug_t1_loop_loop_log, "debug_t1_loop_loop_log: sleeping\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
@@ -115,7 +116,7 @@ int frameProcessor() {
 
         if (forward == true) {
             doLog(true, "pos %d grabPos %d\n", pos, grabPos);
-            if (pos <= grabPos) {
+            if (pos < grabPos) {
                 iter++;
                 pos++;
             } else {
