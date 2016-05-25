@@ -81,7 +81,7 @@ int frameGrabber() {
 
         doLog(debug_t1_loop_log, "debug_t1_loop_log: frameTime %lf\n", frameTimeMs);
         // TODO if size > X sleep for a while
-        if (listSize > 30) {
+        if (listSize > (5*30)) {
             finished = true;
             break;
         }
@@ -92,6 +92,7 @@ int frameGrabber() {
 }
 int frameProcessor() {
     bool pause = false;
+    bool forward = true;
     if (debug_t2_show_img_main == true) {
         cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 400, 100); cv::resizeWindow("main",1280, 960);
     }
@@ -100,12 +101,17 @@ int frameProcessor() {
     while(iter != frameList.end()) {
         FrameCarrier& fc = *iter;
         cv::Mat frame    = fc.frame;
-        double frameTimeMs = fc.timestamp;
-        iter++;
+        frameTimeMs = fc.timestamp;
+        if (forward == true) {
+            iter++;
+        } else {
+            iter--;
+        }
+
         // TODO delete old frame from the list
-        doLog(debug_t2_loop_log, "debug_t2_loop_log: frameTime %lf diff %lf\n", frameTimeMs, frameTimeMs-prevFrameMs);
+        doLog(debug_t2_loop_log, "debug_t2_loop_log: t %d:%02d.%03d frameTime %lf diff %lf\n", ((int)frameTimeMs)/60000, ((int)frameTimeMs/1000)%60, ((int)frameTimeMs)%1000, frameTimeMs, frameTimeMs-prevFrameMs);
         prevFrameMs = frameTimeMs;
-        
+
         imshowWrapper("main", frame, debug_t2_show_img_main);
         if (debug_t2_show_img_main == true) {
             // flow control
@@ -125,11 +131,16 @@ int frameProcessor() {
                     if((char)c == 'p') {
                         pause = 0;
                         break;
+                    } else if((char)c == 'b') {
+                        forward = false;
+                    } else if((char)c == 'f') {
+                        forward = true;
                     } else if((char)c == 'n') {
                         break;
                     } else if((char)c == 's') {
                         // status
                         //printStatus();
+
                         break;
                     }
                 }
