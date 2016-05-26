@@ -8,7 +8,7 @@ MACROS =
 
 
 clonegoogletest :
-	git clone https://predkambrij@bitbucket.org/predkambrij/googletest.git test/googletest/
+	git clone git@github.com:predkambrij/googletest.git test/googletest/
 
 ndk-build :
 	/home/developer/other/android_deps/android-ndk-r10d/ndk-build
