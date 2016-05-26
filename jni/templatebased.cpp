@@ -13,7 +13,7 @@ class TemplateBased {
     Mat leftTemplate, rightTemplate;
     int haveTemplate = 0;
 
-    public: int setup(const char* cascadeFileName) {
+    public: void setup(const char* cascadeFileName) {
         try {
             if(!face_cascade.load(cascadeFileName)) {
                 throw "--(!)Error loading face cascade, please change face_cascade_name in source code.\n";
@@ -22,15 +22,14 @@ class TemplateBased {
             doLog(true, msg);
             throw;
         }
-        return 0;
     }
 
 #ifdef IS_PHONE
-    public: int setJni(JNIEnv* jenv) {
+    public: void setJni(JNIEnv* jenv) {
     }
 #endif
 
-    public: int appendStatistics(double t, double lv, double rv) {
+    public: void appendStatistics(double t, double lv, double rv) {
 #ifndef IS_PHONE
         //FILE * pFile;
         //pFile = fopen("/home/developer/other/resources/statistics/statistics.txt","a");
@@ -39,7 +38,7 @@ class TemplateBased {
 #endif
     }
 
-    public: int appendEmpty(double t) {
+    public: void appendEmpty(double t) {
 #ifndef IS_PHONE
         //FILE * pFile;
         //pFile = fopen("/home/developer/other/resources/statistics/statistics.txt","a");
@@ -48,7 +47,7 @@ class TemplateBased {
 #endif
     }
 
-    public: int process(Mat gray, Mat out, double timestamp) {
+    public: void process(Mat gray, Mat out, double timestamp) {
         std::chrono::time_point<std::chrono::steady_clock> t1;
         cv::Rect face, leftEyeRegion, rightEyeRegion;
         Mat faceROI;
@@ -67,7 +66,7 @@ class TemplateBased {
         if (fdRes != 0) {
             this->appendEmpty(timestamp);
             imshowWrapper("main", out, debug_show_img_main);
-            return -1;
+            return;
         }
 
         if (this->haveTemplate == false) {
@@ -77,7 +76,7 @@ class TemplateBased {
             int rowsO = face.height/4.3;
             int colsO = face.width/7;
             int rows2 = face.height/4;
-            int cols2 = face.width/4;
+            int cols2 = face.width/4.5;
 
             cv::Rect leftE(colsO, rowsO, cols2, rows2);
             cv::Rect rightE(face.width-colsO-rows2, rowsO, cols2, rows2);
@@ -131,7 +130,7 @@ class TemplateBased {
             }
         }
     }
-    public: int measureBlinks() {
+    public: void measureBlinks() {
         BlinkMeasure::measureBlinks();
     }
     public: void checkNotificationStatus(double timestamp) {
@@ -188,7 +187,7 @@ class TemplateBased {
         *face = faces[0];
         return 0;
     }
-    public: int run(Mat gray, Mat out, double timestamp) {
+    public: void run(Mat gray, Mat out, double timestamp) {
         std::chrono::time_point<std::chrono::steady_clock> t1;
 
         t1 = std::chrono::steady_clock::now();

@@ -43,7 +43,7 @@ void captureFrames() {
     }
 
     Mat frame;
-    std::chrono::time_point<std::chrono::steady_clock> t1 = std::chrono::steady_clock::now();
+    //std::chrono::time_point<std::chrono::steady_clock> t1 = std::chrono::steady_clock::now();
     double prevFrameMs = 0;
     while (grabbing) {
         if(!(stream1.read(frame))) {
@@ -52,7 +52,7 @@ void captureFrames() {
             return;
         }
 
-        long unsigned int listSize = frameList.size();
+        long int listSize = frameList.size();
         doLog(debug_t1_log, "size %ld\n", frameList.size());
 
         if (listSize >= maxSize && disable_max_size != true) {

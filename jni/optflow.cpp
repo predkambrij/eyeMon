@@ -63,7 +63,7 @@ void drawOptFlowMap (const Mat flow, Mat cflowmap, int step, const Scalar& color
     printf("\n\n\n");
 }
 
-int getGray(Mat frame, Mat *gray) {
+void getGray(Mat frame, Mat *gray) {
     // int resizeFactor = 1;
     //resize(frame, *output, Size(frame.size().width/resizeFactor, frame.size().height/resizeFactor));
     //cvtColor(frame, *gray, CV_BGR2GRAY);
@@ -74,7 +74,7 @@ int getGray(Mat frame, Mat *gray) {
 
 int eye_region_width, eye_region_height;
 
-int getLeftRightEyeMat(Mat gray, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, Mat *left, Mat *right) {
+void getLeftRightEyeMat(Mat gray, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, Mat *left, Mat *right) {
     // printf("eye_region_width %d, eye_region_height %d\n", eye_region_width, eye_region_height);
     // printf("leftEyeRegion %d, leftEyeRegion %d\n", leftEyeRegion.x, leftEyeRegion.y);
     // printf("rightEyeRegion %d, rightEyeRegion %d\n", rightEyeRegion.x, rightEyeRegion.y);
@@ -93,19 +93,19 @@ int faceDetect(Mat gray, cv::Rect *face) {
     *face = faces[0];
     return 0;
 }
-int eyeRegions(cv::Rect face, cv::Rect *leftEyeRegion, cv::Rect *rightEyeRegion) {
+void eyeRegions(cv::Rect face, cv::Rect *leftEyeRegion, cv::Rect *rightEyeRegion) {
     eye_region_width = face.width * (kEyePercentWidth/100.0);
     eye_region_height = face.width * (kEyePercentHeight/100.0);
     int eye_region_top = face.height * (kEyePercentTop/100.0);
     (*leftEyeRegion) = cv::Rect(face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
     (*rightEyeRegion) = cv::Rect(face.width - eye_region_width - face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
 }
-int eyeCenters(Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point *leftPupil, cv::Point *rightPupil) {
-    *leftPupil  = findEyeCenter(faceROI, leftEyeRegion, "Left Eye");
-    *rightPupil = findEyeCenter(faceROI, rightEyeRegion, "Right Eye");
+void eyeCenters(Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point *leftPupil, cv::Point *rightPupil) {
+    //*leftPupil  = findEyeCenter(faceROI, leftEyeRegion, "Left Eye");
+    //*rightPupil = findEyeCenter(faceROI, rightEyeRegion, "Right Eye");
 }
 
-int showResult(Mat cflow, cv::Rect face, Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil) {
+void showResult(Mat cflow, cv::Rect face, Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil) {
     // // change eye centers to face coordinates
     // rightPupil.x += rightEyeRegion.x; rightPupil.y += rightEyeRegion.y;
     // leftPupil.x += leftEyeRegion.x; leftPupil.y += leftEyeRegion.y;
@@ -148,7 +148,7 @@ bool addRemovePtx = false;
 vector<Point2f> points[2];
 Mat pleft, pright;
 int firstLoopProcs = 1;
-int process(Mat gray, Mat out) {
+void process(Mat gray, Mat out) {
     clock_t start;
     cv::Point leftPupil, rightPupil;
     cv::Rect face, leftEyeRegion, rightEyeRegion;
@@ -161,7 +161,7 @@ int process(Mat gray, Mat out) {
         if (debug_show_img_main == true && PHONE == 0) {
             imshow("main", out);
         }
-        return -1;
+        return;
     }
     // // faceROI = gray(face);
     // if (kSmoothFaceImage) {
