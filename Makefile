@@ -21,11 +21,13 @@ compile :
 setEyelikeFiles :
 	$(eval FILES_TO_COMPILE += eyelike/findEyeCorner.cpp eyelike/findEyeCenter.cpp eyelike/helpers.cpp)
 
-setDesktopSettings : setEyelikeFiles
+# setEyelikeFiles
+setDesktopSettings :
 	$(eval FILES_TO_COMPILE += common_settings_comp.cpp main_settings.cpp)
 	$(eval OUTPUT_BIN = bins/d)
 
-setTestSettings : setEyelikeFiles
+# setEyelikeFiles
+setTestSettings :
 	$(eval FILES_TO_COMPILE += common_settings_test.cpp main_settings_test.cpp)
 	$(eval MACROS = -DIS_TEST)
 	$(eval OUTPUT_BIN = bins/t)
