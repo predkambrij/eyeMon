@@ -63,15 +63,6 @@ void drawOptFlowMap (const Mat flow, Mat cflowmap, int step, const Scalar& color
     printf("\n\n\n");
 }
 
-void getGray(Mat frame, Mat *gray) {
-    // int resizeFactor = 1;
-    //resize(frame, *output, Size(frame.size().width/resizeFactor, frame.size().height/resizeFactor));
-    //cvtColor(frame, *gray, CV_BGR2GRAY);
-    std::vector<cv::Mat> rgbChannels(3);
-    cv::split(frame, rgbChannels);
-    *gray = rgbChannels[2];
-}
-
 int eye_region_width, eye_region_height;
 
 void getLeftRightEyeMat(Mat gray, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, Mat *left, Mat *right) {

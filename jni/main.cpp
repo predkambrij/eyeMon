@@ -3,10 +3,19 @@
 #include <thread>
 
 
-#include <optflow.cpp>
+//#include <optflow.cpp>
 #include <templatebased.cpp>
 
 #include <main_settings.hpp>
+
+void getGray(Mat frame, Mat *gray) {
+    // int resizeFactor = 1;
+    //resize(frame, *output, Size(frame.size().width/resizeFactor, frame.size().height/resizeFactor));
+    //cvtColor(frame, *gray, CV_BGR2GRAY);
+    std::vector<cv::Mat> rgbChannels(3);
+    cv::split(frame, rgbChannels);
+    *gray = rgbChannels[2];
+}
 
 class FrameCarrier {
     public: Mat frame;
@@ -76,7 +85,7 @@ void captureFrames() {
     }
 }
 
-OptFlow optf;
+//OptFlow optf;
 TemplateBased templ;
 
 void doProcessing() {
@@ -144,7 +153,7 @@ void doProcessing() {
         t2 = std::chrono::steady_clock::now();
         switch (method) {
             case METHOD_OPTFLOW:
-            optf.run(gray, frame);
+            //optf.run(gray, frame);
             break;
             case METHOD_TEMPLATE_BASED:
             templ.run(gray, frame, timestamp);
@@ -213,15 +222,15 @@ void processOptions(int argc, char* argv[]) {
     }
 }
 
-int main(int argc, char * argv[]) {
+int main() { // int argc, char * argv[]
     //processOptions(argc, argv);
     //return 0;
-    PHONE = 0; farne = 0;
+    PHONE = 0;
 
     char faceDetector[200] = "/home/developer/other/android_deps/OpenCV-2.4.10-android-sdk/samples/optical-flow/res/raw/lbpcascade_frontalface.xml";
     switch (method) {
         case METHOD_OPTFLOW:
-        optf.setup(faceDetector);
+        //optf.setup(faceDetector);
         break;
         case METHOD_TEMPLATE_BASED:
         templ.setup(faceDetector);

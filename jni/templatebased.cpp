@@ -29,24 +29,6 @@ class TemplateBased {
     }
 #endif
 
-    public: void appendStatistics(double t, double lv, double rv) {
-#ifndef IS_PHONE
-        //FILE * pFile;
-        //pFile = fopen("/home/developer/other/resources/statistics/statistics.txt","a");
-        //fprintf(pFile, "%lf\t%lf\t%lf\n", t, lv, rv);
-        //fclose(pFile);
-#endif
-    }
-
-    public: void appendEmpty(double t) {
-#ifndef IS_PHONE
-        //FILE * pFile;
-        //pFile = fopen("/home/developer/other/resources/statistics/statistics.txt","a");
-        //fprintf(pFile, "%lf\t\t\n", t);
-        //fclose(pFile);
-#endif
-    }
-
     public: void process(Mat gray, Mat out, double timestamp) {
         std::chrono::time_point<std::chrono::steady_clock> t1;
         cv::Rect face, leftEyeRegion, rightEyeRegion;
@@ -64,7 +46,6 @@ class TemplateBased {
         difftime("Face detect", t1, debug_tmpl_perf2);
 
         if (fdRes != 0) {
-            this->appendEmpty(timestamp);
             imshowWrapper("main", out, debug_show_img_main);
             return;
         }
@@ -115,9 +96,6 @@ class TemplateBased {
             // blink measure
             BlinkMeasure bm(timestamp, lcor, rcor);
             blinkMeasure.push_back(bm);
-
-            // correlation log
-            this->appendStatistics(timestamp, lcor, rcor);
 
             if (debug_show_img_main == true) {
                 matchLocL = minLocL;
