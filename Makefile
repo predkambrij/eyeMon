@@ -16,7 +16,7 @@ ndk-build :
 # -Werror -Wall -Wextra
 compile :
 	cd jni; \
-	g++ $(MACROS) -std=c++11 -Werror -Wextra $(FILES_TO_COMPILE) -o ../$(OUTPUT_BIN) -I. $$(pkg-config --cflags --libs opencv);
+	g++ $(MACROS) -std=c++11 -Wall -Wextra $(FILES_TO_COMPILE) -o ../$(OUTPUT_BIN) -I. $$(pkg-config --cflags --libs opencv);
 
 setEyelikeFiles :
 	$(eval FILES_TO_COMPILE += eyelike/findEyeCorner.cpp eyelike/findEyeCenter.cpp eyelike/helpers.cpp)
