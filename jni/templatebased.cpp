@@ -12,7 +12,9 @@ class TemplateBased {
     cv::CascadeClassifier face_cascade;
     Mat leftTemplate, rightTemplate;
     int haveTemplate = 0;
-
+    int frameNum = 0;
+    int frameNumt = 20;
+    bool canProcess = false;
     public: void setup(const char* cascadeFileName) {
         try {
             if(!face_cascade.load(cascadeFileName)) {
@@ -30,6 +32,13 @@ class TemplateBased {
 #endif
 
     public: void process(Mat gray, Mat out, double timestamp) {
+        if (this->canProcess == false) {
+            if (frameNum >= frameNumt) {
+                this->canProcess = true;
+            } else {
+                return;
+            }
+        }
         std::chrono::time_point<std::chrono::steady_clock> t1;
         cv::Rect face, leftEyeRegion, rightEyeRegion;
         Mat faceROI;
@@ -51,8 +60,8 @@ class TemplateBased {
         }
 
         if (this->haveTemplate == false) {
-            imshowWrapper("face", faceROI, debug_show_img_face);
             faceROI = gray(face);
+            imshowWrapper("face", faceROI, debug_show_img_face);
 
             int rowsO = face.height/4.3;
             int colsO = face.width/7;
@@ -167,7 +176,7 @@ class TemplateBased {
     }
     public: void run(Mat gray, Mat out, double timestamp) {
         std::chrono::time_point<std::chrono::steady_clock> t1;
-
+        this->frameNum++;
         t1 = std::chrono::steady_clock::now();
         this->frameTimeProcessing(timestamp);
         this->checkNotificationStatus(timestamp);

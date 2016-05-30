@@ -13,7 +13,8 @@
 
 #include <opencv2/highgui/highgui.hpp>
 
-char fileName[100] = "/home/developer/other/posnetki/o4_89.mp4"; // knjiznica
+//char fileName[100] = "/home/developer/other/posnetki/o4_89.mp4"; // knjiznica
+char fileName[100] = "/home/developer/other/posnetki/o4_90.mp4"; // knjiznica, na zac na sredino (zaflasha svetloba), pol premikal
 //char fileName[100] = "/home/developer/other/posnetki/o4_83.mp4";
 //char fileName[100] = "/home/developer/other/posnetki/o4_85.mp4"; // pri miru, niso rukal mize
 //char fileName[100] = "/home/developer/other/posnetki/o4_86.mp4"; // na zacetku gledal na sredi ekrana

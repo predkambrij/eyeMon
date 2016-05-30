@@ -14,7 +14,8 @@ bool debug_t2_show_img_main = true;
 
 //char fileName[100] = "/home/developer/other/posnetki/o4_44.mp4"; // doma
 //char fileName[100] = "/home/developer/other/posnetki/o4_87.mp4"; // na zacetku gledal na sredi ekrana, pol premikal glavo
-char fileName[100] = "/home/developer/other/posnetki/o4_89.mp4"; // knjiznica
+//char fileName[100] = "/home/developer/other/posnetki/o4_89.mp4"; // knjiznica
+char fileName[100] = "/home/developer/other/posnetki/o4_90.mp4"; // knjiznica (na zac. gledal na sredo, pol premikal glavo,...)
 
 class FrameCarrier {
     public: cv::Mat frame;
@@ -97,10 +98,16 @@ int frameProcessor() {
     bool pause = false;
     bool forward = true;
     if (debug_t2_show_img_main == true) {
-        cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 400, 100); cv::resizeWindow("main",1280, 960);
+        cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", -100, 0); cv::resizeWindow("main",640, 480);
+        cv::namedWindow("main2",CV_WINDOW_NORMAL); cv::moveWindow("main2", 400, 0); cv::resizeWindow("main2",640, 480);
+        cv::namedWindow("main3",CV_WINDOW_NORMAL); cv::moveWindow("main3", 900, 0); cv::resizeWindow("main3",640, 480);
+        cv::namedWindow("main4",CV_WINDOW_NORMAL); cv::moveWindow("main4", 1400, 0); cv::resizeWindow("main4",640, 480);
     }
 
-    cv::Mat frame;
+    cv::Mat frame, prevFrame2, prevFrame3, prevFrame4;
+    bool prev2FrameAssigned = false;
+    bool prev3FrameAssigned = false;
+    bool prev4FrameAssigned = false;
     double frameTimeMs = 0, prevFrameMs = 0;
     std::list<FrameCarrier>::iterator iter = frameList.begin();
     FrameCarrier& fc = *iter;
@@ -140,6 +147,22 @@ int frameProcessor() {
         prevFrameMs = frameTimeMs;
 
         imshowWrapper("main", frame, debug_t2_show_img_main);
+        if (prev4FrameAssigned) {
+            imshowWrapper("main4", prevFrame4, debug_t2_show_img_main);
+        }
+        if (prev3FrameAssigned) {
+            imshowWrapper("main3", prevFrame3, debug_t2_show_img_main);
+            prevFrame4 = prevFrame3.clone();
+            prev4FrameAssigned = true;
+        }
+        if (prev2FrameAssigned) {
+            imshowWrapper("main2", prevFrame2, debug_t2_show_img_main);
+            prevFrame3 = prevFrame2.clone();
+            prev3FrameAssigned = true;
+        }
+        prevFrame2 = frame.clone();
+        prev2FrameAssigned = true;
+
         if (debug_t2_show_img_main == true) {
             // flow control
             int c = cv::waitKey(10);
@@ -176,7 +199,7 @@ int frameProcessor() {
     }
     return 0;
 }
-int main(int argc, char * argv[]) {
+int main() { // int argc, char * argv[]
     std::thread t1(frameGrabber);
     std::thread t2(frameProcessor);
 
