@@ -34,7 +34,7 @@ class TemplateBased {
     public: void setJni(JNIEnv* jenv) {
     }
 #endif
-    public: bool preprocessing(cv::Mat* gray) {
+    public: bool preprocessing(cv::Mat& gray) {
         // light flash at the start
         this->frameNum++;
         if (this->canProcess == false) {
@@ -46,34 +46,36 @@ class TemplateBased {
         }
         std::chrono::time_point<std::chrono::steady_clock> t1;
         t1 = std::chrono::steady_clock::now();
-        GaussianBlur(*gray, *gray, cv::Size(5,5), 0);
+        GaussianBlur(gray, gray, cv::Size(5,5), 0);
         difftime("GaussianBlur", t1, debug_tmpl_perf1);
         return true;
     }
 
-    public: bool eyesInit(cv::Mat *gray, cv::Rect* face, cv::Mat *faceROI) {
+    public: bool eyesInit(cv::Mat& gray) {
+        cv::Rect face;
+        cv::Mat faceROI;
         std::chrono::time_point<std::chrono::steady_clock> t1;
         t1 = std::chrono::steady_clock::now();
-        int fdRes = this->faceDetect(*gray, face);
+        int fdRes = this->faceDetect(gray, &face);
         difftime("Face detect", t1, debug_tmpl_perf2);
 
         if (fdRes != 0) {
             return false;
         }
 
-        *faceROI = (*gray)(*face).clone();
-        imshowWrapper("face", *faceROI, debug_show_img_face);
+        faceROI = (gray)(face).clone();
+        imshowWrapper("face", faceROI, debug_show_img_face);
 
-        int rowsO = (*face).height/4.3;
-        int colsO = (*face).width/5.5;
-        int rows2 = (*face).height/4.3;
-        int cols2 = (*face).width/4.5;
+        int rowsO = (face).height/4.3;
+        int colsO = (face).width/5.5;
+        int rows2 = (face).height/4.3;
+        int cols2 = (face).width/4.5;
 
         cv::Rect leftE(colsO, rowsO, cols2, rows2);
-        cv::Rect rightE((*face).width-colsO-rows2, rowsO, cols2, rows2);
+        cv::Rect rightE((face).width-colsO-rows2, rowsO, cols2, rows2);
 
-        cv::Mat left  = (*faceROI)(leftE);
-        cv::Mat right = (*faceROI)(rightE);
+        cv::Mat left  = (faceROI)(leftE);
+        cv::Mat right = (faceROI)(rightE);
         left.copyTo(this->leftTemplate);
         right.copyTo(this->rightTemplate);
 
@@ -85,19 +87,19 @@ class TemplateBased {
 
     public: void process(cv::Mat gray, cv::Mat out, double timestamp) {
         std::chrono::time_point<std::chrono::steady_clock> t1;
-        cv::Rect face, leftEyeRegion, rightEyeRegion;
-        cv::Mat faceROI, lTemplSearch, rTemplSearch;
+        cv::Rect leftEyeRegion, rightEyeRegion;
+        cv::Mat lTemplSearch, rTemplSearch;
         cv::Mat leftResult, rightResult;
         cv::Mat flowLeft, flowRight;
 
-        if (!this->preprocessing(&gray)) {
+        if (!this->preprocessing(gray)) {
             // it will wait first 20 frames so that light flash ends
             return;
         }
 
         // we have template if we have template of open eyes
         if (this->haveTemplate == false) {
-            if (!this->eyesInit(&gray, &face, &faceROI)) {
+            if (!this->eyesInit(gray)) {
                 // eyes initialization failed
                 imshowWrapper("main", out, debug_show_img_main);
                 return;
