@@ -51,55 +51,68 @@ class TemplateBased {
         return true;
     }
 
+    public: bool eyesInit(cv::Mat *gray, cv::Rect* face, cv::Mat *faceROI) {
+        std::chrono::time_point<std::chrono::steady_clock> t1;
+        t1 = std::chrono::steady_clock::now();
+        int fdRes = this->faceDetect(*gray, face);
+        difftime("Face detect", t1, debug_tmpl_perf2);
+
+        if (fdRes != 0) {
+            return false;
+        }
+
+        *faceROI = (*gray)(*face).clone();
+        imshowWrapper("face", *faceROI, debug_show_img_face);
+
+        int rowsO = (*face).height/4.3;
+        int colsO = (*face).width/5.5;
+        int rows2 = (*face).height/4.3;
+        int cols2 = (*face).width/4.5;
+
+        cv::Rect leftE(colsO, rowsO, cols2, rows2);
+        cv::Rect rightE((*face).width-colsO-rows2, rowsO, cols2, rows2);
+
+        cv::Mat left  = (*faceROI)(leftE);
+        cv::Mat right = (*faceROI)(rightE);
+        left.copyTo(this->leftTemplate);
+        right.copyTo(this->rightTemplate);
+
+        imshowWrapper("left", this->leftTemplate, debug_show_img_templ_eyes_tmpl);
+        imshowWrapper("right", this->rightTemplate, debug_show_img_templ_eyes_tmpl);
+
+        return true;
+    }
+
     public: void process(cv::Mat gray, cv::Mat out, double timestamp) {
         std::chrono::time_point<std::chrono::steady_clock> t1;
         cv::Rect face, leftEyeRegion, rightEyeRegion;
         cv::Mat faceROI, lTemplSearch, rTemplSearch;
-        cv::Mat left, right;
         cv::Mat leftResult, rightResult;
         cv::Mat flowLeft, flowRight;
 
         if (!this->preprocessing(&gray)) {
+            // it will wait first 20 frames so that light flash ends
             return;
         }
 
+        // we have template if we have template of open eyes
         if (this->haveTemplate == false) {
-            t1 = std::chrono::steady_clock::now();
-            int fdRes = this->faceDetect(gray, &face);
-            difftime("Face detect", t1, debug_tmpl_perf2);
-
-            if (fdRes != 0) {
+            if (!this->eyesInit(&gray, &face, &faceROI)) {
+                // eyes initialization failed
                 imshowWrapper("main", out, debug_show_img_main);
                 return;
             }
 
-            faceROI = gray(face);
-            imshowWrapper("face", faceROI, debug_show_img_face);
-
-            int rowsO = face.height/4.3;
-            int colsO = face.width/5.5;
-            int rows2 = face.height/4.3;
-            int cols2 = face.width/4.5;
-
-            cv::Rect leftE(colsO, rowsO, cols2, rows2);
-            cv::Rect rightE(face.width-colsO-rows2, rowsO, cols2, rows2);
-
-            left  = faceROI(leftE);
-            right = faceROI(rightE);
-            left.copyTo(leftTemplate);
-            right.copyTo(rightTemplate);
-
-            imshowWrapper("left", leftTemplate, debug_show_img_templ_eyes_tmpl);
-            imshowWrapper("right", rightTemplate, debug_show_img_templ_eyes_tmpl);
-
             this->haveTemplate = true;
         } else {
+            imshowWrapper("left", this->leftTemplate, debug_show_img_templ_eyes_tmpl);
+            imshowWrapper("right", this->rightTemplate, debug_show_img_templ_eyes_tmpl);
             double minValL, maxValL, minValR, maxValR;
             cv::Point  minLocL, maxLocL, matchLocL, minLocR, maxLocR, matchLocR;
 
             t1 = std::chrono::steady_clock::now();
-            cv::matchTemplate(gray, leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
-            cv::matchTemplate(gray, rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
+            cv::matchTemplate(gray, this->leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
+            cv::matchTemplate(gray, this->rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
             difftime("matchTemplate (2x)", t1, debug_tmpl_perf2);
 
             imshowWrapper("leftR", leftResult, debug_show_img_templ_eyes_cor);
