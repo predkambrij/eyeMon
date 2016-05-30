@@ -26,7 +26,6 @@ JNIEXPORT jlong JNICALL Java_org_blatnik_eyemon_TemplateBasedJNI_templateBasedCr
 JNIEXPORT void JNICALL Java_org_blatnik_eyemon_TemplateBasedJNI_templateBasedDestroyObject(JNIEnv * jenv, jclass, jlong thiz) {
 }
 
-
 JNIEXPORT void JNICALL Java_org_blatnik_eyemon_TemplateBasedJNI_templateBasedDetect
                                                                 (JNIEnv * jenv, jclass, jlong imageRGB, jlong imageGray) {
     Mat rgb = *((Mat*)imageRGB);

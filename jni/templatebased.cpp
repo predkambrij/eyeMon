@@ -11,10 +11,14 @@
 class TemplateBased {
     cv::CascadeClassifier face_cascade;
     cv::Mat leftTemplate, rightTemplate;
-    int haveTemplate = 0;
+    bool haveTemplate = false;
     int frameNum = 0;
     int frameNumt = 20;
     bool canProcess = false;
+    int lEyex = -1, lEyey = -1;
+    int rEyex = -1, rEyey = -1;
+    int lLastTime = -1, rLastTime = -1;
+
     public: void setup(const char* cascadeFileName) {
         try {
             if(!face_cascade.load(cascadeFileName)) {
@@ -32,13 +36,6 @@ class TemplateBased {
 #endif
 
     public: void process(cv::Mat gray, cv::Mat out, double timestamp) {
-        if (this->canProcess == false) {
-            if (frameNum >= frameNumt) {
-                this->canProcess = true;
-            } else {
-                return;
-            }
-        }
         std::chrono::time_point<std::chrono::steady_clock> t1;
         cv::Rect face, leftEyeRegion, rightEyeRegion;
         cv::Mat faceROI, lTemplSearch, rTemplSearch;
@@ -46,20 +43,31 @@ class TemplateBased {
         cv::Mat leftResult, rightResult;
         cv::Mat flowLeft, flowRight;
 
+        // light flash at the start
+        this->frameNum++;
+        if (this->canProcess == false) {
+            if (frameNum >= frameNumt) {
+                this->canProcess = true;
+            } else {
+                return;
+            }
+        }
+
+        // preprocessing
         t1 = std::chrono::steady_clock::now();
         GaussianBlur(gray, gray, cv::Size(5,5), 0);
         difftime("GaussianBlur", t1, debug_tmpl_perf1);
 
-        t1 = std::chrono::steady_clock::now();
-        int fdRes = this->faceDetect(gray, &face);
-        difftime("Face detect", t1, debug_tmpl_perf2);
-
-        if (fdRes != 0) {
-            imshowWrapper("main", out, debug_show_img_main);
-            return;
-        }
-
         if (this->haveTemplate == false) {
+            t1 = std::chrono::steady_clock::now();
+            int fdRes = this->faceDetect(gray, &face);
+            difftime("Face detect", t1, debug_tmpl_perf2);
+
+            if (fdRes != 0) {
+                imshowWrapper("main", out, debug_show_img_main);
+                return;
+            }
+
             faceROI = gray(face);
             imshowWrapper("face", faceROI, debug_show_img_face);
 
@@ -176,7 +184,6 @@ class TemplateBased {
     }
     public: void run(cv::Mat gray, cv::Mat out, double timestamp) {
         std::chrono::time_point<std::chrono::steady_clock> t1;
-        this->frameNum++;
         t1 = std::chrono::steady_clock::now();
         this->frameTimeProcessing(timestamp);
         this->checkNotificationStatus(timestamp);
