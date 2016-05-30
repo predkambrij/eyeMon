@@ -11,7 +11,7 @@
 class TemplateBased {
     cv::CascadeClassifier face_cascade;
     cv::Mat leftTemplate, rightTemplate;
-    bool haveTemplate = false;
+    bool hasTemplate = false;
     int frameNum = 0;
     int frameNumt = 20;
     bool canProcess = false;
@@ -63,7 +63,7 @@ class TemplateBased {
             return false;
         }
 
-        faceROI = (gray)(face).clone();
+        faceROI = gray(face);
         imshowWrapper("face", faceROI, debug_show_img_face);
 
         int rowsO = (face).height/4.3;
@@ -74,8 +74,8 @@ class TemplateBased {
         cv::Rect leftE(colsO, rowsO, cols2, rows2);
         cv::Rect rightE((face).width-colsO-rows2, rowsO, cols2, rows2);
 
-        cv::Mat left  = (faceROI)(leftE);
-        cv::Mat right = (faceROI)(rightE);
+        cv::Mat left  = faceROI(leftE);
+        cv::Mat right = faceROI(rightE);
         left.copyTo(this->leftTemplate);
         right.copyTo(this->rightTemplate);
 
@@ -84,65 +84,65 @@ class TemplateBased {
 
         return true;
     }
+    public: void method(cv::Mat& gray, cv::Mat& out, double timestamp) {
+        std::chrono::time_point<std::chrono::steady_clock> t1;
+        //cv::Mat lTemplSearch, rTemplSearch;
+        cv::Mat leftResult, rightResult;
+        imshowWrapper("left", this->leftTemplate, debug_show_img_templ_eyes_tmpl);
+        imshowWrapper("right", this->rightTemplate, debug_show_img_templ_eyes_tmpl);
+        double minValL, maxValL, minValR, maxValR;
+        cv::Point  minLocL, maxLocL, matchLocL, minLocR, maxLocR, matchLocR;
+
+        t1 = std::chrono::steady_clock::now();
+        cv::matchTemplate(gray, this->leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
+        cv::matchTemplate(gray, this->rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
+        difftime("matchTemplate (2x)", t1, debug_tmpl_perf2);
+
+        imshowWrapper("leftR", leftResult, debug_show_img_templ_eyes_cor);
+        imshowWrapper("rightR", rightResult, debug_show_img_templ_eyes_cor);
+
+        //normalize(leftResult, leftResult, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
+        //normalize(rightResult, rightResult, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
+        //imshowWrapper("leftR1", leftResult);
+        //imshowWrapper("rightR1", rightResult);
+        minMaxLoc(leftResult, &minValL, &maxValL, &minLocL, &maxLocL, cv::Mat());
+        minMaxLoc(rightResult, &minValR, &maxValR, &minLocR, &maxLocR, cv::Mat());
+        double lcor = 1-minValL;
+        double rcor = 1-minValR;
+        doLog(debug_tmpl_log, "debug_tmpl_log: lcor %lf rcor %lf\n", lcor, rcor);
+
+        // blink measure
+        BlinkMeasure bm(timestamp, lcor, rcor);
+        blinkMeasure.push_back(bm);
+
+        if (debug_show_img_main == true) {
+            matchLocL = minLocL;
+            matchLocR = minLocR;
+
+            circle(out, cv::Point2f((float)matchLocL.x, (float)matchLocL.y), 10, cv::Scalar(0,255,0), -1, 8);
+            rectangle(out, matchLocL, cv::Point(matchLocL.x + leftTemplate.cols , matchLocL.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
+            circle(out, cv::Point2f((float)matchLocR.x, (float)matchLocR.y), 10, cv::Scalar(0,255,0), -1, 8);
+            rectangle(out, matchLocR, cv::Point(matchLocR.x + leftTemplate.cols , matchLocR.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
+        }
+    }
 
     public: void process(cv::Mat gray, cv::Mat out, double timestamp) {
-        std::chrono::time_point<std::chrono::steady_clock> t1;
-        cv::Rect leftEyeRegion, rightEyeRegion;
-        cv::Mat lTemplSearch, rTemplSearch;
-        cv::Mat leftResult, rightResult;
-        cv::Mat flowLeft, flowRight;
-
         if (!this->preprocessing(gray)) {
             // it will wait first 20 frames so that light flash ends
             return;
         }
 
         // we have template if we have template of open eyes
-        if (this->haveTemplate == false) {
+        if (this->hasTemplate == false) {
             if (!this->eyesInit(gray)) {
                 // eyes initialization failed
                 imshowWrapper("main", out, debug_show_img_main);
                 return;
             }
 
-            this->haveTemplate = true;
+            this->hasTemplate = true;
         } else {
-            imshowWrapper("left", this->leftTemplate, debug_show_img_templ_eyes_tmpl);
-            imshowWrapper("right", this->rightTemplate, debug_show_img_templ_eyes_tmpl);
-            double minValL, maxValL, minValR, maxValR;
-            cv::Point  minLocL, maxLocL, matchLocL, minLocR, maxLocR, matchLocR;
-
-            t1 = std::chrono::steady_clock::now();
-            cv::matchTemplate(gray, this->leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
-            cv::matchTemplate(gray, this->rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
-            difftime("matchTemplate (2x)", t1, debug_tmpl_perf2);
-
-            imshowWrapper("leftR", leftResult, debug_show_img_templ_eyes_cor);
-            imshowWrapper("rightR", rightResult, debug_show_img_templ_eyes_cor);
-
-            //normalize(leftResult, leftResult, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
-            //normalize(rightResult, rightResult, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
-            //imshowWrapper("leftR1", leftResult);
-            //imshowWrapper("rightR1", rightResult);
-            minMaxLoc(leftResult, &minValL, &maxValL, &minLocL, &maxLocL, cv::Mat());
-            minMaxLoc(rightResult, &minValR, &maxValR, &minLocR, &maxLocR, cv::Mat());
-            double lcor = 1-minValL;
-            double rcor = 1-minValR;
-            doLog(debug_tmpl_log, "debug_tmpl_log: lcor %lf rcor %lf\n", lcor, rcor);
-
-            // blink measure
-            BlinkMeasure bm(timestamp, lcor, rcor);
-            blinkMeasure.push_back(bm);
-
-            if (debug_show_img_main == true) {
-                matchLocL = minLocL;
-                matchLocR = minLocR;
-
-                circle(out, cv::Point2f((float)matchLocL.x, (float)matchLocL.y), 10, cv::Scalar(0,255,0), -1, 8);
-                rectangle(out, matchLocL, cv::Point(matchLocL.x + leftTemplate.cols , matchLocL.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
-                circle(out, cv::Point2f((float)matchLocR.x, (float)matchLocR.y), 10, cv::Scalar(0,255,0), -1, 8);
-                rectangle(out, matchLocR, cv::Point(matchLocR.x + leftTemplate.cols , matchLocR.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
-            }
+            this->method(gray, out, timestamp);
         }
     }
     public: void measureBlinks() {
