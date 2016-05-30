@@ -64,8 +64,8 @@ class TemplateBased {
             imshowWrapper("face", faceROI, debug_show_img_face);
 
             int rowsO = face.height/4.3;
-            int colsO = face.width/7;
-            int rows2 = face.height/4;
+            int colsO = face.width/5.5;
+            int rows2 = face.height/4.3;
             int cols2 = face.width/4.5;
 
             cv::Rect leftE(colsO, rowsO, cols2, rows2);
