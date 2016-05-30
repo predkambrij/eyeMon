@@ -6,7 +6,7 @@
 #include <blinkmeasure.hpp>
 
 //using namespace cv;
-using namespace std;
+//using namespace std;
 
 class TemplateBased {
     cv::CascadeClassifier face_cascade;

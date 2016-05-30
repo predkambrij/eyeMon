@@ -239,8 +239,8 @@ int main() { // int argc, char * argv[]
         break;
     }
 
-    thread t1(captureFrames);
-    thread t2(doProcessing);
+    std::thread t1(captureFrames);
+    std::thread t2(doProcessing);
 
     t1.join();
     t2.join();
