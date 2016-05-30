@@ -34,6 +34,22 @@ class TemplateBased {
     public: void setJni(JNIEnv* jenv) {
     }
 #endif
+    public: bool preprocessing(cv::Mat* gray) {
+        // light flash at the start
+        this->frameNum++;
+        if (this->canProcess == false) {
+            if (this->frameNum >= this->frameNumt) {
+                this->canProcess = true;
+            } else {
+                return false;
+            }
+        }
+        std::chrono::time_point<std::chrono::steady_clock> t1;
+        t1 = std::chrono::steady_clock::now();
+        GaussianBlur(*gray, *gray, cv::Size(5,5), 0);
+        difftime("GaussianBlur", t1, debug_tmpl_perf1);
+        return true;
+    }
 
     public: void process(cv::Mat gray, cv::Mat out, double timestamp) {
         std::chrono::time_point<std::chrono::steady_clock> t1;
@@ -43,20 +59,9 @@ class TemplateBased {
         cv::Mat leftResult, rightResult;
         cv::Mat flowLeft, flowRight;
 
-        // light flash at the start
-        this->frameNum++;
-        if (this->canProcess == false) {
-            if (frameNum >= frameNumt) {
-                this->canProcess = true;
-            } else {
-                return;
-            }
+        if (!this->preprocessing(&gray)) {
+            return;
         }
-
-        // preprocessing
-        t1 = std::chrono::steady_clock::now();
-        GaussianBlur(gray, gray, cv::Size(5,5), 0);
-        difftime("GaussianBlur", t1, debug_tmpl_perf1);
 
         if (this->haveTemplate == false) {
             t1 = std::chrono::steady_clock::now();
