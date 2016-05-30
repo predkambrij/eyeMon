@@ -8,7 +8,7 @@
 
 #include <main_settings.hpp>
 
-void getGray(Mat frame, Mat *gray) {
+void getGray(cv::Mat frame, cv::Mat *gray) {
     // int resizeFactor = 1;
     //resize(frame, *output, Size(frame.size().width/resizeFactor, frame.size().height/resizeFactor));
     //cvtColor(frame, *gray, CV_BGR2GRAY);
@@ -18,10 +18,10 @@ void getGray(Mat frame, Mat *gray) {
 }
 
 class FrameCarrier {
-    public: Mat frame;
+    public: cv::Mat frame;
     public: double timestamp;
 
-    public: FrameCarrier(Mat frame, double timestamp) {
+    public: FrameCarrier(cv::Mat frame, double timestamp) {
         this->frame     = frame;
         this->timestamp = timestamp;
 
@@ -51,7 +51,7 @@ void captureFrames() {
         doLog(debug_t1_log, "debug_t1_log: CAP_PROP_FRAME_COUNT %f\n", stream1.get(CV_CAP_PROP_FRAME_COUNT));
     }
 
-    Mat frame;
+    cv::Mat frame;
     //std::chrono::time_point<std::chrono::steady_clock> t1 = std::chrono::steady_clock::now();
     double prevFrameMs = 0;
     while (grabbing) {
@@ -91,7 +91,7 @@ TemplateBased templ;
 void doProcessing() {
     //cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
     if (debug_show_img_main == true) {
-        cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 400, 100); resizeWindow("main",1280, 960);
+        cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 400, 100); cv::resizeWindow("main",1280, 960);
     }
     if (debug_show_img_face == true) {
         cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 400, 100);
@@ -114,7 +114,7 @@ void doProcessing() {
 
     std::chrono::time_point<std::chrono::steady_clock> t1 = std::chrono::steady_clock::now();
     std::chrono::time_point<std::chrono::steady_clock> t2;
-    Mat frame, gray, cflow;
+    cv::Mat frame, gray, cflow;
 
     while (true) {
         long unsigned int listSize = frameList.size();
@@ -132,7 +132,7 @@ void doProcessing() {
 
         FrameCarrier fc = frameList.front();
         frameList.pop_front();
-        Mat frame = fc.frame;
+        cv::Mat frame = fc.frame;
         // cv::flip(frame, frame, 1);
         double timestamp = fc.timestamp;
         if (debug_t2_log == true) {

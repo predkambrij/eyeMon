@@ -5,12 +5,12 @@
 
 #include <blinkmeasure.hpp>
 
-using namespace cv;
+//using namespace cv;
 using namespace std;
 
 class TemplateBased {
     cv::CascadeClassifier face_cascade;
-    Mat leftTemplate, rightTemplate;
+    cv::Mat leftTemplate, rightTemplate;
     int haveTemplate = 0;
     int frameNum = 0;
     int frameNumt = 20;
@@ -31,7 +31,7 @@ class TemplateBased {
     }
 #endif
 
-    public: void process(Mat gray, Mat out, double timestamp) {
+    public: void process(cv::Mat gray, cv::Mat out, double timestamp) {
         if (this->canProcess == false) {
             if (frameNum >= frameNumt) {
                 this->canProcess = true;
@@ -41,13 +41,13 @@ class TemplateBased {
         }
         std::chrono::time_point<std::chrono::steady_clock> t1;
         cv::Rect face, leftEyeRegion, rightEyeRegion;
-        Mat faceROI;
-        Mat left, right;
-        Mat leftResult, rightResult;
-        Mat flowLeft, flowRight;
+        cv::Mat faceROI, lTemplSearch, rTemplSearch;
+        cv::Mat left, right;
+        cv::Mat leftResult, rightResult;
+        cv::Mat flowLeft, flowRight;
 
         t1 = std::chrono::steady_clock::now();
-        GaussianBlur(gray, gray, Size(5,5), 0);
+        GaussianBlur(gray, gray, cv::Size(5,5), 0);
         difftime("GaussianBlur", t1, debug_tmpl_perf1);
 
         t1 = std::chrono::steady_clock::now();
@@ -82,7 +82,7 @@ class TemplateBased {
             this->haveTemplate = true;
         } else {
             double minValL, maxValL, minValR, maxValR;
-            Point  minLocL, maxLocL, matchLocL, minLocR, maxLocR, matchLocR;
+            cv::Point  minLocL, maxLocL, matchLocL, minLocR, maxLocR, matchLocR;
 
             t1 = std::chrono::steady_clock::now();
             cv::matchTemplate(gray, leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
@@ -92,12 +92,12 @@ class TemplateBased {
             imshowWrapper("leftR", leftResult, debug_show_img_templ_eyes_cor);
             imshowWrapper("rightR", rightResult, debug_show_img_templ_eyes_cor);
 
-            //normalize(leftResult, leftResult, 0, 1, cv::NORM_MINMAX, -1, Mat());
-            //normalize(rightResult, rightResult, 0, 1, cv::NORM_MINMAX, -1, Mat());
+            //normalize(leftResult, leftResult, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
+            //normalize(rightResult, rightResult, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
             //imshowWrapper("leftR1", leftResult);
             //imshowWrapper("rightR1", rightResult);
-            minMaxLoc(leftResult, &minValL, &maxValL, &minLocL, &maxLocL, Mat());
-            minMaxLoc(rightResult, &minValR, &maxValR, &minLocR, &maxLocR, Mat());
+            minMaxLoc(leftResult, &minValL, &maxValL, &minLocL, &maxLocL, cv::Mat());
+            minMaxLoc(rightResult, &minValR, &maxValR, &minLocR, &maxLocR, cv::Mat());
             double lcor = 1-minValL;
             double rcor = 1-minValR;
             doLog(debug_tmpl_log, "debug_tmpl_log: lcor %lf rcor %lf\n", lcor, rcor);
@@ -110,10 +110,10 @@ class TemplateBased {
                 matchLocL = minLocL;
                 matchLocR = minLocR;
 
-                circle(out, Point2f((float)matchLocL.x, (float)matchLocL.y), 10, Scalar(0,255,0), -1, 8);
-                rectangle(out, matchLocL, Point(matchLocL.x + leftTemplate.cols , matchLocL.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
-                circle(out, Point2f((float)matchLocR.x, (float)matchLocR.y), 10, Scalar(0,255,0), -1, 8);
-                rectangle(out, matchLocR, Point(matchLocR.x + leftTemplate.cols , matchLocR.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
+                circle(out, cv::Point2f((float)matchLocL.x, (float)matchLocL.y), 10, cv::Scalar(0,255,0), -1, 8);
+                rectangle(out, matchLocL, cv::Point(matchLocL.x + leftTemplate.cols , matchLocL.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
+                circle(out, cv::Point2f((float)matchLocR.x, (float)matchLocR.y), 10, cv::Scalar(0,255,0), -1, 8);
+                rectangle(out, matchLocR, cv::Point(matchLocR.x + leftTemplate.cols , matchLocR.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
             }
         }
     }
@@ -165,7 +165,7 @@ class TemplateBased {
         }
         previousFrameTime = timestamp;
     }
-    public: int faceDetect(Mat gray, cv::Rect *face) {
+    public: int faceDetect(cv::Mat gray, cv::Rect *face) {
         std::vector<cv::Rect> faces;
         face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
         if (faces.size() != 1) {
@@ -174,7 +174,7 @@ class TemplateBased {
         *face = faces[0];
         return 0;
     }
-    public: void run(Mat gray, Mat out, double timestamp) {
+    public: void run(cv::Mat gray, cv::Mat out, double timestamp) {
         std::chrono::time_point<std::chrono::steady_clock> t1;
         this->frameNum++;
         t1 = std::chrono::steady_clock::now();
