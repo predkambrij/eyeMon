@@ -4,8 +4,4 @@ libs
 obj
 test/googletest/
 
-# x86_64 binaries
-el
-eel
-annot
 
