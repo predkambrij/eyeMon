@@ -10,13 +10,14 @@
 
 class TemplateBased {
     cv::CascadeClassifier face_cascade;
+
+    bool canProcess = false;
+    int frameNum = 0, frameNumt = 20;
+
     cv::Mat leftTemplate, rightTemplate;
     bool hasTemplate = false;
-    int frameNum = 0;
-    int frameNumt = 20;
-    bool canProcess = false;
-    int lEyex = -1, lEyey = -1;
-    int rEyex = -1, rEyey = -1;
+
+    cv::Point lEye, rEye;
     int lLastTime = -1, rLastTime = -1;
 
     public: void setup(const char* cascadeFileName) {
@@ -51,7 +52,7 @@ class TemplateBased {
         return true;
     }
 
-    public: bool eyesInit(cv::Mat& gray) {
+    public: bool eyesInit(cv::Mat& gray, double timestamp) {
         cv::Rect face;
         cv::Mat faceROI;
         std::chrono::time_point<std::chrono::steady_clock> t1;
@@ -73,38 +74,48 @@ class TemplateBased {
 
         cv::Rect leftE(colsO, rowsO, cols2, rows2);
         cv::Rect rightE((face).width-colsO-rows2, rowsO, cols2, rows2);
+        this->lEye = cv::Point(face.x+leftE.x, face.y+leftE.y);
+        this->rEye = cv::Point(face.x+rightE.x, face.y+rightE.y);
+        this->lLastTime = timestamp;
+        this->rLastTime = timestamp;
+
+        // mark where on the gray are eyes so we can define search region in the next frame
+        doLog(debug_tmpl_log, "debug_tmpl_log: debug lEye %d %d rEye %d %d\n", lEye.x, lEye.y, rEye.x, rEye.y);
 
         cv::Mat left  = faceROI(leftE);
         cv::Mat right = faceROI(rightE);
+// TODO - should wait for initial blink, so that eyes are open for sure
         left.copyTo(this->leftTemplate);
         right.copyTo(this->rightTemplate);
 
         imshowWrapper("left", this->leftTemplate, debug_show_img_templ_eyes_tmpl);
         imshowWrapper("right", this->rightTemplate, debug_show_img_templ_eyes_tmpl);
-
         return true;
     }
     public: void method(cv::Mat& gray, cv::Mat& out, double timestamp) {
         std::chrono::time_point<std::chrono::steady_clock> t1;
-        //cv::Mat lTemplSearch, rTemplSearch;
         cv::Mat leftResult, rightResult;
-        imshowWrapper("left", this->leftTemplate, debug_show_img_templ_eyes_tmpl);
-        imshowWrapper("right", this->rightTemplate, debug_show_img_templ_eyes_tmpl);
         double minValL, maxValL, minValR, maxValR;
         cv::Point  minLocL, maxLocL, matchLocL, minLocR, maxLocR, matchLocR;
+
+        imshowWrapper("left", this->leftTemplate, debug_show_img_templ_eyes_tmpl);
+        imshowWrapper("right", this->rightTemplate, debug_show_img_templ_eyes_tmpl);
+
+        cv::Mat lTemplSearch(this->leftTemplate.rows*2, this->leftTemplate.cols*2, gray.type());
+        cv::Mat rTemplSearch(this->rightTemplate.rows*2, this->rightTemplate.cols*2, gray.type());
+        // TODO gray.copyto this area based on this->lEye, this->rEye
 
         t1 = std::chrono::steady_clock::now();
         cv::matchTemplate(gray, this->leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
         cv::matchTemplate(gray, this->rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
-        difftime("matchTemplate (2x)", t1, debug_tmpl_perf2);
-
+        difftime("debug_tmpl_perf2: matchTemplate (2x)", t1, debug_tmpl_perf2);
+// TODO we should estimate whether we lost eyes
+// - location moved too far, correlation too low, (face not visible)
         imshowWrapper("leftR", leftResult, debug_show_img_templ_eyes_cor);
         imshowWrapper("rightR", rightResult, debug_show_img_templ_eyes_cor);
 
         //normalize(leftResult, leftResult, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
         //normalize(rightResult, rightResult, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
-        //imshowWrapper("leftR1", leftResult);
-        //imshowWrapper("rightR1", rightResult);
         minMaxLoc(leftResult, &minValL, &maxValL, &minLocL, &maxLocL, cv::Mat());
         minMaxLoc(rightResult, &minValR, &maxValR, &minLocR, &maxLocR, cv::Mat());
         double lcor = 1-minValL;
@@ -118,7 +129,9 @@ class TemplateBased {
         if (debug_show_img_main == true) {
             matchLocL = minLocL;
             matchLocR = minLocR;
+            doLog(debug_tmpl_log, "debug_tmpl_log: debug matchLEye %d %d matchREye %d %d\n", matchLocL.x, matchLocL.y, matchLocR.x, matchLocR.y);
 
+// TODO update eyes location on gray
             circle(out, cv::Point2f((float)matchLocL.x, (float)matchLocL.y), 10, cv::Scalar(0,255,0), -1, 8);
             rectangle(out, matchLocL, cv::Point(matchLocL.x + leftTemplate.cols , matchLocL.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
             circle(out, cv::Point2f((float)matchLocR.x, (float)matchLocR.y), 10, cv::Scalar(0,255,0), -1, 8);
@@ -129,19 +142,23 @@ class TemplateBased {
     public: void process(cv::Mat gray, cv::Mat out, double timestamp) {
         if (!this->preprocessing(gray)) {
             // it will wait first 20 frames so that light flash ends
+            // it blurs the grayscale image
             return;
         }
 
         // we have template if we have template of open eyes
         if (this->hasTemplate == false) {
-            if (!this->eyesInit(gray)) {
-                // eyes initialization failed
+            if (!this->eyesInit(gray, timestamp)) {
+                // it finds eye region based on face detection and (TODO after first blink)
                 imshowWrapper("main", out, debug_show_img_main);
                 return;
             }
 
             this->hasTemplate = true;
         } else {
+            // once we have eyes location we calculate correlation in the area around the eyes
+            // if we believe that eyes are not in the search area anymore (person turned head or left the computer)
+            //                                                                      we reinitialize (set hasTemplate to false)
             this->method(gray, out, timestamp);
         }
     }
