@@ -14,33 +14,33 @@ ndk-build :
 	/home/developer/other/android_deps/android-ndk-r10d/ndk-build
 
 # -Werror -Wall -Wextra
-compile :
+_compile :
 	cd jni; \
 	g++ $(MACROS) -std=c++11 -Wall -Wextra $(FILES_TO_COMPILE) -o ../$(OUTPUT_BIN) -I. $$(pkg-config --cflags --libs opencv);
 
-setEyelikeFiles :
+_setEyelikeFiles :
 	$(eval FILES_TO_COMPILE += eyelike/findEyeCorner.cpp eyelike/findEyeCenter.cpp eyelike/helpers.cpp)
 
 # setEyelikeFiles
-setDesktopSettings :
+_setDesktopSettings :
 	$(eval FILES_TO_COMPILE += common_settings_comp.cpp main_settings.cpp)
 	$(eval OUTPUT_BIN = bins/d)
 
 # setEyelikeFiles
-setTestSettings :
+_setTestSettings :
 	$(eval FILES_TO_COMPILE += common_settings_test.cpp main_settings_test.cpp)
 	$(eval MACROS = -DIS_TEST)
 	$(eval OUTPUT_BIN = bins/t)
 
-setAnnotVars :
+_setAnnotVars :
 	$(eval FILES_TO_COMPILE = annot.cpp)
 	$(eval OUTPUT_BIN = bins/annot)
 
 run/% :
 	bins/$*
 
-d : setDesktopSettings compile run/d
-dt : setTestSettings compile run/t
-annot : setAnnotVars compile run/annot
+d : _setDesktopSettings _compile run/d
+dt : _setTestSettings _compile run/t
+annot : _setAnnotVars _compile run/annot
 
 
