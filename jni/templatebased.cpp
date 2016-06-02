@@ -149,11 +149,11 @@ class TemplateBased {
         doLog(debug_tmpl_log, "debug_tmpl_log: debug matchLEye %d %d matchREye %d %d\n", matchLocL.x, matchLocL.y, matchLocR.x, matchLocR.y);
         doLog(debug_tmpl_log, "debug_tmpl_log: debug this->lEye %d %d this->rEye %d %d\n", this->lEye.x, this->lEye.y, this->lEye.x, this->lEye.y);
 
-        if (abs(matchLocL.x-this->lEye.x) < 50 && abs(matchLocL.y-this->lEye.y) < 50) {
+        if (abs(matchLocL.x-this->lEye.x) < 10 && abs(matchLocL.y-this->lEye.y) < 10) {
             this->lEye.x = matchLocL.x;
             this->lEye.y = matchLocL.y;
         }
-        if (abs(matchLocR.x-this->rEye.x) < 50 && abs(matchLocR.y-this->rEye.y) < 50) {
+        if (abs(matchLocR.x-this->rEye.x) < 10 && abs(matchLocR.y-this->rEye.y) < 10) {
             this->rEye.x = matchLocR.x;
             this->rEye.y = matchLocR.y;
         }
