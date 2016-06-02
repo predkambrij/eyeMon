@@ -74,13 +74,14 @@ class TemplateBased {
 
         cv::Rect leftE(colsO, rowsO, cols2, rows2);
         cv::Rect rightE((face).width-colsO-rows2, rowsO, cols2, rows2);
+
+        // mark where on the gray are eyes so we can define search region in the next frame
+        // region size is double size of leftTemplate and leftTemplate size
         this->lEye = cv::Point(face.x+leftE.x, face.y+leftE.y);
         this->rEye = cv::Point(face.x+rightE.x, face.y+rightE.y);
         this->lLastTime = timestamp;
         this->rLastTime = timestamp;
-
-        // mark where on the gray are eyes so we can define search region in the next frame
-        doLog(debug_tmpl_log, "debug_tmpl_log: debug lEye %d %d rEye %d %d\n", lEye.x, lEye.y, rEye.x, rEye.y);
+        doLog(debug_tmpl_log, "debug_tmpl_log: lEye %d %d rEye %d %d\n", lEye.x, lEye.y, rEye.x, rEye.y);
 
         cv::Mat left  = faceROI(leftE);
         cv::Mat right = faceROI(rightE);
@@ -92,22 +93,39 @@ class TemplateBased {
         imshowWrapper("right", this->rightTemplate, debug_show_img_templ_eyes_tmpl);
         return true;
     }
+    public: void updateTemplSearch(cv::Rect& lTemplSearchR, cv::Rect& rTemplSearchR, cv::Mat& gray, cv::Mat& lTemplSearch, cv::Mat& rTemplSearch) {
+// TODO take care that it won't get outside of gray
+        int lTempColsHalf = this->leftTemplate.cols/2;
+        int lTempRowsHalf = this->leftTemplate.rows/2;
+        int rTempColsHalf = this->leftTemplate.cols/2;
+        int rTempRowsHalf = this->leftTemplate.rows/2;
+        int lTemplSearchSX = this->lEye.x-lTempColsHalf;
+        int rTemplSearchSX = this->rEye.x-rTempColsHalf;
+        int lTemplSearchSY = this->lEye.y-lTempRowsHalf;
+        int rTemplSearchSY = this->rEye.y-rTempRowsHalf;
+        lTemplSearchR = cv::Rect(lTemplSearchSX, lTemplSearchSY, this->leftTemplate.cols*1.8, this->leftTemplate.rows*2);
+        rTemplSearchR = cv::Rect(rTemplSearchSX, rTemplSearchSY, this->rightTemplate.cols*1.8, this->rightTemplate.rows*2);
+        doLog(debug_tmpl_log, "debug_tmpl_log: AAA lTemplSearchR %d %d %d %d\n", lTemplSearchR.x, lTemplSearchR.y, lTemplSearchR.width, lTemplSearchR.height);
+        doLog(debug_tmpl_log, "debug_tmpl_log: AAA rTemplSearchR %d %d %d %d\n", rTemplSearchR.x, rTemplSearchR.y, rTemplSearchR.width, rTemplSearchR.height);
+        lTemplSearch = gray(lTemplSearchR);
+        rTemplSearch = gray(rTemplSearchR);
+    }
     public: void method(cv::Mat& gray, cv::Mat& out, double timestamp) {
         std::chrono::time_point<std::chrono::steady_clock> t1;
-        cv::Mat leftResult, rightResult;
+        cv::Mat lTemplSearch, rTemplSearch, leftResult, rightResult;
+        cv::Rect lTemplSearchR, rTemplSearchR;
         double minValL, maxValL, minValR, maxValR;
         cv::Point  minLocL, maxLocL, matchLocL, minLocR, maxLocR, matchLocR;
 
         imshowWrapper("left", this->leftTemplate, debug_show_img_templ_eyes_tmpl);
         imshowWrapper("right", this->rightTemplate, debug_show_img_templ_eyes_tmpl);
 
-        cv::Mat lTemplSearch(this->leftTemplate.rows*2, this->leftTemplate.cols*2, gray.type());
-        cv::Mat rTemplSearch(this->rightTemplate.rows*2, this->rightTemplate.cols*2, gray.type());
-        // TODO gray.copyto this area based on this->lEye, this->rEye
+        // define template search region based on eyes' location in previous frame
+        this->updateTemplSearch(lTemplSearchR, rTemplSearchR, gray, lTemplSearch, rTemplSearch);
 
         t1 = std::chrono::steady_clock::now();
-        cv::matchTemplate(gray, this->leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
-        cv::matchTemplate(gray, this->rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
+        cv::matchTemplate(lTemplSearch, this->leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
+        cv::matchTemplate(rTemplSearch, this->rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
         difftime("debug_tmpl_perf2: matchTemplate (2x)", t1, debug_tmpl_perf2);
 // TODO we should estimate whether we lost eyes
 // - location moved too far, correlation too low, (face not visible)
@@ -126,16 +144,27 @@ class TemplateBased {
         BlinkMeasure bm(timestamp, lcor, rcor);
         blinkMeasure.push_back(bm);
 
-        if (debug_show_img_main == true) {
-            matchLocL = minLocL;
-            matchLocR = minLocR;
-            doLog(debug_tmpl_log, "debug_tmpl_log: debug matchLEye %d %d matchREye %d %d\n", matchLocL.x, matchLocL.y, matchLocR.x, matchLocR.y);
+        matchLocL = cv::Point(minLocL.x+lTemplSearchR.x, minLocL.y+lTemplSearchR.y);
+        matchLocR = cv::Point(minLocR.x+rTemplSearchR.x, minLocR.y+rTemplSearchR.y);
+        doLog(debug_tmpl_log, "debug_tmpl_log: debug matchLEye %d %d matchREye %d %d\n", matchLocL.x, matchLocL.y, matchLocR.x, matchLocR.y);
+        doLog(debug_tmpl_log, "debug_tmpl_log: debug this->lEye %d %d this->rEye %d %d\n", this->lEye.x, this->lEye.y, this->lEye.x, this->lEye.y);
 
-// TODO update eyes location on gray
+        if (abs(matchLocL.x-this->lEye.x) < 50 && abs(matchLocL.y-this->lEye.y) < 50) {
+            this->lEye.x = matchLocL.x;
+            this->lEye.y = matchLocL.y;
+        }
+        if (abs(matchLocR.x-this->rEye.x) < 50 && abs(matchLocR.y-this->rEye.y) < 50) {
+            this->rEye.x = matchLocR.x;
+            this->rEye.y = matchLocR.y;
+        }
+        if (debug_show_img_main == true) {
             circle(out, cv::Point2f((float)matchLocL.x, (float)matchLocL.y), 10, cv::Scalar(0,255,0), -1, 8);
-            rectangle(out, matchLocL, cv::Point(matchLocL.x + leftTemplate.cols , matchLocL.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
+            rectangle(out, matchLocL, cv::Point(matchLocL.x+ leftTemplate.cols, matchLocL.y+leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
             circle(out, cv::Point2f((float)matchLocR.x, (float)matchLocR.y), 10, cv::Scalar(0,255,0), -1, 8);
-            rectangle(out, matchLocR, cv::Point(matchLocR.x + leftTemplate.cols , matchLocR.y + leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
+            rectangle(out, matchLocR, cv::Point(matchLocR.x+leftTemplate.cols, matchLocR.y+leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
+
+            rectangle(out, lTemplSearchR, CV_RGB(255, 255, 255), 0.5);
+            rectangle(out, rTemplSearchR, CV_RGB(255, 255, 255), 0.5);
         }
     }
 
