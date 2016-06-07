@@ -87,12 +87,12 @@ bool TemplateBased::eyesInit(cv::Mat& gray, double timestamp) {
     imshowWrapper("right", this->rightTemplate, debug_show_img_templ_eyes_tmpl);
     return true;
 };
-void TemplateBased::updateTemplSearch(cv::Rect& lTemplSearchR, cv::Rect& rTemplSearchR, cv::Mat& gray, cv::Mat& lTemplSearch, cv::Mat& rTemplSearch) {
+void TemplateBased::updateTemplSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv::Rect& rTemplSearchR, cv::Mat& lTemplSearch, cv::Mat& rTemplSearch) {
 // TODO take care that it won't get outside of gray
     int lTempColsHalf = this->leftTemplate.cols/2;
     int lTempRowsHalf = this->leftTemplate.rows/2;
-    int rTempColsHalf = this->leftTemplate.cols/2;
-    int rTempRowsHalf = this->leftTemplate.rows/2;
+    int rTempColsHalf = this->rightTemplate.cols/2;
+    int rTempRowsHalf = this->rightTemplate.rows/2;
     int lTemplSearchSX = this->lEye.x-lTempColsHalf;
     int rTemplSearchSX = this->rEye.x-rTempColsHalf;
     int lTemplSearchSY = this->lEye.y-lTempRowsHalf;
@@ -115,18 +115,18 @@ void TemplateBased::method(cv::Mat& gray, cv::Mat& out, double timestamp) {
     imshowWrapper("right", this->rightTemplate, debug_show_img_templ_eyes_tmpl);
 
     // define template search region based on eyes' location in previous frame
-    this->updateTemplSearch(lTemplSearchR, rTemplSearchR, gray, lTemplSearch, rTemplSearch);
+    this->updateTemplSearch(gray, lTemplSearchR, rTemplSearchR, lTemplSearch, rTemplSearch);
+    imshowWrapper("leftSR", lTemplSearch, debug_show_img_templ_eyes_cor);
+    imshowWrapper("rightSR", rTemplSearch, debug_show_img_templ_eyes_cor);
 
+// TODO we should estimate whether we lost eyes
+// - location moved too far, correlation too low, (face not visible)
     t1 = std::chrono::steady_clock::now();
     cv::matchTemplate(lTemplSearch, this->leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
     cv::matchTemplate(rTemplSearch, this->rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
     difftime("debug_tmpl_perf2: matchTemplate (2x)", t1, debug_tmpl_perf2);
-// TODO we should estimate whether we lost eyes
-// - location moved too far, correlation too low, (face not visible)
     imshowWrapper("leftR", leftResult, debug_show_img_templ_eyes_cor);
     imshowWrapper("rightR", rightResult, debug_show_img_templ_eyes_cor);
-    imshowWrapper("leftSR", lTemplSearch, debug_show_img_templ_eyes_cor);
-    imshowWrapper("rightSR", rTemplSearch, debug_show_img_templ_eyes_cor);
 
     //normalize(leftResult, leftResult, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
     //normalize(rightResult, rightResult, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
@@ -148,10 +148,16 @@ void TemplateBased::method(cv::Mat& gray, cv::Mat& out, double timestamp) {
     if (abs(matchLocL.x-this->lEye.x) < 10 && abs(matchLocL.y-this->lEye.y) < 10) {
         this->lEye.x = matchLocL.x;
         this->lEye.y = matchLocL.y;
+        this->lLastTime = timestamp;
     }
     if (abs(matchLocR.x-this->rEye.x) < 10 && abs(matchLocR.y-this->rEye.y) < 10) {
         this->rEye.x = matchLocR.x;
         this->rEye.y = matchLocR.y;
+        this->rLastTime = timestamp;
+    }
+    if ((this->lLastTime+1000) < timestamp || (this->rLastTime+1000) < timestamp) {
+        // we lost eyes, request reinit
+        this->hasTemplate = false;
     }
     if (debug_show_img_main == true) {
         circle(out, cv::Point2f((float)matchLocL.x, (float)matchLocL.y), 10, cv::Scalar(0,255,0), -1, 8);
