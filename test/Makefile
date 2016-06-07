@@ -46,6 +46,9 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 testall : $(TESTS)
 
 testclean :
+	ls $(TB)/|grep -Ev "gtest.*(.o|.a)\$$" | xargs -i rm -f $(TB)/{}
+
+testcleanall :
 	rm -f $(TESTS) $(TB)/gtest.a $(TB)/gtest_main.a $(TB)/*.o
 
 # Builds gtest.a and gtest_main.a.
@@ -72,30 +75,28 @@ $(TB)/gtest.a : $(TB)/gtest-all.o
 $(TB)/gtest_main.a : $(TB)/gtest-all.o $(TB)/gtest_main.o
 	$(AR) $(ARFLAGS) $@ $^
 
-# Builds a sample test.  A test should link with either gtest.a or
-# gtest_main.a, depending on whether it defines its own main()
-# function.
+# Builds tests.  A test should link with either gtest.a or
+# gtest_main.a, depending on whether it defines its own main() function.
 
-$(TB)/sample1.o : $(USER_DIR)/sample1.cc $(USER_DIR)/sample1.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/sample1.cc -o $@
+$(TB)/common.o : $(USER_DIR)/common.cpp $(USER_DIR)/common.hpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $$(pkg-config --cflags opencv) -I$(USER_DIR) -c $(USER_DIR)/common.cpp -o $@
 
-$(TB)/sample1_unittest.o : $(TEST_DIR)/sample1_unittest.cc \
-                     $(USER_DIR)/sample1.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I $(USER_DIR) -c $(TEST_DIR)/sample1_unittest.cc -o $@
+$(TB)/common_settings_test.o : $(USER_DIR)/common_settings_test.cpp $(USER_DIR)/common.hpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $$(pkg-config --cflags opencv) -I$(USER_DIR) -c $(USER_DIR)/common_settings_test.cpp -o $@
 
-$(TB)/sample1_unittest : $(TB)/sample1.o $(TB)/sample1_unittest.o $(TB)/gtest_main.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+# classes
+$(TB)/blinkmeasure.o : $(USER_DIR)/blinkmeasure.cpp $(USER_DIR)/blinkmeasure.hpp $(USER_DIR)/common.hpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $$(pkg-config --cflags opencv) -I$(USER_DIR) -c $(USER_DIR)/blinkmeasure.cpp -o $@
 
-$(TB)/sample1_unittest_run : $(TB)/sample1_unittest
-	$(TB)/sample1_unittest
+$(TB)/templatebased.o : $(USER_DIR)/templatebased.cpp $(USER_DIR)/templatebased.hpp \
+        $(USER_DIR)/common.hpp $(USER_DIR)/blinkmeasure.hpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $$(pkg-config --cflags opencv) -I$(USER_DIR) -c $(USER_DIR)/templatebased.cpp -o $@
 
-$(TB)/templatebased.o : $(USER_DIR)/templatebased.cpp $(USER_DIR)/templatebased.hpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(USER_DIR) $$(pkg-config --cflags opencv) -c $(USER_DIR)/templatebased.cpp -o $@
+# unittests
+$(TB)/templatebased_unittest.o : $(TEST_DIR)/templatebased_unittest.cpp $(USER_DIR)/templatebased.hpp $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $$(pkg-config --cflags opencv) -I$(USER_DIR) $(TEST_DIR)/templatebased_unittest.cpp -o $@
 
-$(TB)/templatebased_unittest.o : $(TEST_DIR)/templatebased_unittest.cpp \
-                     $(USER_DIR)/templatebased.hpp $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/templatebased_unittest.cpp -o $@
+$(TB)/templatebased_unittest : $(TB)/templatebased.o $(TB)/templatebased_unittest.o $(TB)/common.o $(TB)/common_settings_test.o $(TB)/blinkmeasure.o $(TB)/gtest_main.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@ $$(pkg-config --cflags --libs opencv| tr ' ' '\n' |grep -v /usr/local/lib/libopencv_ts.a|tr '\n' ' ')
 
-$(TB)/templatebased_unittest : $(TB)/templatebased.o $(TB)/templatebased_unittest.o $(TB)/gtest_main.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $$(pkg-config --libs opencv) $^ -o $@
 
