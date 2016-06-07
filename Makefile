@@ -10,7 +10,7 @@ MACROS =
 clonegoogletest :
 	git clone git@github.com:predkambrij/googletest.git test/googletest/
 
-ndk-build :
+ndkb :
 	/home/developer/other/android_deps/android-ndk-r10d/ndk-build
 
 # -Werror -Wall -Wextra
