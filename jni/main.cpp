@@ -2,9 +2,10 @@
 #include <list>
 #include <thread>
 
+#include <common.hpp>
 
 //#include <optflow.cpp>
-#include <templatebased.cpp>
+#include <templatebased.hpp>
 
 #include <main_settings.hpp>
 

@@ -2,7 +2,7 @@ include test/Makefile
 
 PROJDIR = ${CURDIR}/
 
-FILES_TO_COMPILE = common.cpp main.cpp blinkmeasure.cpp
+FILES_TO_COMPILE = common.cpp main.cpp blinkmeasure.cpp templatebased.cpp
 OUTPUT_BIN =
 MACROS =
 
@@ -39,6 +39,7 @@ _setAnnotVars :
 run/% :
 	bins/$*
 
+dco : _setDesktopSettings _compile
 d : _setDesktopSettings _compile run/d
 dt : _setTestSettings _compile run/t
 annot : _setAnnotVars _compile run/annot
