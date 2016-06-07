@@ -94,7 +94,11 @@ void doProcessing() {
         cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 400, 100); cv::resizeWindow("main",1280, 960);
     }
     if (debug_show_img_face == true) {
-        cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 400, 100);
+        cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 60, 100);
+    }
+    if (debug_show_img_templ_eyes_tmpl == true) {
+        cv::namedWindow("leftSR",CV_WINDOW_NORMAL); cv::moveWindow("leftSR", 1300, 200);
+        cv::namedWindow("rightSR",CV_WINDOW_NORMAL); cv::moveWindow("rightSR", 1600, 200);
     }
     if (debug_show_img_templ_eyes_tmpl == true) {
         cv::namedWindow("left",CV_WINDOW_NORMAL); cv::moveWindow("left", 1300, 500);

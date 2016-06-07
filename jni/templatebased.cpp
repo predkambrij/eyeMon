@@ -131,6 +131,8 @@ class TemplateBased {
 // - location moved too far, correlation too low, (face not visible)
         imshowWrapper("leftR", leftResult, debug_show_img_templ_eyes_cor);
         imshowWrapper("rightR", rightResult, debug_show_img_templ_eyes_cor);
+        imshowWrapper("leftSR", lTemplSearch, debug_show_img_templ_eyes_cor);
+        imshowWrapper("rightSR", rTemplSearch, debug_show_img_templ_eyes_cor);
 
         //normalize(leftResult, leftResult, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
         //normalize(rightResult, rightResult, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
