@@ -25,6 +25,8 @@ class TemplateBased {
         void checkNotificationStatus(double timestamp);
         void frameTimeProcessing(double timestamp);
         int faceDetect(cv::Mat gray, cv::Rect *face);
+        void updateSearchRegion(cv::Point matchLocL, cv::Point matchLocR, double timestamp);
+        void checkTracking(double timestamp);
         void run(cv::Mat gray, cv::Mat out, double timestamp);
 
 #ifdef IS_PHONE

@@ -104,6 +104,25 @@ void TemplateBased::updateTemplSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv:
     lTemplSearch = gray(lTemplSearchR);
     rTemplSearch = gray(rTemplSearchR);
 };
+void TemplateBased::checkTracking(double timestamp) {
+    if ((this->lLastTime+1000) < timestamp || (this->rLastTime+1000) < timestamp) {
+        // we lost eyes, request reinit
+        this->hasTemplate = false;
+        doLog(debug_tmpl_log, "debug_tmpl_log: reinit: eyes were displaced\n");
+    }
+};
+void TemplateBased::updateSearchRegion(cv::Point matchLocL, cv::Point matchLocR, double timestamp) {
+    if (abs(matchLocL.x-this->lEye.x) < 10 && abs(matchLocL.y-this->lEye.y) < 10) {
+        this->lEye.x = matchLocL.x;
+        this->lEye.y = matchLocL.y;
+        this->lLastTime = timestamp;
+    }
+    if (abs(matchLocR.x-this->rEye.x) < 10 && abs(matchLocR.y-this->rEye.y) < 10) {
+        this->rEye.x = matchLocR.x;
+        this->rEye.y = matchLocR.y;
+        this->rLastTime = timestamp;
+    }
+};
 void TemplateBased::method(cv::Mat& gray, cv::Mat& out, double timestamp) {
     std::chrono::time_point<std::chrono::steady_clock> t1;
     cv::Mat lTemplSearch, rTemplSearch, leftResult, rightResult;
@@ -145,20 +164,12 @@ void TemplateBased::method(cv::Mat& gray, cv::Mat& out, double timestamp) {
     doLog(debug_tmpl_log, "debug_tmpl_log: debug matchLEye %d %d matchREye %d %d\n", matchLocL.x, matchLocL.y, matchLocR.x, matchLocR.y);
     doLog(debug_tmpl_log, "debug_tmpl_log: debug this->lEye %d %d this->rEye %d %d\n", this->lEye.x, this->lEye.y, this->lEye.x, this->lEye.y);
 
-    if (abs(matchLocL.x-this->lEye.x) < 10 && abs(matchLocL.y-this->lEye.y) < 10) {
-        this->lEye.x = matchLocL.x;
-        this->lEye.y = matchLocL.y;
-        this->lLastTime = timestamp;
-    }
-    if (abs(matchLocR.x-this->rEye.x) < 10 && abs(matchLocR.y-this->rEye.y) < 10) {
-        this->rEye.x = matchLocR.x;
-        this->rEye.y = matchLocR.y;
-        this->rLastTime = timestamp;
-    }
-    if ((this->lLastTime+1000) < timestamp || (this->rLastTime+1000) < timestamp) {
-        // we lost eyes, request reinit
-        this->hasTemplate = false;
-    }
+    // if eyes didn't move too much, update eyes position so search region can be re-centered the next time
+    this->updateSearchRegion(matchLocL, matchLocR, timestamp);
+
+    // re-init the tracking if we think that we lost eyes
+    this->checkTracking(timestamp);
+
     if (debug_show_img_main == true) {
         circle(out, cv::Point2f((float)matchLocL.x, (float)matchLocL.y), 10, cv::Scalar(0,255,0), -1, 8);
         rectangle(out, matchLocL, cv::Point(matchLocL.x+ leftTemplate.cols, matchLocL.y+leftTemplate.rows), CV_RGB(255, 255, 255), 0.5);
