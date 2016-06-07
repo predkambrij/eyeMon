@@ -1,6 +1,8 @@
-include test/Makefile
+#PROJDIR = ${CURDIR}
+PROJDIR = .
+#PROJDIR = /home/developer/other/android_deps/OpenCV-2.4.10-android-sdk/samples/optical-flow
 
-PROJDIR = ${CURDIR}/
+include test/Makefile
 
 FILES_TO_COMPILE = common.cpp main.cpp blinkmeasure.cpp templatebased.cpp
 OUTPUT_BIN =
@@ -45,3 +47,5 @@ dt : _setTestSettings _compile run/t
 annot : _setAnnotVars _compile run/annot
 
 
+te:
+	echo $(PROJDIR)

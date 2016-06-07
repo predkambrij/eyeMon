@@ -14,13 +14,14 @@
 
 # Points to the root of Google Test, relative to where this file is.
 # Remember to tweak this if you move this file.
-TB = $(PROJDIR)bins/tests/
-GTEST_DIR = $(PROJDIR)test/googletest/googletest/
+TB = $(PROJDIR)/bins/tests
+GTEST_DIR = $(PROJDIR)/test/googletest/googletest/
 
 # Where to find user code.
-USER_DIR = $(PROJDIR)test/jnitests
+#USER_DIR = $(PROJDIR)/test/jnitests
 #USER_DIR = ../samples
-
+USER_DIR = $(PROJDIR)/jni
+TEST_DIR = $(PROJDIR)/test/jnitests
 
 # Flags passed to the preprocessor.
 # Set Google Test's header directory as a system directory, such that
@@ -28,11 +29,12 @@ USER_DIR = $(PROJDIR)test/jnitests
 CPPFLAGS += -isystem $(GTEST_DIR)/include
 
 # Flags passed to the C++ compiler.
-CXXFLAGS += -g -Wall -Wextra -pthread
+CXXFLAGS += -g -Wall -Wextra -pthread -std=c++11
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-TESTS = $(TB)sample1_unittest
+TESTS = $(TB)/sample1_unittest_run
+#TESTS = $(TB)/templatebased_unittest_run
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.
@@ -44,7 +46,7 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 testall : $(TESTS)
 
 testclean :
-	rm -f $(TESTS) $(TB)gtest.a $(TB)gtest_main.a $(TB)*.o
+	rm -f $(TESTS) $(TB)/gtest.a $(TB)/gtest_main.a $(TB)/*.o
 
 # Builds gtest.a and gtest_main.a.
 
@@ -56,31 +58,44 @@ GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h $(GTEST_HEADERS)
 # implementation details, the dependencies specified below are
 # conservative and not optimized.  This is fine as Google Test
 # compiles fast and for ordinary users its source rarely changes.
-$(TB)gtest-all.o : $(GTEST_SRCS_)
+$(TB)/gtest-all.o : $(GTEST_SRCS_)
 	$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) $(CXXFLAGS) -c \
             $(GTEST_DIR)/src/gtest-all.cc -o $@
 
-$(TB)gtest_main.o : $(GTEST_SRCS_)
+$(TB)/gtest_main.o : $(GTEST_SRCS_)
 	$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) $(CXXFLAGS) -c \
             $(GTEST_DIR)/src/gtest_main.cc -o $@
 
-$(TB)gtest.a : $(TB)gtest-all.o
+$(TB)/gtest.a : $(TB)/gtest-all.o
 	$(AR) $(ARFLAGS) $@ $^
 
-$(TB)gtest_main.a : $(TB)gtest-all.o $(TB)gtest_main.o
+$(TB)/gtest_main.a : $(TB)/gtest-all.o $(TB)/gtest_main.o
 	$(AR) $(ARFLAGS) $@ $^
 
 # Builds a sample test.  A test should link with either gtest.a or
 # gtest_main.a, depending on whether it defines its own main()
 # function.
 
-$(TB)sample1.o : $(USER_DIR)/sample1.cc $(USER_DIR)/sample1.h $(GTEST_HEADERS)
+$(TB)/sample1.o : $(USER_DIR)/sample1.cc $(USER_DIR)/sample1.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/sample1.cc -o $@
 
-$(TB)sample1_unittest.o : $(USER_DIR)/sample1_unittest.cc \
+$(TB)/sample1_unittest.o : $(TEST_DIR)/sample1_unittest.cc \
                      $(USER_DIR)/sample1.h $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/sample1_unittest.cc -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I $(USER_DIR) -c $(TEST_DIR)/sample1_unittest.cc -o $@
 
-$(TB)sample1_unittest : $(TB)sample1.o $(TB)sample1_unittest.o $(TB)gtest_main.a
+$(TB)/sample1_unittest : $(TB)/sample1.o $(TB)/sample1_unittest.o $(TB)/gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
+$(TB)/sample1_unittest_run : $(TB)/sample1_unittest
+	$(TB)/sample1_unittest
+
+$(TB)/templatebased.o : $(USER_DIR)/templatebased.cpp $(USER_DIR)/templatebased.hpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(USER_DIR) $$(pkg-config --cflags opencv) -c $(USER_DIR)/templatebased.cpp -o $@
+
+$(TB)/templatebased_unittest.o : $(TEST_DIR)/templatebased_unittest.cpp \
+                     $(USER_DIR)/templatebased.hpp $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/templatebased_unittest.cpp -o $@
+
+$(TB)/templatebased_unittest : $(TB)/templatebased.o $(TB)/templatebased_unittest.o $(TB)/gtest_main.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $$(pkg-config --libs opencv) $^ -o $@
 
