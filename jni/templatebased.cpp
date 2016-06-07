@@ -12,7 +12,7 @@ class TemplateBased {
     cv::CascadeClassifier face_cascade;
 
     bool canProcess = false;
-    int frameNum = 0, frameNumt = 20;
+    int frameNum = 0, frameNumt = 40;
 
     cv::Mat leftTemplate, rightTemplate;
     bool hasTemplate = false;
