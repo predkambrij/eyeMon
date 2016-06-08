@@ -15,7 +15,8 @@ bool debug_t2_show_img_main = true;
 //char fileName[100] = "/home/developer/other/posnetki/o4_44.mp4"; // doma
 //char fileName[100] = "/home/developer/other/posnetki/o4_87.mp4"; // na zacetku gledal na sredi ekrana, pol premikal glavo
 //char fileName[100] = "/home/developer/other/posnetki/o4_89.mp4"; // knjiznica
-char fileName[100] = "/home/developer/other/posnetki/o4_90.mp4"; // knjiznica (na zac. gledal na sredo, pol premikal glavo,...)
+//char fileName[100] = "/home/developer/other/posnetki/o4_90.mp4"; // knjiznica (na zac. gledal na sredo, pol premikal glavo,...)
+char fileName[100] = "/home/developer/other/posnetki/talking.avi";
 
 class FrameCarrier {
     public: cv::Mat frame;
@@ -113,6 +114,7 @@ int frameProcessor() {
     FrameCarrier& fc = *iter;
 
     while(true) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         if (iter != frameList.end()) {
             fc          = *iter;
             frame       = fc.frame;

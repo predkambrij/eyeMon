@@ -56,6 +56,11 @@ void captureFrames() {
     //std::chrono::time_point<std::chrono::steady_clock> t1 = std::chrono::steady_clock::now();
     double prevFrameMs = 0;
     while (grabbing) {
+#ifdef IS_TEST
+        while (canAdd != true) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+#endif
         if(!(stream1.read(frame))) {
             doLog(debug_t1_log, "debug_t1_log: No captured frame, exiting!\n");
             finished = true;
@@ -131,7 +136,7 @@ void doProcessing() {
             if (canAdd == false) {
                 canAdd = true;
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             continue;
         }
 
