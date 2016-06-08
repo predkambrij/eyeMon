@@ -20,12 +20,13 @@ void getGray(cv::Mat frame, cv::Mat *gray) {
 
 class FrameCarrier {
     public: cv::Mat frame;
+    public: unsigned int frameNum;
     public: double timestamp;
 
-    public: FrameCarrier(cv::Mat frame, double timestamp) {
+    public: FrameCarrier(cv::Mat frame, double timestamp, unsigned int frameNum) {
         this->frame     = frame;
         this->timestamp = timestamp;
-
+        this->frameNum  = frameNum;
     }
 };
 
@@ -53,6 +54,7 @@ void captureFrames() {
     }
 
     cv::Mat frame;
+    unsigned int frameNum = 0;
     //std::chrono::time_point<std::chrono::steady_clock> t1 = std::chrono::steady_clock::now();
     double prevFrameMs = 0;
     while (grabbing) {
@@ -82,7 +84,8 @@ void captureFrames() {
                 } else {
                     frameTimeMs = (double) stream1.get(CV_CAP_PROP_POS_MSEC);
                 }
-                FrameCarrier fc(frame.clone(), frameTimeMs);
+                FrameCarrier fc(frame.clone(), frameTimeMs, frameNum);
+                frameNum++;
                 frameList.push_back(fc);
                 doLog(debug_t1_log, "debug_t1_log: frameTime %lf diff %lf\n", frameTimeMs, frameTimeMs-prevFrameMs);
                 prevFrameMs = frameTimeMs;
@@ -166,7 +169,7 @@ void doProcessing() {
             //optf.run(gray, frame);
             break;
             case METHOD_TEMPLATE_BASED:
-            templ.run(gray, frame, timestamp);
+            templ.run(gray, frame, timestamp, fc.frameNum);
             break;
             case METHOD_BLACK_PIXELS:
             break;

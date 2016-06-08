@@ -6,10 +6,11 @@
 #include <blinkmeasure.hpp>
 
 
-BlinkMeasure::BlinkMeasure(double timestamp, double lcor, double rcor) {
+BlinkMeasure::BlinkMeasure(unsigned int frameNum, double timestamp, double lcor, double rcor) {
+    this->frameNum  = frameNum;
     this->timestamp = timestamp;
-    this->lcor = lcor;
-    this->rcor = rcor;
+    this->lcor      = lcor;
+    this->rcor      = rcor;
 };
 
 void BlinkMeasure::measureBlinksAVG(int shortBmSize, double *lavg, double *ravg) {
@@ -62,10 +63,10 @@ void BlinkMeasure::measureBlinks() {
 
     int shortBmSize = blinkMeasureShort.size();
     if (shortBmSize < 90) {
-        doLog(debug_blinks_d1, "debug_blinks_d1: shortBmSize is less than X %d\n", shortBmSize);
+        doLog(debug_blinks_d1, "debug_blinks_d1: F %d shortBmSize is less than X %d\n", bm.frameNum, shortBmSize);
         return;
     } else {
-        doLog(debug_blinks_d1, "debug_blinks_d1: shortBmSize is %d\n", shortBmSize);
+        doLog(debug_blinks_d1, "debug_blinks_d1: F %d shortBmSize is %d\n", bm.frameNum, shortBmSize);
     }
 
     double lavg = 0;
@@ -78,22 +79,22 @@ void BlinkMeasure::measureBlinks() {
     double lsd2 = 0;
     double rsd2 = 0;
     BlinkMeasure::measureBlinksSD(shortBmSize, lavg, ravg, &lSD, &rSD, &lsd1, &rsd1, &lsd2, &rsd2);
-    doLog(debug_blinks_d1, "debug_blinks_d1: lastT %.2lf La %lf %.8lf Ra %lf %.8lf lSD12 %lf %lf %lf rSD12 %lf %lf %lf\n",
-        bm.timestamp, bm.lcor, lavg, bm.rcor, ravg, lSD, lsd1, lsd2, rSD, rsd1, rsd2);
+    doLog(debug_blinks_d1, "debug_blinks_d1: lastF %d T %.2lf La %lf %.8lf Ra %lf %.8lf lSD12 %lf %lf %lf rSD12 %lf %lf %lf\n",
+        bm.frameNum, bm.timestamp, bm.lcor, lavg, bm.rcor, ravg, lSD, lsd1, lsd2, rSD, rsd1, rsd2);
 
     if (bm.lcor < lsd2) {
-        doLog(debug_blinks_d3, "debug_blinks_d3: BLINK T %.2lf L %lf SD1 %lf SD2 %lf\n", bm.timestamp, bm.lcor, lsd1, lsd2);
+        doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf L %lf SD1 %lf SD2 %lf\n", bm.frameNum, bm.timestamp, bm.lcor, lsd1, lsd2);
         // check whether we can create a new blink (chunk)
-        BlinkMeasure::makeChunk(true, (double)bm.timestamp, true);
+        BlinkMeasure::makeChunk(true, (double)bm.timestamp, true, bm.frameNum);
     } else {
-        BlinkMeasure::makeChunk(true, (double)bm.timestamp, false);
+        BlinkMeasure::makeChunk(true, (double)bm.timestamp, false, bm.frameNum);
     }
     if (bm.rcor < rsd2) {
-        doLog(debug_blinks_d3, "debug_blinks_d3: BLINK T %.2lf R %lf SD1 %lf SD2 %lf\n", bm.timestamp, bm.rcor, rsd1, rsd2);
+        doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf R %lf SD1 %lf SD2 %lf\n", bm.frameNum, bm.timestamp, bm.rcor, rsd1, rsd2);
         // check whether we can create a new blink (chunk)
-        BlinkMeasure::makeChunk(false, (double)bm.timestamp, true);
+        BlinkMeasure::makeChunk(false, (double)bm.timestamp, true, bm.frameNum);
     } else {
-        BlinkMeasure::makeChunk(false, (double)bm.timestamp, false);
+        BlinkMeasure::makeChunk(false, (double)bm.timestamp, false, bm.frameNum);
     }
 }
 
@@ -102,27 +103,35 @@ bool BlinkMeasure::lAdding = false;
 bool BlinkMeasure::rAdding = false;
 double BlinkMeasure::lLastNonBlinkT = -1;
 double BlinkMeasure::rLastNonBlinkT = -1;
+unsigned int BlinkMeasure::lLastNonBlinkF = 0;
+unsigned int BlinkMeasure::rLastNonBlinkF = 0;
 
 double BlinkMeasure::lFirstBlinkT = 0;
 double BlinkMeasure::rFirstBlinkT = 0;
+unsigned int BlinkMeasure::lFirstBlinkF = 0;
+unsigned int BlinkMeasure::rFirstBlinkF = 0;
 
-void BlinkMeasure::makeChunk(bool isLeft, double timestamp, bool isBlink) {
+void BlinkMeasure::makeChunk(bool isLeft, double timestamp, bool isBlink, unsigned int frameNum) {
     if (isLeft == true) {
         if (isBlink == true) {
             if (BlinkMeasure::lAdding == false) {
                 BlinkMeasure::lAdding = true;
                 BlinkMeasure::lFirstBlinkT = timestamp;
+                BlinkMeasure::lFirstBlinkF = frameNum;
             }
             BlinkMeasure::lLastNonBlinkT = -1;
         } else {
             if (BlinkMeasure::lAdding == true) {
                 if (BlinkMeasure::lLastNonBlinkT == -1) {
                     BlinkMeasure::lLastNonBlinkT = timestamp;
+                    BlinkMeasure::lLastNonBlinkF = frameNum;
                 } else {
                     if (BlinkMeasure::lLastNonBlinkT < (timestamp-BlinkMeasure::maxNonBlinkT)) {
-                        Blink b(BlinkMeasure::lFirstBlinkT, BlinkMeasure::lLastNonBlinkT, 0);
+                        Blink b(BlinkMeasure::lFirstBlinkF, BlinkMeasure::lLastNonBlinkF,
+                            BlinkMeasure::lFirstBlinkT, BlinkMeasure::lLastNonBlinkT, 0);
                         lBlinkChunks.push_back(b);
-                        doLog(debug_blinks_d4, "debug_blinks_d4: adding_lBlinkChunks start %.2lf end %lf duration %lf\n", BlinkMeasure::lFirstBlinkT, BlinkMeasure::lLastNonBlinkT, BlinkMeasure::lLastNonBlinkT-BlinkMeasure::lFirstBlinkT);
+                        doLog(debug_blinks_d4, "debug_blinks_d4: adding_lBlinkChunks fs %d fe %d start %.2lf end %lf duration %lf\n",
+                            BlinkMeasure::lFirstBlinkF, BlinkMeasure::lLastNonBlinkF, BlinkMeasure::lFirstBlinkT, BlinkMeasure::lLastNonBlinkT, BlinkMeasure::lLastNonBlinkT-BlinkMeasure::lFirstBlinkT);
                         BlinkMeasure::makeNotification(true);
                         BlinkMeasure::lAdding = false;
                     }
@@ -135,17 +144,21 @@ void BlinkMeasure::makeChunk(bool isLeft, double timestamp, bool isBlink) {
             if (BlinkMeasure::rAdding == false) {
                 BlinkMeasure::rAdding = true;
                 BlinkMeasure::rFirstBlinkT = timestamp;
+                BlinkMeasure::rFirstBlinkF = frameNum;
             }
             BlinkMeasure::rLastNonBlinkT = -1;
         } else {
             if (BlinkMeasure::rAdding == true) {
                 if (BlinkMeasure::rLastNonBlinkT == -1) {
                     BlinkMeasure::rLastNonBlinkT = timestamp;
+                    BlinkMeasure::rLastNonBlinkF = frameNum;
                 } else {
                     if (BlinkMeasure::rLastNonBlinkT < (timestamp-BlinkMeasure::maxNonBlinkT)) {
-                        Blink b(BlinkMeasure::rFirstBlinkT, BlinkMeasure::rLastNonBlinkT, 0);
+                        Blink b(BlinkMeasure::rFirstBlinkF, BlinkMeasure::rLastNonBlinkF,
+                            BlinkMeasure::rFirstBlinkT, BlinkMeasure::rLastNonBlinkT, 0);
                         rBlinkChunks.push_back(b);
-                        doLog(debug_blinks_d4, "debug_blinks_d4: adding_rBlinkChunks start %.2lf end %lf duration %lf\n", BlinkMeasure::rFirstBlinkT, BlinkMeasure::rLastNonBlinkT, BlinkMeasure::rLastNonBlinkT-BlinkMeasure::rFirstBlinkT);
+                        doLog(debug_blinks_d4, "debug_blinks_d4: adding_rBlinkChunks fs %d fe %d start %.2lf end %lf duration %lf\n",
+                            BlinkMeasure::rFirstBlinkF, BlinkMeasure::rLastNonBlinkF, BlinkMeasure::rFirstBlinkT, BlinkMeasure::rLastNonBlinkT, BlinkMeasure::rLastNonBlinkT-BlinkMeasure::rFirstBlinkT);
                         BlinkMeasure::makeNotification(false);
                         BlinkMeasure::rAdding = false;
                     }
@@ -155,7 +168,9 @@ void BlinkMeasure::makeChunk(bool isLeft, double timestamp, bool isBlink) {
     }
 };
 
-Blink::Blink(double timestampStart, double timestampEnd, int eventType) {
+Blink::Blink(unsigned int frameStart, unsigned int frameEnd, double timestampStart, double timestampEnd, int eventType) {
+    this->frameStart     = frameStart;
+    this->frameEnd       = frameEnd;
     this->timestampStart = timestampStart;
     this->timestampEnd   = timestampEnd;
     this->eventType      = eventType;

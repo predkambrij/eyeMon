@@ -123,7 +123,7 @@ void TemplateBased::updateSearchRegion(cv::Point matchLocL, cv::Point matchLocR,
         this->rLastTime = timestamp;
     }
 };
-void TemplateBased::method(cv::Mat& gray, cv::Mat& out, double timestamp) {
+void TemplateBased::method(cv::Mat& gray, cv::Mat& out, double timestamp, unsigned int frameNum) {
     std::chrono::time_point<std::chrono::steady_clock> t1;
     cv::Mat lTemplSearch, rTemplSearch, leftResult, rightResult;
     cv::Rect lTemplSearchR, rTemplSearchR;
@@ -156,7 +156,7 @@ void TemplateBased::method(cv::Mat& gray, cv::Mat& out, double timestamp) {
     doLog(debug_tmpl_log, "debug_tmpl_log: lcor %lf rcor %lf\n", lcor, rcor);
 
     // blink measure
-    BlinkMeasure bm(timestamp, lcor, rcor);
+    BlinkMeasure bm(frameNum, timestamp, lcor, rcor);
     blinkMeasure.push_back(bm);
 
     matchLocL = cv::Point(minLocL.x+lTemplSearchR.x, minLocL.y+lTemplSearchR.y);
@@ -181,7 +181,7 @@ void TemplateBased::method(cv::Mat& gray, cv::Mat& out, double timestamp) {
     }
 };
 
-void TemplateBased::process(cv::Mat gray, cv::Mat out, double timestamp) {
+void TemplateBased::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
     if (!this->preprocessing(gray)) {
         // it will wait first 20 frames so that light flash ends
         // it blurs the grayscale image
@@ -201,12 +201,13 @@ void TemplateBased::process(cv::Mat gray, cv::Mat out, double timestamp) {
         // once we have eyes location we calculate correlation in the area around the eyes
         // if we believe that eyes are not in the search area anymore (person turned head or left the computer)
         //                                                                      we reinitialize (set hasTemplate to false)
-        this->method(gray, out, timestamp);
+        this->method(gray, out, timestamp, frameNum);
     }
 };
 void TemplateBased::measureBlinks() {
     BlinkMeasure::measureBlinks();
 };
+/*
 void TemplateBased::checkNotificationStatus(double timestamp) {
     while (lBlinkChunks.size() > 0) {
         Blink b = lBlinkChunks.front();
@@ -251,7 +252,7 @@ void TemplateBased::frameTimeProcessing(double timestamp) {
         rBlinkChunks.push_back(rb);
     }
     previousFrameTime = timestamp;
-};
+};*/
 int TemplateBased::faceDetect(cv::Mat gray, cv::Rect *face) {
     std::vector<cv::Rect> faces;
     face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
@@ -261,15 +262,15 @@ int TemplateBased::faceDetect(cv::Mat gray, cv::Rect *face) {
     *face = faces[0];
     return 0;
 };
-void TemplateBased::run(cv::Mat gray, cv::Mat out, double timestamp) {
+void TemplateBased::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
     std::chrono::time_point<std::chrono::steady_clock> t1;
     t1 = std::chrono::steady_clock::now();
-    this->frameTimeProcessing(timestamp);
-    this->checkNotificationStatus(timestamp);
+    //this->frameTimeProcessing(timestamp);
+    //this->checkNotificationStatus(timestamp);
     difftime("-- frameTimeProcessing and checkNotificationStatus", t1, debug_tmpl_perf1);
 
     t1 = std::chrono::steady_clock::now();
-    this->process(gray, out, timestamp);
+    this->process(gray, out, timestamp, frameNum);
     difftime("-- process", t1, debug_tmpl_perf2);
 
     t1 = std::chrono::steady_clock::now();
