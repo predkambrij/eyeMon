@@ -9,6 +9,7 @@ using namespace std;
 
 extern "C" {
 
+long int grabberFrameNum = 0;
 TemplateBased templBased;
 
 JNIEXPORT jlong JNICALL Java_org_blatnik_eyemon_TemplateBasedJNI_templateBasedCreateObject
@@ -31,7 +32,8 @@ JNIEXPORT void JNICALL Java_org_blatnik_eyemon_TemplateBasedJNI_templateBasedDet
     Mat rgb = *((Mat*)imageRGB);
     Mat gray = *((Mat*)imageGray);
     long int tstp = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
-    templBased.run(gray, rgb, tstp);
+    templBased.run(gray, rgb, tstp, grabberFrameNum);
+    grabberFrameNum++;
 }
 
 

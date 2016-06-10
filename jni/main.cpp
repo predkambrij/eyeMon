@@ -59,7 +59,7 @@ void captureFrames() {
     double prevFrameMs = 0;
     while (grabbing) {
 #ifdef IS_TEST
-        while (canAdd != true) {
+        while (canAdd != true && grabbing) {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 #endif
