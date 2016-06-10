@@ -49,6 +49,7 @@ extern bool debug_blinks_d4;
 // optical flow
 extern int flg;
 ///
+extern int maxFramesShortList;
 
 
 extern std::list<BlinkMeasure> blinkMeasure;

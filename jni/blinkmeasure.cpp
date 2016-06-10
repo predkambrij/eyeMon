@@ -42,8 +42,7 @@ void BlinkMeasure::measureBlinksSD(int shortBmSize, double lavg, double ravg, do
 };
 
 void BlinkMeasure::measureBlinks() {
-    long unsigned int blinkMeasureSize = blinkMeasure.size();
-    if (blinkMeasureSize == 0) {
+    if (blinkMeasure.size() == 0) {
         doLog(debug_blinks_d1, "debug_blinks_d1: blinkMeasureSize is zero\n");
         return;
     }
@@ -52,9 +51,10 @@ void BlinkMeasure::measureBlinks() {
     blinkMeasure.pop_front();
 
     blinkMeasureShort.push_back(bm);
+    int timeWindow = 10;
     while (true) {
         BlinkMeasure oldestBm = blinkMeasureShort.front();
-        if (oldestBm.timestamp > (bm.timestamp - 10000)) {
+        if (oldestBm.timestamp > (bm.timestamp - (timeWindow*1000))) {
             break;
         } else {
             blinkMeasureShort.pop_front();
@@ -62,11 +62,27 @@ void BlinkMeasure::measureBlinks() {
     }
 
     int shortBmSize = blinkMeasureShort.size();
-    if (shortBmSize < 90) {
-        doLog(debug_blinks_d1, "debug_blinks_d1: F %d shortBmSize is less than X %d\n", bm.frameNum, shortBmSize);
+    if (maxFramesShortList == 0) {
+        if (shortBmSize < 30) {
+            return;
+        }
+        BlinkMeasure first = blinkMeasureShort.front();
+        BlinkMeasure last = blinkMeasureShort.back();
+        double tsDiff = last.timestamp-first.timestamp;
+        double fps = shortBmSize/(tsDiff/1000);
+        maxFramesShortList = fps*timeWindow*0.80;
+        doLog(debug_blinks_d1, "debug_blinks_d1: fps of the first 30 frames %lf current maxFramesShortList %d\n", fps, maxFramesShortList);
+    } else {
+        if (shortBmSize > maxFramesShortList) {
+            maxFramesShortList = shortBmSize;
+            doLog(debug_blinks_d1, "debug_blinks_d1: updated maxFramesShortList %d\n", maxFramesShortList);
+        }
+    }
+    if (shortBmSize < (maxFramesShortList/2)) {
+        doLog(debug_blinks_d1, "debug_blinks_d1: F %d shortBmSize is less than max/2 %d T %lf\n", bm.frameNum, shortBmSize, bm.timestamp);
         return;
     } else {
-        doLog(debug_blinks_d1, "debug_blinks_d1: F %d shortBmSize is %d\n", bm.frameNum, shortBmSize);
+        doLog(debug_blinks_d1, "debug_blinks_d1: F %d shortBmSize is big enough %d\n", bm.frameNum, shortBmSize);
     }
 
     double lavg = 0;
