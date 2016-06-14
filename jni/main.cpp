@@ -166,7 +166,7 @@ void doProcessing() {
         t2 = std::chrono::steady_clock::now();
         switch (method) {
             case METHOD_OPTFLOW:
-            optf.run(gray, frame);
+            optf.run(gray, frame, timestamp, fc.frameNum);
             break;
             case METHOD_TEMPLATE_BASED:
             templ.run(gray, frame, timestamp, fc.frameNum);

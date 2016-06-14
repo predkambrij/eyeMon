@@ -119,14 +119,14 @@ void showResult(cv::Mat cflow, cv::Rect face, cv::Mat faceROI, cv::Rect leftEyeR
     }
 }
 
-void process(cv::Mat gray, cv::Mat out) {
+void OptFlow::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
     clock_t start;
     cv::Point leftPupil, rightPupil;
-    cv::Rect face, leftEyeRegion, rightEyeRegion;
+//    cv::Rect face, leftEyeRegion, rightEyeRegion;
     cv::Mat faceROI;
     cv::Mat left, right;
     cv::Mat flowLeft, flowRight;
-
+/*
     start = clock();
     if (faceDetect(gray, &face) != 0) {
         if (debug_show_img_main == true && PHONE == 0) {
@@ -134,13 +134,14 @@ void process(cv::Mat gray, cv::Mat out) {
         }
         return;
     }
+*/
     // // faceROI = gray(face);
     // if (kSmoothFaceImage) {
     //     double sigma = kSmoothFaceFactor * gray.cols*1;
     //     // todo only farne eye region
     //     GaussianBlur(gray, gray, cv::Size(0, 0), sigma);
     // }
-
+/*
     diffclock("- facedetect", start);
 
     // start = clock();
@@ -171,47 +172,82 @@ void process(cv::Mat gray, cv::Mat out) {
     } else {
         firstLoopProcs = 0;
     }
+*/
+    if ((frameNum % 90) == 0) {
+        // initialize
+        flg=1;
+    }
+    if (flg == 1) {
+        if (faceDetect(gray, &face) != 0) {
+            if (debug_show_img_main == true && PHONE == 0) {
+                imshow("main", out);
+            }
+            return;
+        }
 
-    // if (flg == 1) {
-    //     Size subPixWinSize(10,10), winSize(31,31);
-    //     goodFeaturesToTrack(left, points[1], MAX_COUNT, 0.01, 10, Mat(), 3, 0, 0.04);
-    //     // cornerSubPix(gray, points[1], subPixWinSize, Size(-1,-1), termcrit); // sig abrt
-    //     flg = 0;
-    // } else {
-    //     if(!points[0].empty()){
-    //         printf("BUJU BUJU\n");
-    //         Point2f point;
-    //         vector<uchar> status;
-    //         vector<float> err;
-    //         TermCriteria termcrit(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 20, 0.03);
-    //         Size subPixWinSize(10,10), winSize(31,31);
-    //         calcOpticalFlowPyrLK(pleft, left, points[0], points[1], status, err, winSize,
-    //                              3, termcrit, 0, 0.001);
-    //         size_t i, k;
-    //         for(i = k = 0; i < points[1].size(); i++) {
-    //             if(addRemovePtx) {
-    //                 if(norm(point - points[1][i]) <= 5 ) {
-    //                     addRemovePtx = false;
-    //                     continue;
-    //                 }
-    //             }
+        int rowsO = (face).height/4.3;
+        int colsO = (face).width/5.5;
+        int rows2 = (face).height/4.3;
+        int cols2 = (face).width/4.5;
+        leftE = cv::Rect(colsO, rowsO, cols2, rows2);
+        rightE = cv::Rect((face).width-colsO-rows2, rowsO, cols2, rows2);
+    }
+    //printf("face %d %d\n", face.width, face.height);
+    faceROI = gray(face);
+    left  = faceROI(leftE);
+    right = faceROI(rightE);
+    imshowWrapper("face", faceROI, debug_show_img_face);
+    imshowWrapper("leftSR", left, debug_show_img_templ_eyes_cor);
+    imshowWrapper("rightSR", right, debug_show_img_templ_eyes_cor);
+
+    if (flg == 1) {
+        start = clock();
+
+        printf("BUJU init %d\n", frameNum);
+        cv::Size subPixWinSize(10,10), winSize(31,31);
+        cv::goodFeaturesToTrack(left, points[1], MAX_COUNT, 0.01, 10, cv::Mat(), 3, false, 0.04);
+        printf("BUJU init res %d %lu\n", frameNum, points[1].size());
+        // cornerSubPix(gray, points[1], subPixWinSize, Size(-1,-1), termcrit); // sig abrt
+        flg = 0;
+     } else {
+        if(!points[0].empty()){
+            cv::Point2f point;
+            std::vector<uchar> status;
+            std::vector<float> err;
+            cv::TermCriteria termcrit(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 20, 0.03);
+            cv::Size subPixWinSize(10,10), winSize(31,31);
             
-    //             if(!status[i]) {
-    //                 continue;
-    //             }
-                
-    //             points[1][k++] = points[1][i];
-    //             circle(frame, points[1][i], 3, Scalar(0,255,0), -1, 8);
-    //         }
-    //         points[1].resize(k);
-    //     }
-    // }
+            cv::calcOpticalFlowPyrLK(pleft, left, points[0], points[1], status, err
+                                , winSize, 3, termcrit, 0, 0.001
+                                );
+            
+            size_t i, k;
+            for(i = k = 0; i < points[1].size(); i++) {
+                if(addRemovePtx) {
+                    if(norm(point - points[1][i]) <= 5 ) {
+                        addRemovePtx = false;
+                        continue;
+                    }
+                }
 
+                if(!status[i]) {
+                    continue;
+                }
+
+                points[1][k++] = points[1][i];
+                //cv::circle(out, points[1][i], 3, cv::Scalar(0,255,0), -1, 8);
+                cv::circle(out, cv::Point2f((float)points[1][i].x+face.x+leftE.x, (float)points[1][i].y+face.y+leftE.y), 3, cv::Scalar(0,255,0), -1, 8);
+            }
+            points[1].resize(k);
+        }
+    }
+/*
+*/
     start = clock();
     showResult(out, face, faceROI, leftEyeRegion, rightEyeRegion, leftPupil, rightPupil);
     diffclock("- showResult", start);
 
-    pleft = left.clone(); pright = right.clone(); // TODO try just with assigning
+    pleft = left.clone(); pright = right.clone();
     std::swap(points[1], points[0]);
 }
 
@@ -240,10 +276,10 @@ int OptFlow::setJni(JNIEnv* jenv) {
 };
 #endif
 
-int OptFlow::run(cv::Mat gray, cv::Mat out) {
+int OptFlow::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
     //cvtColor(rgb, grayx, COLOR_BGR2GRAY);
     //process(rgb, grayx, rgb);
-    process(gray, out);
+    process(gray, out, timestamp, frameNum);
 
     //cv::swap(prevLeft, left);
     //cv::swap(prevRight, right);
