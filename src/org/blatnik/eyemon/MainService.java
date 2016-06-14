@@ -162,7 +162,7 @@ public class MainService extends Service {
         static final int METHOD_OPTFLOW      = 0;
         static final int METHOD_TEMPLATE     = 1;
         static final int METHOD_TEMPLATE_JNI = 2;
-        int method = 2;
+        int method = 0;
 
         long frameCount      = 0;
         long timeStart       = 0;
