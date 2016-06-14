@@ -25,4 +25,22 @@ double previousFrameTime = -1;
 
 // optical flow
 int flg=0;
+
+int farne = 0;
+
+int leftXOffset=200, leftYOffset=130, leftCols=100, leftRows=100;
+int rightXOffset=350, rightYOffset=130, rightCols=100, rightRows=100;
+
+int leftXp1=0, leftYp1=0, rightXp1=0, rightYp1=0;
+int leftXlast=0, leftYlast=0, rightXlast=0, rightYlast=0;
+int leftXavg=0, leftYavg=0, rightXavg=0, rightYavg=0;
+int eye_region_width, eye_region_height;
+cv::TermCriteria termcrit;
+cv::Size subPixWinSize, winSize;
+const int MAX_COUNT = 500;
+bool addRemovePtx = false;
+cv::vector<cv::Point2f> points[2];
+cv::Mat pleft, pright;
+int firstLoopProcs = 1;
+
 ///

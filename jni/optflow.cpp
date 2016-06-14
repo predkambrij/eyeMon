@@ -7,14 +7,13 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "opencv2/video/tracking.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/highgui/highgui.hpp"
-
 #include <iostream>
 #include <ctype.h>
 #include <chrono>
 
+#include <opencv2/objdetect/objdetect.hpp>
+#include <opencv2/video/tracking.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -23,21 +22,11 @@
 #include <eyelike/main.cpp>
 
 #include <common.hpp>
+#include <optflow.hpp>
 
-using namespace cv;
-using namespace std;
-
-int farne = 0;
-
-int leftXOffset=200, leftYOffset=130, leftCols=100, leftRows=100;
-int rightXOffset=350, rightYOffset=130, rightCols=100, rightRows=100;
-
-int leftXp1=0, leftYp1=0, rightXp1=0, rightYp1=0;
-int leftXlast=0, leftYlast=0, rightXlast=0, rightYlast=0;
-int leftXavg=0, leftYavg=0, rightXavg=0, rightYavg=0;
-void drawOptFlowMap (const Mat flow, Mat cflowmap, int step, const Scalar& color, int eye) {
-    //circle(cflowmap, Point2f((float)10, (float)10), 3, Scalar(0,255,0), -1, 8);
-    circle(cflowmap, Point2f((float)15, (float)15), 10, Scalar(0,255,0), -1, 8);
+void drawOptFlowMap (const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, int eye) {
+    //cv::circle(cflowmap, cv::Point2f((float)10, (float)10), 3, cv::Scalar(0,255,0), -1, 8);
+    cv::circle(cflowmap, cv::Point2f((float)15, (float)15), 10, cv::Scalar(0,255,0), -1, 8);
     int xo, yo;
     if (eye == 0) {
         xo = leftXOffset;
@@ -49,11 +38,11 @@ void drawOptFlowMap (const Mat flow, Mat cflowmap, int step, const Scalar& color
     for(int y = 0; y < flow.rows; y += step) {
         for(int x = 0; x < flow.cols; x += step) {
             
-            const Point2f& fxy = flow.at< Point2f>(y, x);
+            const cv::Point2f& fxy = flow.at< cv::Point2f>(y, x);
             int px = x+xo, py = y+yo;
-            line(cflowmap, Point(px,py), Point(cvRound(px+fxy.x), cvRound(py+fxy.y)), color);
+            cv::line(cflowmap, cv::Point(px,py), cv::Point(cvRound(px+fxy.x), cvRound(py+fxy.y)), color);
             //circle(cflowmap, Point(cvRound(x+fxy.x), cvRound(y+fxy.y)), 1, color, -1);
-            circle(cflowmap, Point(cvRound(px+fxy.x), cvRound(py+fxy.y)), 1, color, -1, 8);
+            cv::circle(cflowmap, cv::Point(cvRound(px+fxy.x), cvRound(py+fxy.y)), 1, color, -1, 8);
 
             //circle( image, points[1][i], 3, Scalar(0,255,0), -1, 8);
             printf("%.0f ", fxy.y);
@@ -63,9 +52,7 @@ void drawOptFlowMap (const Mat flow, Mat cflowmap, int step, const Scalar& color
     printf("\n\n\n");
 }
 
-int eye_region_width, eye_region_height;
-
-void getLeftRightEyeMat(Mat gray, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, Mat *left, Mat *right) {
+void getLeftRightEyeMat(cv::Mat gray, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Mat *left, cv::Mat *right) {
     // printf("eye_region_width %d, eye_region_height %d\n", eye_region_width, eye_region_height);
     // printf("leftEyeRegion %d, leftEyeRegion %d\n", leftEyeRegion.x, leftEyeRegion.y);
     // printf("rightEyeRegion %d, rightEyeRegion %d\n", rightEyeRegion.x, rightEyeRegion.y);
@@ -75,7 +62,7 @@ void getLeftRightEyeMat(Mat gray, cv::Rect leftEyeRegion, cv::Rect rightEyeRegio
     gray(cv::Rect(rightXOffset, rightYOffset, rightCols, rightRows)).copyTo(*right);
 }
 
-int faceDetect(Mat gray, cv::Rect *face) {
+int faceDetect(cv::Mat gray, cv::Rect *face) {
     std::vector<cv::Rect> faces;
     face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
     if (faces.size() != 1) {
@@ -91,12 +78,12 @@ void eyeRegions(cv::Rect face, cv::Rect *leftEyeRegion, cv::Rect *rightEyeRegion
     (*leftEyeRegion) = cv::Rect(face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
     (*rightEyeRegion) = cv::Rect(face.width - eye_region_width - face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
 }
-void eyeCenters(Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point *leftPupil, cv::Point *rightPupil) {
+void eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point *leftPupil, cv::Point *rightPupil) {
     //*leftPupil  = findEyeCenter(faceROI, leftEyeRegion, "Left Eye");
     //*rightPupil = findEyeCenter(faceROI, rightEyeRegion, "Right Eye");
 }
 
-void showResult(Mat cflow, cv::Rect face, Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil) {
+void showResult(cv::Mat cflow, cv::Rect face, cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil) {
     // // change eye centers to face coordinates
     // rightPupil.x += rightEyeRegion.x; rightPupil.y += rightEyeRegion.y;
     // leftPupil.x += leftEyeRegion.x; leftPupil.y += leftEyeRegion.y;
@@ -132,20 +119,13 @@ void showResult(Mat cflow, cv::Rect face, Mat faceROI, cv::Rect leftEyeRegion, c
     }
 }
 
-TermCriteria termcrit;
-Size subPixWinSize, winSize;
-const int MAX_COUNT = 500;
-bool addRemovePtx = false;
-vector<Point2f> points[2];
-Mat pleft, pright;
-int firstLoopProcs = 1;
-void process(Mat gray, Mat out) {
+void process(cv::Mat gray, cv::Mat out) {
     clock_t start;
     cv::Point leftPupil, rightPupil;
     cv::Rect face, leftEyeRegion, rightEyeRegion;
-    Mat faceROI;
-    Mat left, right;
-    Mat flowLeft, flowRight;
+    cv::Mat faceROI;
+    cv::Mat left, right;
+    cv::Mat flowLeft, flowRight;
 
     start = clock();
     if (faceDetect(gray, &face) != 0) {
@@ -175,13 +155,13 @@ void process(Mat gray, Mat out) {
 
     if (firstLoopProcs == 0) {
         start = clock();
-        calcOpticalFlowFarneback(pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
-        calcOpticalFlowFarneback(pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
+        cv::calcOpticalFlowFarneback(pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
+        cv::calcOpticalFlowFarneback(pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
         diffclock("- farneback", start);
 
         start = clock();
-        drawOptFlowMap(flowLeft, out, 10, Scalar(0, 255, 0), 0);
-        drawOptFlowMap(flowRight, out, 10, Scalar(0, 255, 0), 1);
+        drawOptFlowMap(flowLeft, out, 10, cv::Scalar(0, 255, 0), 0);
+        drawOptFlowMap(flowRight, out, 10, cv::Scalar(0, 255, 0), 1);
         diffclock("- drawOptFlowMap", start);
 
         if (debug_show_img_optfl_eyes == true && PHONE == 0) {
@@ -235,53 +215,37 @@ void process(Mat gray, Mat out) {
     std::swap(points[1], points[0]);
 }
 
-
-
-
-class OptFlow {
-    Mat rgb, grayx, left, right, prevLeft, prevRight;
-    unsigned long long int ns = 0;
-    vector<Point2f> points[2];
-    const int MAX_COUNT = 501;
-    TermCriteria termcrit;
-    Size subPixWinSize, winSize;
+OptFlow::OptFlow () {
+    ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-startx).count();
     
-    
-    bool yes = false;
-    bool yes1 = false;
-    Point2f point;
-    
-    public: OptFlow () {
-        ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-startx).count();
-        
-        termcrit= TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 20, 0.03);
-        subPixWinSize = Size(10,10);
-        winSize = Size(31,31);
-        
-    }
-    public: int setup(const char* cascadeFileName) {
-        try {
-            if(!face_cascade.load(cascadeFileName)) {
-                throw "--(!)Error loading face cascade, please change face_cascade_name in source code.\n";
-            }
-        } catch (const char* msg) {
-            doLog(true, msg);
-            throw;
+    termcrit= cv::TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 20, 0.03);
+    subPixWinSize = cv::Size(10,10);
+    winSize = cv::Size(31,31);
+};
+
+int OptFlow::setup(const char* cascadeFileName) {
+    try {
+        if(!face_cascade.load(cascadeFileName)) {
+            throw "--(!)Error loading face cascade, please change face_cascade_name in source code.\n";
         }
-        return 0;
+    } catch (const char* msg) {
+        doLog(true, msg);
+        throw;
     }
-#ifdef IS_PHONE
-    public: int setJni(JNIEnv* jenv) {
-    }
-#endif
-    public: int run(Mat gray, Mat out) {
-        //cvtColor(rgb, grayx, COLOR_BGR2GRAY);
-        //process(rgb, grayx, rgb);
-        process(gray, out);
+    return 0;
+};
 
-        //cv::swap(prevLeft, left);
-        //cv::swap(prevRight, right);
-        
-        return 0;
-    }
-}; // end of OptFlow class definition
+#ifdef IS_PHONE
+int OptFlow::setJni(JNIEnv* jenv) {
+};
+#endif
+
+int OptFlow::run(cv::Mat gray, cv::Mat out) {
+    //cvtColor(rgb, grayx, COLOR_BGR2GRAY);
+    //process(rgb, grayx, rgb);
+    process(gray, out);
+
+    //cv::swap(prevLeft, left);
+    //cv::swap(prevRight, right);
+    return 0;
+};

@@ -48,6 +48,25 @@ extern bool debug_blinks_d3;
 extern bool debug_blinks_d4;
 // optical flow
 extern int flg;
+
+extern int farne;
+
+extern int leftXOffset, leftYOffset, leftCols, leftRows;
+extern int rightXOffset, rightYOffset, rightCols, rightRows;
+
+extern int leftXp1, leftYp1, rightXp1, rightYp1;
+extern int leftXlast, leftYlast, rightXlast, rightYlast;
+extern int leftXavg, leftYavg, rightXavg, rightYavg;
+extern int eye_region_width, eye_region_height;
+
+extern cv::TermCriteria termcrit;
+extern cv::Size subPixWinSize, winSize;
+extern const int MAX_COUNT;
+extern bool addRemovePtx;
+extern cv::vector<cv::Point2f> points[2];
+extern cv::Mat pleft, pright;
+extern int firstLoopProcs;
+
 ///
 extern int maxFramesShortList;
 

@@ -4,7 +4,7 @@
 
 #include <common.hpp>
 
-//#include <optflow.cpp>
+#include <optflow.hpp>
 #include <templatebased.hpp>
 
 #include <main_settings.hpp>
@@ -94,7 +94,7 @@ void captureFrames() {
     }
 }
 
-//OptFlow optf;
+OptFlow optf;
 TemplateBased templ;
 
 void doProcessing() {
@@ -166,7 +166,7 @@ void doProcessing() {
         t2 = std::chrono::steady_clock::now();
         switch (method) {
             case METHOD_OPTFLOW:
-            //optf.run(gray, frame);
+            optf.run(gray, frame);
             break;
             case METHOD_TEMPLATE_BASED:
             templ.run(gray, frame, timestamp, fc.frameNum);
@@ -243,7 +243,7 @@ int main() { // int argc, char * argv[]
     char faceDetector[200] = "/home/developer/other/android_deps/OpenCV-2.4.10-android-sdk/samples/optical-flow/res/raw/lbpcascade_frontalface.xml";
     switch (method) {
         case METHOD_OPTFLOW:
-        //optf.setup(faceDetector);
+        optf.setup(faceDetector);
         break;
         case METHOD_TEMPLATE_BASED:
         templ.setup(faceDetector);

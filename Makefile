@@ -4,8 +4,9 @@ PROJDIR = .
 
 include test/Makefile
 
-FILES_TO_COMPILE = common.cpp main.cpp blinkmeasure.cpp templatebased.cpp
-COMPILER_FLAGS = -std=c++11 -Wall -Wextra
+FILES_TO_COMPILE = common.cpp main.cpp blinkmeasure.cpp templatebased.cpp optflow.cpp
+# -Werror -Wall -Wextra
+COMPILER_FLAGS = -std=c++11 -Wextra
 OUTPUT_BIN =
 MACROS =
 
@@ -16,7 +17,6 @@ clonegoogletest :
 ndkb :
 	/home/developer/other/android_deps/android-ndk-r10d/ndk-build
 
-# -Werror -Wall -Wextra
 _compile :
 	cd jni; \
 	g++ $(MACROS) $(COMPILER_FLAGS) $(FILES_TO_COMPILE) -o ../$(OUTPUT_BIN) -I. $$(pkg-config --cflags --libs opencv);
