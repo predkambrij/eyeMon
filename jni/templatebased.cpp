@@ -85,6 +85,9 @@ bool TemplateBased::eyesInit(cv::Mat& gray, double timestamp) {
 
     imshowWrapper("left", this->leftTemplate, debug_show_img_templ_eyes_tmpl);
     imshowWrapper("right", this->rightTemplate, debug_show_img_templ_eyes_tmpl);
+
+    doLog(debug_tmpl_log, "debug_tmpl_log: reinit: timestamp %lf lLastTime %lf rLastTime %lf\n",
+            timestamp, this->lLastTime, this->rLastTime);
     return true;
 };
 void TemplateBased::updateTemplSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv::Rect& rTemplSearchR, cv::Mat& lTemplSearch, cv::Mat& rTemplSearch) {
@@ -108,7 +111,8 @@ void TemplateBased::checkTracking(double timestamp) {
     if ((this->lLastTime+1000) < timestamp || (this->rLastTime+1000) < timestamp) {
         // we lost eyes, request reinit
         this->hasTemplate = false;
-        doLog(debug_tmpl_log, "debug_tmpl_log: reinit: eyes were displaced\n");
+        doLog(debug_tmpl_log, "debug_tmpl_log: reinit: eyes were displaced timestamp %lf lLastTime %lf rLastTime %lf\n",
+            timestamp, this->lLastTime, this->rLastTime);
     }
 };
 void TemplateBased::updateSearchRegion(cv::Point matchLocL, cv::Point matchLocR, double timestamp) {

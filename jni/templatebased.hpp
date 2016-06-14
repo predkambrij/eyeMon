@@ -12,7 +12,7 @@ class TemplateBased {
         cv::Mat leftTemplate, rightTemplate;
         bool hasTemplate;
         cv::Point lEye, rEye;
-        int lLastTime, rLastTime;
+        double lLastTime, rLastTime;
 
         TemplateBased();
         void setup(const char* cascadeFileName);

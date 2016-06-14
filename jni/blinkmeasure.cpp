@@ -51,7 +51,7 @@ void BlinkMeasure::measureBlinks() {
     blinkMeasure.pop_front();
 
     blinkMeasureShort.push_back(bm);
-    int timeWindow = 10;
+    int timeWindow = 5;
     while (true) {
         BlinkMeasure oldestBm = blinkMeasureShort.front();
         if (oldestBm.timestamp > (bm.timestamp - (timeWindow*1000))) {
@@ -71,7 +71,8 @@ void BlinkMeasure::measureBlinks() {
         double tsDiff = last.timestamp-first.timestamp;
         double fps = shortBmSize/(tsDiff/1000);
         maxFramesShortList = fps*timeWindow*0.80;
-        doLog(debug_blinks_d1, "debug_blinks_d1: fps of the first 30 frames %lf current maxFramesShortList %d\n", fps, maxFramesShortList);
+        doLog(debug_blinks_d1, "debug_blinks_d1: F %d fps of the first 30 frames %lf current maxFramesShortList %d\n",
+            bm.frameNum, fps, maxFramesShortList);
     } else {
         if (shortBmSize > maxFramesShortList) {
             maxFramesShortList = shortBmSize;

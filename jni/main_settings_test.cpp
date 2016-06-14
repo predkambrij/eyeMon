@@ -19,7 +19,11 @@
 //char fileName[100] = "/home/developer/other/posnetki/o4_85.mp4"; // pri miru, niso rukal mize
 //char fileName[100] = "/home/developer/other/posnetki/o4_86.mp4"; // na zacetku gledal na sredi ekrana
 //char fileName[100] = "/home/developer/other/posnetki/o4_87.mp4"; // na zacetku gledal na sredi ekrana, pol premikal glavo
-char fileName[100] = "/home/developer/other/posnetki/talking.avi";
+//char fileName[100] = "/home/developer/other/posnetki/o4_96.mp4"; // svetloba s strani
+//char fileName[100] = "/home/developer/other/posnetki/talking.avi";
+//char fileName[100] = "/home/developer/other/posnetki/sk/eyeblink8/1/26122013_223310_cam.avi"; // punca od dalec
+char fileName[100] = "/home/developer/other/posnetki/sk/NightOfResearchers15/test/14/26092014_211047_cam.avi"; // ful partial
+
 cv::VideoCapture stream1(fileName);
 bool isVideoCapture = false;
 bool disable_max_size = false;
