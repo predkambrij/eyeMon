@@ -101,6 +101,7 @@ void doProcessing() {
     //cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
     if (debug_show_img_main == true) {
         cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 400, 100); cv::resizeWindow("main",1280, 960);
+        //cv::namedWindow("gray",CV_WINDOW_NORMAL); cv::moveWindow("gray", 400, 100); cv::resizeWindow("gray",1280, 960);
     }
     if (debug_show_img_face == true) {
         cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 60, 100);
@@ -188,13 +189,14 @@ void doProcessing() {
                 pause = 1;
             } else if((char)c == 'f') {
                 flg = 1;
-                // imwrite("/tmp/frame.png",cflow);
             } else if (pause == 1) {
                 while (true) {
                     int c = cv::waitKey(10);
                     if((char)c == 'p') {
                         pause = 0;
                         break;
+                    } else if((char)c == 'i') {
+                        imwrite("/tmp/frame.png", toSave);
                     } else if((char)c == 'n') {
                         break;
                     } else if((char)c == 's') {

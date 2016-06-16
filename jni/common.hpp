@@ -65,6 +65,7 @@ extern const int MAX_COUNT;
 extern bool addRemovePtx;
 extern cv::vector<cv::Point2f> points[2];
 extern cv::Mat pleft, pright;
+extern cv::Mat toSave;
 extern int firstLoopProcs;
 
 ///

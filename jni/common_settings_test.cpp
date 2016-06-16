@@ -1,11 +1,11 @@
 #include <common.hpp>
 
 // TODO this could be done using macros (at all places is used ifdef)
-bool debug_show_img_main = false;
-bool debug_show_img_face = false;
+bool debug_show_img_main = true;
+bool debug_show_img_face = true;
 bool debug_show_img_optfl_eyes = false;
-bool debug_show_img_templ_eyes_cor = false;
-bool debug_show_img_templ_eyes_tmpl = false;
+bool debug_show_img_templ_eyes_cor = true;
+bool debug_show_img_templ_eyes_tmpl = true;
 bool debug_t1_log = false;
 bool debug_t2_log = false;
 bool debug_t2_perf_method = false;
@@ -19,8 +19,8 @@ bool debug_blinks_d2 = true;
 bool debug_blinks_d3 = true;
 bool debug_blinks_d4 = true;
 
-//int method = METHOD_OPTFLOW;
-int method = METHOD_TEMPLATE_BASED;
+int method = METHOD_OPTFLOW;
+//int method = METHOD_TEMPLATE_BASED;
 double previousFrameTime = -1;
 
 // optical flow

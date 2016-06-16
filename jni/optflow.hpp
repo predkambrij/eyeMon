@@ -20,12 +20,20 @@ void showResult(cv::Mat cflow, cv::Rect face, cv::Mat faceROI, cv::Rect leftEyeR
 
 class OptFlow {
     public:
+        int num = 0;
+        int flg1 = 0;
+        int resetDelay = 0;
+        cv::Mat pgray;
+        cv::Mat oprev, opprev;
+        cv::Mat loprev, lopprev;
+        cv::Mat roprev, ropprev;
+        
         cv::Rect face, leftEyeRegion, rightEyeRegion;
         cv::Rect leftE, rightE;
 
         cv::Mat rgb, grayx, left, right, prevLeft, prevRight;
         unsigned long long int ns = 0;
-        cv::vector<cv::Point2f> points[2];
+        cv::vector<cv::Point2f> lpoints[2], rpoints[2];
         const int MAX_COUNT = 501;
         cv::TermCriteria termcrit;
         cv::Size subPixWinSize, winSize;

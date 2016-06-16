@@ -24,6 +24,7 @@ std::list<Blink> rBlinkChunks;
 std::list<Blink> lBlinkTimeframeChunks;
 std::list<Blink> rBlinkTimeframeChunks;
 int pause = 0;
+cv::Mat toSave;
 
 int PHONE = 1;
 int maxFramesShortList = 0;
