@@ -19,7 +19,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/video/background_segm.hpp>
 
-#include <eyelike/main.cpp>
+#include <eyeLike/src/main.cpp>
 
 #include <common.hpp>
 #include <optflow.hpp>
@@ -78,9 +78,9 @@ void eyeRegions(cv::Rect face, cv::Rect *leftEyeRegion, cv::Rect *rightEyeRegion
     (*leftEyeRegion) = cv::Rect(face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
     (*rightEyeRegion) = cv::Rect(face.width - eye_region_width - face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
 }
-void eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point *leftPupil, cv::Point *rightPupil) {
-    //*leftPupil  = findEyeCenter(faceROI, leftEyeRegion, "Left Eye");
-    //*rightPupil = findEyeCenter(faceROI, rightEyeRegion, "Right Eye");
+void eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point &leftPupil, cv::Point &rightPupil) {
+    leftPupil  = findEyeCenter(faceROI, leftEyeRegion, "Left Eye");
+    rightPupil = findEyeCenter(faceROI, rightEyeRegion, "Right Eye");
 }
 
 void showResult(cv::Mat cflow, cv::Rect face, cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil) {
@@ -217,6 +217,15 @@ void OptFlow::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int 
     cv::equalizeHist(right, right);
     toSave = faceROI.clone();
 
+    eyeCenters(faceROI, leftE, rightE, leftPupil, rightPupil);
+    leftPupil.x += leftE.x; leftPupil.y += leftE.y;
+    rightPupil.x += rightE.x; rightPupil.y += rightE.y;
+    leftPupil.x += face.x; leftPupil.y += face.y;
+    rightPupil.x += face.x; rightPupil.y += face.y;
+
+    circle(out, rightPupil, 3, cv::Scalar(0,255,0), -1, 8);
+    circle(out, leftPupil, 3, cv::Scalar(0,255,0), -1, 8);
+
     int noiseReduct=0;
     int noise2Fris=0;
     if (noiseReduct == 1) {
@@ -280,12 +289,12 @@ void OptFlow::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int 
 
     //cv::equalizeHist(left, left);
     //cv::equalizeHist(right, right);
-    //cv::threshold(left, left, 27, 255, CV_THRESH_BINARY);
-    //cv::threshold(right, right, 27, 255, CV_THRESH_BINARY);
+    cv::threshold(left, left, 27, 255, CV_THRESH_BINARY);
+    cv::threshold(right, right, 27, 255, CV_THRESH_BINARY);
     //cv::threshold(left, left, 50, 255, CV_THRESH_BINARY+CV_THRESH_OTSU);
     //cv::threshold(right, right, 50, 255, CV_THRESH_BINARY+CV_THRESH_OTSU);
-    cv::adaptiveThreshold(left, left, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 15, 0);
-    cv::adaptiveThreshold(right, right, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 15, 0);
+    //cv::adaptiveThreshold(left, left, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 15, 0);
+    //cv::adaptiveThreshold(right, right, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 15, 0);
     imshowWrapper("leftSR", left, debug_show_img_templ_eyes_cor);
     imshowWrapper("rightSR", right, debug_show_img_templ_eyes_cor);
 
@@ -295,6 +304,7 @@ void OptFlow::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int 
     imshowWrapper("leftR", lEdge, debug_show_img_templ_eyes_cor);
     imshowWrapper("rightR", rEdge, debug_show_img_templ_eyes_cor);
 
+/*
     std::vector<cv::Vec3f> hcircles;
     cv::HoughCircles(left, hcircles, CV_HOUGH_GRADIENT, 1, 100, 150, 9, 1, 30);
 printf("hdetected num %lu\n",hcircles.size());
@@ -303,7 +313,7 @@ printf("hdetected num %lu\n",hcircles.size());
         cv::circle(out, cv::Point(c[0]+face.x+leftE.x, c[1]+face.y+leftE.y), c[2], cv::Scalar(0,0,255), 3, CV_AA);
         cv::circle(out, cv::Point(c[0]+face.x+leftE.x, c[1]+face.y+leftE.y), 2, cv::Scalar(0,255,0), 3, CV_AA);
     }
-
+*/
     std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Vec4i> hierarchy;
     /// Find contours

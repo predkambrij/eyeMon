@@ -13,6 +13,8 @@ MACROS =
 
 clonegoogletest :
 	git clone git@github.com:predkambrij/googletest.git test/googletest/
+cloneEyeLike :
+	git clone git@github.com:predkambrij/eyeLike.git jni/eyeLike/
 
 ndkb :
 	/home/developer/other/android_deps/android-ndk-r10d/ndk-build
@@ -22,7 +24,7 @@ _compile :
 	g++ $(MACROS) $(COMPILER_FLAGS) $(FILES_TO_COMPILE) -o ../$(OUTPUT_BIN) -I. $$(pkg-config --cflags --libs opencv);
 
 _setEyelikeFiles :
-	$(eval FILES_TO_COMPILE += eyelike/findEyeCorner.cpp eyelike/findEyeCenter.cpp eyelike/helpers.cpp)
+	$(eval FILES_TO_COMPILE += eyeLike/src/findEyeCorner.cpp eyeLike/src/findEyeCenter.cpp eyeLike/src/helpers.cpp)
 
 # setEyelikeFiles
 _setDesktopSettings :
@@ -42,9 +44,9 @@ _setAnnotVars :
 run/% :
 	bins/$*
 
-dco : _setDesktopSettings _compile
-d : _setDesktopSettings _compile run/d
-dt : _setTestSettings _compile run/t
+dco : _setDesktopSettings _setEyelikeFiles _compile
+d : _setDesktopSettings _setEyelikeFiles _compile run/d
+dt : _setTestSettings _setEyelikeFiles _compile run/t
 annot : _setAnnotVars _compile run/annot
 
 # tests (it doesn't work, see Makefile in test directory)

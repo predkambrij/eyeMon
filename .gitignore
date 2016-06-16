@@ -3,5 +3,5 @@ gen
 libs
 obj
 test/googletest/
-
+jni/eyeLike/
 
