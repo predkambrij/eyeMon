@@ -99,12 +99,18 @@ TemplateBased templ;
 
 void doProcessing() {
     //cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
+    if (debug_show_img_d1 == true) {
+        cv::namedWindow("debug1",CV_WINDOW_NORMAL); cv::moveWindow("debug1", 60, 220);
+        cv::namedWindow("debug2",CV_WINDOW_NORMAL); cv::moveWindow("debug2", 60, 490);
+        cv::namedWindow("debug3",CV_WINDOW_NORMAL); cv::moveWindow("debug3", 60, 790);
+        cv::namedWindow("debug4",CV_WINDOW_NORMAL); cv::moveWindow("debug4", 60, 30);
+    }
     if (debug_show_img_main == true) {
-        cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 400, 100); cv::resizeWindow("main",1280, 960);
+        cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 400, 30); cv::resizeWindow("main",1280, 960);
         //cv::namedWindow("gray",CV_WINDOW_NORMAL); cv::moveWindow("gray", 400, 100); cv::resizeWindow("gray",1280, 960);
     }
     if (debug_show_img_face == true) {
-        cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 60, 100);
+        cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 60, 30);
     }
     if (debug_show_img_templ_eyes_tmpl == true) {
         cv::namedWindow("leftSR",CV_WINDOW_NORMAL); cv::moveWindow("leftSR", 1300, 200);

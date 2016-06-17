@@ -5,6 +5,7 @@
 #include <list>
 
 #include <opencv2/core/core.hpp>
+#include <opencv2/objdetect/objdetect.hpp>
 
 #include <blinkmeasure.hpp>
 
@@ -29,6 +30,7 @@ extern int method;
 extern int pause;
 extern double previousFrameTime;
 
+extern bool debug_show_img_d1;
 extern bool debug_show_img_main;
 extern bool debug_show_img_face;
 extern bool debug_show_img_optfl_eyes;
@@ -67,6 +69,7 @@ extern cv::vector<cv::Point2f> points[2];
 extern cv::Mat pleft, pright;
 extern cv::Mat toSave;
 extern int firstLoopProcs;
+extern cv::CascadeClassifier face_cascade;
 
 ///
 extern int maxFramesShortList;

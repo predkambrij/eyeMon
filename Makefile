@@ -23,8 +23,9 @@ _compile :
 	cd jni; \
 	g++ $(MACROS) $(COMPILER_FLAGS) $(FILES_TO_COMPILE) -o ../$(OUTPUT_BIN) -I. $$(pkg-config --cflags --libs opencv);
 
+#	$(eval FILES_TO_COMPILE += eyeLike/src/findEyeCorner.cpp eyeLike/src/findEyeCenter.cpp eyeLike/src/helpers.cpp)
 _setEyelikeFiles :
-	$(eval FILES_TO_COMPILE += eyeLike/src/findEyeCorner.cpp eyeLike/src/findEyeCenter.cpp eyeLike/src/helpers.cpp)
+	$(eval FILES_TO_COMPILE += eyeLike/src/findEyeCenter.cpp eyeLike/src/helpers.cpp)
 
 # setEyelikeFiles
 _setDesktopSettings :

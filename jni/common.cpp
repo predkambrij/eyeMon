@@ -26,6 +26,8 @@ std::list<Blink> rBlinkTimeframeChunks;
 int pause = 0;
 cv::Mat toSave;
 
+cv::CascadeClassifier face_cascade;
+
 int PHONE = 1;
 int maxFramesShortList = 0;
 std::chrono::high_resolution_clock::time_point startx = std::chrono::high_resolution_clock::now();

@@ -19,22 +19,26 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/video/background_segm.hpp>
 
-#include <eyeLike/src/main.cpp>
+//#include <eyeLike/src/main.cpp>
+#include "eyeLike/src/findEyeCenter.h"
+
 
 #include <common.hpp>
 #include <optflow.hpp>
 
-void drawOptFlowMap (const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, int eye) {
+void drawOptFlowMap (cv::Rect face, cv::Rect eyeE, const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, int eye) {
     //cv::circle(cflowmap, cv::Point2f((float)10, (float)10), 3, cv::Scalar(0,255,0), -1, 8);
     cv::circle(cflowmap, cv::Point2f((float)15, (float)15), 10, cv::Scalar(0,255,0), -1, 8);
     int xo, yo;
-    if (eye == 0) {
-        xo = leftXOffset;
-        yo = leftYOffset;
-    } else {
-        xo = rightXOffset;
-        yo = rightYOffset;
-    }
+    // if (eye == 0) {
+    //     xo = leftXOffset;
+    //     yo = leftYOffset;
+    // } else {
+    //     xo = rightXOffset;
+    //     yo = rightYOffset;
+    // }
+    xo = face.x+eyeE.x;
+    yo = face.y+eyeE.y;
     for(int y = 0; y < flow.rows; y += step) {
         for(int x = 0; x < flow.cols; x += step) {
             
@@ -71,16 +75,16 @@ int faceDetect(cv::Mat gray, cv::Rect *face) {
     *face = faces[0];
     return 0;
 }
-void eyeRegions(cv::Rect face, cv::Rect *leftEyeRegion, cv::Rect *rightEyeRegion) {
-    eye_region_width = face.width * (kEyePercentWidth/100.0);
-    eye_region_height = face.width * (kEyePercentHeight/100.0);
-    int eye_region_top = face.height * (kEyePercentTop/100.0);
-    (*leftEyeRegion) = cv::Rect(face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
-    (*rightEyeRegion) = cv::Rect(face.width - eye_region_width - face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
-}
+// void eyeRegions(cv::Rect face, cv::Rect *leftEyeRegion, cv::Rect *rightEyeRegion) {
+//     eye_region_width = face.width * (kEyePercentWidth/100.0);
+//     eye_region_height = face.width * (kEyePercentHeight/100.0);
+//     int eye_region_top = face.height * (kEyePercentTop/100.0);
+//     (*leftEyeRegion) = cv::Rect(face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
+//     (*rightEyeRegion) = cv::Rect(face.width - eye_region_width - face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
+// }
 void eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point &leftPupil, cv::Point &rightPupil) {
-    leftPupil  = findEyeCenter(faceROI, leftEyeRegion, "Left Eye");
-    rightPupil = findEyeCenter(faceROI, rightEyeRegion, "Right Eye");
+    //leftPupil  = findEyeCenter(faceROI, leftEyeRegion);
+    rightPupil = findEyeCenter(faceROI, rightEyeRegion);
 }
 
 void showResult(cv::Mat cflow, cv::Rect face, cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil) {
@@ -154,33 +158,19 @@ void OptFlow::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int 
     getLeftRightEyeMat(gray, leftEyeRegion, rightEyeRegion,  &left, &right);
     diffclock("- getLeftRightEyeMat", start);
 
-    if (firstLoopProcs == 0) {
-        start = clock();
-        cv::calcOpticalFlowFarneback(pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
-        cv::calcOpticalFlowFarneback(pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
-        diffclock("- farneback", start);
-
-        start = clock();
-        drawOptFlowMap(flowLeft, out, 10, cv::Scalar(0, 255, 0), 0);
-        drawOptFlowMap(flowRight, out, 10, cv::Scalar(0, 255, 0), 1);
-        diffclock("- drawOptFlowMap", start);
-
-        if (debug_show_img_optfl_eyes == true && PHONE == 0) {
-            imshow("left", left);
-            imshow("right", right);
-        }
-    } else {
-        firstLoopProcs = 0;
-    }
 */
-    if ((frameNum % 90) == 0) {
+    if ((frameNum % 30) == 0) {
         // initialize
         flg=1;
         flg1=1;
         resetDelay=0;
-        pause=1;
+        firstLoopProcs = 1;
+//        pause=1;
     } else {
         resetDelay++;
+    }
+    if ((frameNum % 2) == 0) {
+        return;
     }
     if (flg == 1) {
         if (faceDetect(gray, &face) != 0) {
@@ -207,16 +197,19 @@ void OptFlow::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int 
     right = faceROI(rightE);
 
     //cv::equalizeHist(faceROI, faceROI);
+/*
     GaussianBlur(left, left, cv::Size(3,3), 0);
     GaussianBlur(left, left, cv::Size(3,3), 0);
     cv::equalizeHist(left, left);
     cv::equalizeHist(right, right);
+*/
     GaussianBlur(left, left, cv::Size(3,3), 0);
     GaussianBlur(left, left, cv::Size(3,3), 0);
     cv::equalizeHist(left, left);
     cv::equalizeHist(right, right);
-    toSave = faceROI.clone();
 
+    toSave = faceROI.clone();
+/*
     eyeCenters(faceROI, leftE, rightE, leftPupil, rightPupil);
     leftPupil.x += leftE.x; leftPupil.y += leftE.y;
     rightPupil.x += rightE.x; rightPupil.y += rightE.y;
@@ -225,7 +218,7 @@ void OptFlow::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int 
 
     circle(out, rightPupil, 3, cv::Scalar(0,255,0), -1, 8);
     circle(out, leftPupil, 3, cv::Scalar(0,255,0), -1, 8);
-
+*/
     int noiseReduct=0;
     int noise2Fris=0;
     if (noiseReduct == 1) {
@@ -286,7 +279,7 @@ void OptFlow::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int 
 
 
     imshowWrapper("face", faceROI, debug_show_img_face);
-
+/*
     //cv::equalizeHist(left, left);
     //cv::equalizeHist(right, right);
     cv::threshold(left, left, 27, 255, CV_THRESH_BINARY);
@@ -303,7 +296,7 @@ void OptFlow::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int 
     cv::Canny(right, rEdge, 75, 150, 3);
     imshowWrapper("leftR", lEdge, debug_show_img_templ_eyes_cor);
     imshowWrapper("rightR", rEdge, debug_show_img_templ_eyes_cor);
-
+*/
 /*
     std::vector<cv::Vec3f> hcircles;
     cv::HoughCircles(left, hcircles, CV_HOUGH_GRADIENT, 1, 100, 150, 9, 1, 30);
@@ -314,6 +307,7 @@ printf("hdetected num %lu\n",hcircles.size());
         cv::circle(out, cv::Point(c[0]+face.x+leftE.x, c[1]+face.y+leftE.y), 2, cv::Scalar(0,255,0), 3, CV_AA);
     }
 */
+/*
     std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Vec4i> hierarchy;
     /// Find contours
@@ -328,10 +322,10 @@ printf("hdetected num %lu\n",hcircles.size());
        boundRect[i] = cv::boundingRect( cv::Mat(contours_poly[i]) );
        cv::minEnclosingCircle( (cv::Mat)contours_poly[i], center[i], radius[i] );
      }
-
-printf("detected num %lu\n",contours.size());
+//printf("detected num %lu\n",contours.size());
     /// Draw contours
     //cv::Mat drawing = cv::Mat::zeros( canny_output.size(), CV_8UC3 );
+cv::RNG rng(12345);
     for(unsigned int i = 0; i< contours.size(); i++ ) {
         if (radius[i] < 6) {
             continue;
@@ -340,11 +334,12 @@ printf("detected num %lu\n",contours.size());
         cv::drawContours(out, contours, i, color, 2, 8, hierarchy, 0, cv::Point());
         cv::rectangle(out, boundRect[i].tl(), boundRect[i].br(), color, 1, 8, 0 );
         cv::circle(out, center[i], (int)radius[i], color, 1, 8, 0 );
-        printf("radius %d\n",(int)radius[i]);
+ //       printf("radius %d\n",(int)radius[i]);
     }
+*/
 
-imshowWrapper("main", out, debug_show_img_main);
-    return;
+//imshowWrapper("main", out, debug_show_img_main);
+//    return;
     //printf("face %d %d\n", face.width, face.height);
     //imshow("face", faceROI);
     //return;
@@ -352,6 +347,29 @@ imshowWrapper("main", out, debug_show_img_main);
     //cv::equalizeHist(faceROI, faceROI);
 //    GaussianBlur(left, left, cv::Size(3,3), 0);
 //    GaussianBlur(right, right, cv::Size(3,3), 0);
+
+
+    if (firstLoopProcs == 0) {
+        start = clock();
+        cv::calcOpticalFlowFarneback(pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
+        cv::calcOpticalFlowFarneback(pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
+        diffclock("- farneback", start);
+
+        start = clock();
+        drawOptFlowMap(face, leftE, flowLeft, out, 5, cv::Scalar(0, 255, 0), 0);
+        drawOptFlowMap(face, rightE, flowRight, out, 5, cv::Scalar(0, 255, 0), 1);
+        diffclock("- drawOptFlowMap", start);
+
+        if (debug_show_img_optfl_eyes == true && PHONE == 0) {
+            imshow("left", left);
+            imshow("right", right);
+        }
+    } else {
+        firstLoopProcs = 0;
+    }
+
+
+/*
     if (resetDelay > 3) {
         if (flg1 == 1) {
             start = clock();
@@ -425,6 +443,7 @@ imshowWrapper("main", out, debug_show_img_main);
         std::swap(lpoints[1], lpoints[0]);
         std::swap(rpoints[1], rpoints[0]);
     }
+*/
 //    imshowWrapper("gray", gray, debug_show_img_main);
 
     pleft = left.clone(); pright = right.clone();

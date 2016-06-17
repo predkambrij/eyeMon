@@ -1,6 +1,7 @@
 #include <common.hpp>
 
 // TODO this could be done using macros (at all places is used ifdef)
+bool debug_show_img_d1 = true;
 bool debug_show_img_main = true;
 bool debug_show_img_face = true;
 bool debug_show_img_templ_eyes_cor = true;
