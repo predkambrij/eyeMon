@@ -137,11 +137,9 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
         flg=0;
     }
 
-
     faceROI = gray(face);
     left  = faceROI(leftE);
     right = faceROI(rightE);
-
     //cv::equalizeHist(faceROI, faceROI);
 /*
     GaussianBlur(left, left, cv::Size(3,3), 0);
@@ -156,6 +154,21 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
 
     toSave = faceROI.clone();
     fbEyeCenters(faceROI, leftE, rightE, leftPupil, rightPupil);
+
+    // bounding boxes
+    int leftBw = leftE.width*0.75, leftBh = leftE.height*0.4;
+    int rightBw = rightE.width*0.75, rightBh = rightE.height*0.4;
+    leftB = cv::Rect(leftPupil.x-(leftBw/2), leftPupil.y-(leftBh/2), leftBw, leftBh);
+    rightB = cv::Rect(rightPupil.x-(rightBw/2), rightPupil.y-(rightBh/2), rightBw, rightBh);
+    // draw eyes bounding boxes
+    cv::RNG rng(12345);
+    cv::Scalar coolor = cv::Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
+    cv::rectangle(out, cv::Rect(face.x+leftE.x+leftB.x,face.y+leftE.y+leftB.y,leftB.width,leftB.height), coolor, 1, 8, 0);
+    cv::rectangle(out, cv::Rect(face.x+rightE.x+rightB.x,face.y+rightE.y+rightB.y,rightB.width,rightB.height), coolor, 1, 8, 0);
+    cv::rectangle(left, cv::Rect(leftB.x,leftB.y,leftB.width,leftB.height), coolor, 1, 8, 0);
+    cv::rectangle(right, cv::Rect(rightB.x,rightB.y,rightB.width,rightB.height), coolor, 1, 8, 0);
+
+
     leftPupil.x += leftE.x; leftPupil.y += leftE.y;
     rightPupil.x += rightE.x; rightPupil.y += rightE.y;
     leftPupil.x += face.x; leftPupil.y += face.y;
@@ -163,6 +176,8 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
 
     circle(out, rightPupil, 3, cv::Scalar(0,255,0), -1, 8);
     circle(out, leftPupil, 3, cv::Scalar(0,255,0), -1, 8);
+
+
 /*
 */
     int noiseReduct=0;

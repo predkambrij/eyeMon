@@ -27,7 +27,7 @@ class Farneback {
         cv::Mat roprev, ropprev;
         
         cv::Rect face, leftEyeRegion, rightEyeRegion;
-        cv::Rect leftE, rightE;
+        cv::Rect leftE, rightE, leftB, rightB;
 
         cv::Mat rgb, grayx, left, right, prevLeft, prevRight;
         unsigned long long int ns = 0;
