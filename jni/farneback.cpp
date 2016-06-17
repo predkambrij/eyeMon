@@ -83,7 +83,7 @@ int fbFaceDetect(cv::Mat gray, cv::Rect *face) {
 //     (*rightEyeRegion) = cv::Rect(face.width - eye_region_width - face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
 // }
 void fbEyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point &leftPupil, cv::Point &rightPupil) {
-    //leftPupil  = findEyeCenter(faceROI, leftEyeRegion);
+    leftPupil  = findEyeCenter(faceROI, leftEyeRegion);
     rightPupil = findEyeCenter(faceROI, rightEyeRegion);
 }
 
@@ -170,7 +170,7 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
         resetDelay++;
     }
     if ((frameNum % 2) == 0) {
-        return;
+        //return;
     }
     if (flg == 1) {
         if (fbFaceDetect(gray, &face) != 0) {
@@ -209,7 +209,6 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
     cv::equalizeHist(right, right);
 
     toSave = faceROI.clone();
-/*
     fbEyeCenters(faceROI, leftE, rightE, leftPupil, rightPupil);
     leftPupil.x += leftE.x; leftPupil.y += leftE.y;
     rightPupil.x += rightE.x; rightPupil.y += rightE.y;
@@ -218,6 +217,7 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
 
     circle(out, rightPupil, 3, cv::Scalar(0,255,0), -1, 8);
     circle(out, leftPupil, 3, cv::Scalar(0,255,0), -1, 8);
+/*
 */
     int noiseReduct=0;
     int noise2Fris=0;
