@@ -44,6 +44,7 @@ extern bool debug_t2_perf_whole;
 extern bool debug_tmpl_log;
 extern bool debug_tmpl_perf1;
 extern bool debug_tmpl_perf2;
+extern bool debug_fb_log1;
 extern bool debug_notifications_log1;
 extern bool debug_blinks_d1;
 extern bool debug_blinks_d2;

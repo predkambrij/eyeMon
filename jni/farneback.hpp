@@ -11,36 +11,27 @@
 
 
 void fbDrawOptFlowMap (cv::Rect face, cv::Rect eyeE, const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, int eye);
-int fbFaceDetect(cv::Mat gray, cv::Rect *face);
-void fbEyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point& leftPupil, cv::Point& rightPupil);
-void fbShowResult(cv::Mat cflow, cv::Rect face, cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil);
-
 
 class Farneback {
     public:
-        int num = 0;
-        int flg1 = 0;
-        int resetDelay = 0;
+        cv::Point lEye, rEye;
+        double lLastTime, rLastTime;
         cv::Mat pgray;
-        cv::Mat oprev, opprev;
-        cv::Mat loprev, lopprev;
-        cv::Mat roprev, ropprev;
         
-        cv::Rect face, leftEyeRegion, rightEyeRegion;
-        cv::Rect leftE, rightE, leftB, rightB;
+        //cv::Rect face, leftEyeRegion, rightEyeRegion;
+        cv::Rect faceRef, leftE, rightE;
+        bool flagReinit = true, flagPupilSearch = false;
 
-        cv::Mat rgb, grayx, left, right, prevLeft, prevRight;
-        unsigned long long int ns = 0;
-        cv::vector<cv::Point2f> lpoints[2], rpoints[2];
-        const int MAX_COUNT = 501;
-        cv::TermCriteria termcrit;
-        cv::Size subPixWinSize, winSize;
-        bool yes = false;
-        bool yes1 = false;
-        cv::Point2f point;
         Farneback();
+        int faceDetect(cv::Mat gray, cv::Rect *face);
+        void eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point& leftPupil, cv::Point& rightPupil);
+        void method(cv::Mat gray, cv::Mat& faceROI, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight);
+        void rePupil();
+        void updateSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv::Rect& rTemplSearchR, cv::Mat& lTemplSearch, cv::Mat& rTemplSearch);
+        bool reinit(cv::Mat gray, cv::Mat& faceROI, cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum);
         int run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum);
         int setup(const char* cascadeFileName);
+        bool preprocess(cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum);
         void process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum);
 #ifdef IS_PHONE
         int setJni(JNIEnv* jenv);
