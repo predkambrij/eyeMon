@@ -12,13 +12,14 @@
 #include <ctype.h>
 #include <chrono>
 
-#include <optflow.cpp>
+#include <optflow.hpp>
 
 using namespace cv;
 using namespace std;
 
 extern "C" {
 
+long int grabberFrameNumO = 0;
 OptFlow optf;
 
 JNIEXPORT jlong JNICALL Java_org_blatnik_eyemon_OptFlow_optFlowCreateObject
@@ -42,7 +43,9 @@ JNIEXPORT void JNICALL Java_org_blatnik_eyemon_OptFlow_optFlowDetect
     Mat rgb = *((Mat*)imageRGB);
     Mat gray = *((Mat*)imageGray);
 
-    optf.run(gray, rgb);
+    long int tstp = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
+    optf.run(gray, rgb, tstp, grabberFrameNumO);
+    grabberFrameNumO++;
 }
 
 

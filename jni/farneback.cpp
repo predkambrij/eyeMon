@@ -27,16 +27,8 @@
 #include <farneback.hpp>
 
 void fbDrawOptFlowMap (cv::Rect face, cv::Rect eyeE, const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, int eye) {
-    //cv::circle(cflowmap, cv::Point2f((float)10, (float)10), 3, cv::Scalar(0,255,0), -1, 8);
     cv::circle(cflowmap, cv::Point2f((float)15, (float)15), 10, cv::Scalar(0,255,0), -1, 8);
     int xo, yo;
-    // if (eye == 0) {
-    //     xo = leftXOffset;
-    //     yo = leftYOffset;
-    // } else {
-    //     xo = rightXOffset;
-    //     yo = rightYOffset;
-    // }
     xo = face.x+eyeE.x;
     yo = face.y+eyeE.y;
     for(int y = 0; y < flow.rows; y += step) {
@@ -56,16 +48,6 @@ void fbDrawOptFlowMap (cv::Rect face, cv::Rect eyeE, const cv::Mat flow, cv::Mat
     printf("\n\n\n");
 }
 
-void fbGetLeftRightEyeMat(cv::Mat gray, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Mat *left, cv::Mat *right) {
-    // printf("eye_region_width %d, eye_region_height %d\n", eye_region_width, eye_region_height);
-    // printf("leftEyeRegion %d, leftEyeRegion %d\n", leftEyeRegion.x, leftEyeRegion.y);
-    // printf("rightEyeRegion %d, rightEyeRegion %d\n", rightEyeRegion.x, rightEyeRegion.y);
-    // gray(cv::Rect(leftEyeRegion.x, leftEyeRegion.y, 60, 70)).copyTo(*left);
-    // gray(cv::Rect(rightEyeRegion.x, rightEyeRegion.y, 60, 70)).copyTo(*right);
-    gray(cv::Rect(leftXOffset, leftYOffset, leftCols, leftRows)).copyTo(*left);
-    gray(cv::Rect(rightXOffset, rightYOffset, rightCols, rightRows)).copyTo(*right);
-}
-
 int fbFaceDetect(cv::Mat gray, cv::Rect *face) {
     std::vector<cv::Rect> faces;
     face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
@@ -75,48 +57,12 @@ int fbFaceDetect(cv::Mat gray, cv::Rect *face) {
     *face = faces[0];
     return 0;
 }
-// void eyeRegions(cv::Rect face, cv::Rect *leftEyeRegion, cv::Rect *rightEyeRegion) {
-//     eye_region_width = face.width * (kEyePercentWidth/100.0);
-//     eye_region_height = face.width * (kEyePercentHeight/100.0);
-//     int eye_region_top = face.height * (kEyePercentTop/100.0);
-//     (*leftEyeRegion) = cv::Rect(face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
-//     (*rightEyeRegion) = cv::Rect(face.width - eye_region_width - face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
-// }
 void fbEyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point &leftPupil, cv::Point &rightPupil) {
     leftPupil  = findEyeCenter(faceROI, leftEyeRegion);
     rightPupil = findEyeCenter(faceROI, rightEyeRegion);
 }
 
 void fbShowResult(cv::Mat cflow, cv::Rect face, cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil) {
-    // // change eye centers to face coordinates
-    // rightPupil.x += rightEyeRegion.x; rightPupil.y += rightEyeRegion.y;
-    // leftPupil.x += leftEyeRegion.x; leftPupil.y += leftEyeRegion.y;
-    // rightPupil.x += face.x; rightPupil.y += face.y;
-    // leftPupil.x += face.x; leftPupil.y += face.y;
-    // // leftXOffset = leftPupil.x - 50; rightXOffset = rightPupil.x - 50;
-    // // leftYOffset = leftPupil.y - 50; rightYOffset = rightPupil.y - 50;
-
-    // // if (leftXavg==0) {
-    // //     // first iteration
-    // //     leftXp1=leftPupil.x; leftXlast=leftPupil.x; leftXavg=leftPupil.x;
-    // //     leftYp1=leftPupil.y; leftYlast=leftPupil.y; leftYavg=leftPupil.y;
-    // //     rightXp1=rightPupil.x; rightXlast=rightPupil.x; rightXavg=rightPupil.x;
-    // //     rightYp1=rightPupil.y; rightYlast=rightPupil.y; rightYavg=rightPupil.y;
-    // // } else {
-    // //     // calculate avg
-    // //     leftXavg=(leftXp1+leftXlast+leftPupil.x)/3; leftYavg=(leftYp1+leftYlast+leftPupil.y)/3;
-    // //     rightXavg=(rightXp1+rightXlast+rightPupil.x)/3; rightYavg=(rightYp1+rightYlast+rightPupil.y)/3;
-    // //     // rotate
-    // //     leftXp1=leftXlast; rightXp1=rightXlast; leftYp1=leftYlast; rightYp1=rightYlast;
-    // //     leftXlast=leftPupil.x; rightXlast=rightPupil.x; leftYlast=leftPupil.y; rightYlast=rightPupil.y;
-    // // }
-    // // leftXOffset = leftXavg-50; leftYOffset = leftYavg-50;
-    // // rightXOffset = rightXavg-50; rightYOffset = rightYavg-50;
-
-    // circle(cflow, Point2f((float)15, (float)15), 10, Scalar(0,255,0), -1, 8);
-    // circle(cflow, rightPupil, 3, Scalar(0,255,0), -1, 8);
-    // circle(cflow, leftPupil, 3, Scalar(0,255,0), -1, 8);
-
     // draw eye centers
     if (debug_show_img_main == true && PHONE == 0) {
         imshow("main", cflow);
