@@ -20,8 +20,9 @@ bool debug_blinks_d2 = false;
 bool debug_blinks_d3 = false;
 bool debug_blinks_d4 = false;
 
-int method = METHOD_OPTFLOW;
+//int method = METHOD_OPTFLOW;
 //int method = METHOD_TEMPLATE_BASED;
+int method = METHOD_FARNEBACK;
 double previousFrameTime = -1;
 
 // optical flow

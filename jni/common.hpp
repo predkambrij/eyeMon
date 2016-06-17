@@ -23,6 +23,7 @@ void printStatus();
 #define METHOD_OPTFLOW 0
 #define METHOD_TEMPLATE_BASED 1
 #define METHOD_BLACK_PIXELS 2
+#define METHOD_FARNEBACK 3
 
 extern int PHONE;
 extern std::chrono::high_resolution_clock::time_point startx;
