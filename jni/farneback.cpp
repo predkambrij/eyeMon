@@ -129,31 +129,54 @@ void Farneback::updateSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv::Rect& rT
 */
 }
 void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
-    bool firePreprocess = false;
+    bool firePreprocess = false, canUpdateL = false, canUpdateR = false;
     cv::Point newLEyeLoc, newREyeLoc;
+    const int maxDiff = 20;
 
     this->eyeCenters(gray, this->leftRg, this->rightRg, newLEyeLoc, newREyeLoc);
+    printf("L diff x %d y %d\n", newLEyeLoc.x-this->lEye.x, newLEyeLoc.y-this->lEye.y);
+    if (abs(newLEyeLoc.x-this->lEye.x) < maxDiff && abs(newLEyeLoc.y-this->lEye.y) < maxDiff) {
+            this->lLastTime = timestamp;
+            canUpdateL = true;
+    }
+    printf("R diff x %d y %d\n", newREyeLoc.x-this->rEye.x, newREyeLoc.y-this->rEye.y);
+    if (abs(newREyeLoc.x-this->rEye.x) < maxDiff && abs(newREyeLoc.y-this->rEye.y) < maxDiff) {
+            this->rLastTime = timestamp;
+            canUpdateR = true;
+    }
+    if ((this->lLastTime+1000) < timestamp || (this->rLastTime+1000) < timestamp) {
+        // we lost eyes, request reinit
+        this->flagReinit = true;
+        doLog(debug_tmpl_log, "debug_tmpl_log: reinit: eyes were displaced timestamp %lf lLastTime %lf rLastTime %lf\n",
+            timestamp, this->lLastTime, this->rLastTime);
+    } else {
+        printf("timestamp diff L %lf R %lf\n", timestamp-this->lLastTime, timestamp-this->rLastTime);
+    }
 
-    if (newLEyeLoc.x < (this->leftRg.width*0.3) || newLEyeLoc.x > (this->leftRg.width*0.7)
-        || newLEyeLoc.y < (this->leftRg.height*0.3) || newLEyeLoc.y > (this->leftRg.height*0.7)) {
+    if (canUpdateL == true
+        && (newLEyeLoc.x < (this->leftRg.width*0.3) || newLEyeLoc.x > (this->leftRg.width*0.7)
+            || newLEyeLoc.y < (this->leftRg.height*0.3) || newLEyeLoc.y > (this->leftRg.height*0.7))) {
         // reposition leftRg so that lEye will be in the middle
         unsigned int idealX = this->leftRg.width/2, idealY = this->leftRg.height/2;
         int moveX = newLEyeLoc.x-idealX, moveY = newLEyeLoc.y-idealY;
         printf("pL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
         this->leftRg.x += moveX; this->leftRg.y += moveY;
-        this->leftRg = this->leftRg;
+        // update newLEyeLoc because we changed leftRg's location
+        newLEyeLoc.x -= moveX; newLEyeLoc.y -= moveY;
         printf("aL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
         firePreprocess = true;
     }
 
-    if (newREyeLoc.x < (this->rightRg.width*0.3) || newREyeLoc.x > (this->rightRg.width*0.7)
-        || newREyeLoc.y < (this->rightRg.height*0.3) || newREyeLoc.y > (this->rightRg.height*0.7)) {
+    if (canUpdateR == true
+        && (newREyeLoc.x < (this->rightRg.width*0.3) || newREyeLoc.x > (this->rightRg.width*0.7)
+            || newREyeLoc.y < (this->rightRg.height*0.3) || newREyeLoc.y > (this->rightRg.height*0.7))) {
         // reposition rightRg so that rEye will be in the middle
         unsigned int idealX = this->leftRg.width/2, idealY = this->leftRg.height/2;
         int moveX = newREyeLoc.x-idealX, moveY = newREyeLoc.y-idealY;
         printf("pR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
         this->rightRg.x += moveX; this->rightRg.y += moveY;
-        this->rightRg = this->rightRg;
+        // update newREyeLoc because we changed rightRg's location
+        newREyeLoc.x -= moveX; newREyeLoc.y -= moveY;
         printf("aR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
         firePreprocess = true;
     }
@@ -165,6 +188,13 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
         //pause = 1;
     }
 
+    if (canUpdateL == true) {
+        this->lEye = newLEyeLoc;
+    }
+    if (canUpdateR == true) {
+        this->rEye = newREyeLoc;
+    }
+
     // if (newREyeLoc.x < (this->rightE.width*0.3) || newREyeLoc.x > (this->rightE.width*0.7)
     //     || newREyeLoc.y < (this->rightE.height*0.3) || newREyeLoc.y > (this->rightE.height*0.7)) {
     //     // TODO window edges
@@ -173,8 +203,6 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
     //     this->rightE.x -= (this->rightE.width/2);
     //     this->rightE.y -= (this->rightE.height/2);
     // }
-    this->lEye = newLEyeLoc;
-    this->rEye = newREyeLoc;
 
     // update eye locs
 //    this->rePupil(faceROI);
@@ -236,8 +264,8 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
         if ((frameNum % 2) == 0) {
             //return;
         }
-        this->rePupil(gray, frameNum, timestamp);
-        this->method(gray, left, right, flowLeft, flowRight, leftB, rightB, frameNum, timestamp);
+        this->rePupil(gray, timestamp, frameNum);
+        this->method(gray, left, right, flowLeft, flowRight, leftB, rightB, timestamp, frameNum);
         this->drawOptFlowMap(this->leftRg, flowLeft, out, 5, cv::Scalar(0, 255, 0), 0);
         this->drawOptFlowMap(this->rightRg, flowRight, out, 5, cv::Scalar(0, 255, 0), 1);
     }
@@ -246,11 +274,9 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
 //        this->flagReinit = true;
     }
 
-    // draw
-    cv::Point lTmp = cv::Point(this->leftRg.x+this->lEye.x, this->leftRg.y+this->lEye.y);
-    cv::Point rTmp = cv::Point(this->rightRg.x+this->rEye.x, this->rightRg.y+this->rEye.y);
-    circle(out, lTmp, 3, cv::Scalar(0,255,0), -1, 8);
-    circle(out, rTmp, 3, cv::Scalar(0,255,0), -1, 8);
+    // draw pupil location
+    circle(out, cv::Point(this->leftRg.x+this->lEye.x, this->leftRg.y+this->lEye.y), 3, cv::Scalar(0,255,0), -1, 8);
+    circle(out, cv::Point(this->rightRg.x+this->rEye.x, this->rightRg.y+this->rEye.y), 3, cv::Scalar(0,255,0), -1, 8);
 
     // draw eyes bounding boxes
     cv::RNG rng(12345);
