@@ -73,7 +73,6 @@ bool Farneback::preprocess(cv::Mat& left, cv::Mat& right, double timestamp, unsi
 }
 bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum) {
     cv::Rect face;
-    cv::Mat faceROI, leftSr, rightSr;
     int fdRes = this->faceDetect(gray, &face);
 
     if (fdRes != 0) {
@@ -92,27 +91,29 @@ bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double times
     this->rightRg.x += face.x; this->rightRg.y += face.y;
 
     // pupil search region definition
-    this->leftSr = cv::Rect(this->leftRg.x-(this->leftRg.width*0.15), this->leftRg.y-(this->leftRg.height*0.3),
-        this->leftRg.width*1.25, this->leftRg.height*1.5);
-    this->rightSr = cv::Rect(this->rightRg.x-(this->rightRg.width*0.15), this->rightRg.y-(this->rightRg.height*0.3),
-        this->rightRg.width*1.25, this->rightRg.height*1.5);
+    //this->leftSr = cv::Rect(this->leftRg.x-(this->leftRg.width*0.15), this->leftRg.y-(this->leftRg.height*0.3), this->leftRg.width*1.25, this->leftRg.height*1.5);
+    //this->rightSr = cv::Rect(this->rightRg.x-(this->rightRg.width*0.15), this->rightRg.y-(this->rightRg.height*0.3), this->rightRg.width*1.25, this->rightRg.height*1.5);
+    this->leftSr  = this->leftRg;
+    this->rightSr = this->rightRg;
 
     // preprocess only eye region(blur, eqHist)
+    this->preprocess(left, right, timestamp, frameNum);
     left  = gray(this->leftRg).clone();
     right = gray(this->rightRg).clone();
-    this->preprocess(left, right, timestamp, frameNum);
 
-    leftSr = gray(this->leftSr); rightSr = gray(this->rightSr);
-    this->preprocess(leftSr, rightSr, timestamp, frameNum);
-    imshowWrapper("leftSR", leftSr, debug_show_img_templ_eyes_tmpl);
-    imshowWrapper("rightSR", rightSr, debug_show_img_templ_eyes_tmpl);
+    if (debug_show_img_templ_eyes_tmpl == true) {
+        cv::Mat leftSr, rightSr;
+        leftSr = gray(this->leftSr); rightSr = gray(this->rightSr);
+        imshowWrapper("leftSR", leftSr, debug_show_img_templ_eyes_tmpl);
+        imshowWrapper("rightSR", rightSr, debug_show_img_templ_eyes_tmpl);
+    }
 
     // locate and save pupil location
     this->eyeCenters(gray, this->leftSr, this->rightSr, this->lEye, this->rEye);
     this->lLastTime = timestamp;
     this->rLastTime = timestamp;
 
-    faceROI = gray(face);
+    cv::Mat faceROI = gray(face);
     imshowWrapper("face", faceROI, debug_show_img_face);
 
     doLog(debug_fb_log1, "debug_fb_log1: F %u T %.3lf lEye %d %d rEye %d %d lLastTime %lf rLastTime %lf\n",
@@ -144,7 +145,7 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
     cv::Point newLEyeLoc, newREyeLoc;
     cv::Mat leftSr, rightSr;
     leftSr = gray(this->leftSr); rightSr = gray(this->rightSr);
-    this->preprocess(leftSr, rightSr, timestamp, frameNum);
+    //this->preprocess(leftSr, rightSr, timestamp, frameNum);
     imshowWrapper("leftSR", leftSr, debug_show_img_templ_eyes_tmpl);
     imshowWrapper("rightSR", rightSr, debug_show_img_templ_eyes_tmpl);
 
@@ -197,11 +198,13 @@ void Farneback::dominantDirection(cv::Mat flow, cv::Point& updateLoc) {
     updateLoc = cv::Point(totalX, totalY);
 }
 void Farneback::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
-    left = gray(this->leftRg).clone();
-    right = gray(this->rightRg).clone();
+    left = gray(this->leftRg);
+    right = gray(this->rightRg);
 
     // preprocess only eye region(blur, eqHist)
     this->preprocess(left, right, timestamp, frameNum);
+    left = left.clone();
+    right = right.clone();
 
     cv::calcOpticalFlowFarneback(this->pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
     cv::calcOpticalFlowFarneback(this->pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
@@ -244,12 +247,11 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
     circle(out, rTmp, 3, cv::Scalar(0,255,0), -1, 8);
 
     // draw eyes bounding boxes
-    // cv::RNG rng(12345);
-    // cv::Scalar coolor = cv::Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
-    // cv::rectangle(out, cv::Rect(face.x+leftE.x+leftB.x, face.y+leftE.y+leftB.y, leftB.width, leftB.height), coolor, 1, 8, 0);
-    // cv::rectangle(out, cv::Rect(face.x+rightE.x+rightB.x, face.y+rightE.y+rightB.y, rightB.width, rightB.height), coolor, 1, 8, 0);
-    // cv::rectangle(left, cv::Rect(leftB.x, leftB.y, leftB.width, leftB.height), coolor, 1, 8, 0);
-    // cv::rectangle(right, cv::Rect(rightB.x, rightB.y, rightB.width, rightB.height), coolor, 1, 8, 0);
+    cv::RNG rng(12345);
+    cv::Scalar coolor = cv::Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
+    cv::rectangle(out, cv::Rect(this->leftRg.x+leftB.x, this->leftRg.y+leftB.y, leftB.width, leftB.height), coolor, 1, 8, 0);
+    cv::rectangle(out, cv::Rect(this->rightRg.x+rightB.x, this->rightRg.y+rightB.y, rightB.width, rightB.height), coolor, 1, 8, 0);
+
     imshowWrapper("left", left, debug_show_img_templ_eyes_tmpl);
     imshowWrapper("right", right, debug_show_img_templ_eyes_tmpl);
     imshow("main", out);
