@@ -108,8 +108,8 @@ void doProcessing() {
         cv::namedWindow("debug4",CV_WINDOW_NORMAL); cv::moveWindow("debug4", 60, 30);
     }
     if (debug_show_img_main == true) {
+        cv::namedWindow("gray",CV_WINDOW_NORMAL); cv::moveWindow("gray", 400, 100); cv::resizeWindow("gray",1280, 960);
         cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 400, 30); cv::resizeWindow("main",1280, 960);
-        //cv::namedWindow("gray",CV_WINDOW_NORMAL); cv::moveWindow("gray", 400, 100); cv::resizeWindow("gray",1280, 960);
     }
     if (debug_show_img_face == true) {
         cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 60, 30);

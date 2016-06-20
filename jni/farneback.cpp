@@ -90,26 +90,13 @@ bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double times
     this->leftRg.x += face.x; this->leftRg.y += face.y;
     this->rightRg.x += face.x; this->rightRg.y += face.y;
 
-    // pupil search region definition
-    //this->leftSr = cv::Rect(this->leftRg.x-(this->leftRg.width*0.15), this->leftRg.y-(this->leftRg.height*0.3), this->leftRg.width*1.25, this->leftRg.height*1.5);
-    //this->rightSr = cv::Rect(this->rightRg.x-(this->rightRg.width*0.15), this->rightRg.y-(this->rightRg.height*0.3), this->rightRg.width*1.25, this->rightRg.height*1.5);
-    this->leftSr  = this->leftRg;
-    this->rightSr = this->rightRg;
-
     // preprocess only eye region(blur, eqHist)
     this->preprocess(left, right, timestamp, frameNum);
     left  = gray(this->leftRg).clone();
     right = gray(this->rightRg).clone();
 
-    if (debug_show_img_templ_eyes_tmpl == true) {
-        cv::Mat leftSr, rightSr;
-        leftSr = gray(this->leftSr); rightSr = gray(this->rightSr);
-        imshowWrapper("leftSR", leftSr, debug_show_img_templ_eyes_tmpl);
-        imshowWrapper("rightSR", rightSr, debug_show_img_templ_eyes_tmpl);
-    }
-
     // locate and save pupil location
-    this->eyeCenters(gray, this->leftSr, this->rightSr, this->lEye, this->rEye);
+    this->eyeCenters(gray, this->leftRg, this->rightRg, this->lEye, this->rEye);
     this->lLastTime = timestamp;
     this->rLastTime = timestamp;
 
@@ -142,23 +129,42 @@ void Farneback::updateSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv::Rect& rT
 */
 }
 void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
+    bool firePreprocess = false;
     cv::Point newLEyeLoc, newREyeLoc;
-    cv::Mat leftSr, rightSr;
-    leftSr = gray(this->leftSr); rightSr = gray(this->rightSr);
-    //this->preprocess(leftSr, rightSr, timestamp, frameNum);
-    imshowWrapper("leftSR", leftSr, debug_show_img_templ_eyes_tmpl);
-    imshowWrapper("rightSR", rightSr, debug_show_img_templ_eyes_tmpl);
 
-    this->eyeCenters(gray, this->leftSr, this->rightSr, newLEyeLoc, newREyeLoc);
-/*
-    if (newLEyeLoc.x < (this->leftE.width*0.3) || newLEyeLoc.x > (this->leftE.width*0.7)
-        || newLEyeLoc.y < (this->leftE.height*0.3) || newLEyeLoc.y > (this->leftE.height*0.7)) {
-        // TODO window edges
-        this->leftE.x = newLEyeLoc.x - (this->leftE.width/2);
-        this->leftE.y = newLEyeLoc.y + (this->leftE.height/2);
-        pause = 1;
+    this->eyeCenters(gray, this->leftRg, this->rightRg, newLEyeLoc, newREyeLoc);
+
+    if (newLEyeLoc.x < (this->leftRg.width*0.3) || newLEyeLoc.x > (this->leftRg.width*0.7)
+        || newLEyeLoc.y < (this->leftRg.height*0.3) || newLEyeLoc.y > (this->leftRg.height*0.7)) {
+        // reposition leftRg so that lEye will be in the middle
+        unsigned int idealX = this->leftRg.width/2, idealY = this->leftRg.height/2;
+        int moveX = newLEyeLoc.x-idealX, moveY = newLEyeLoc.y-idealY;
+        printf("pL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
+        this->leftRg.x += moveX; this->leftRg.y += moveY;
+        this->leftRg = this->leftRg;
+        printf("aL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
+        firePreprocess = true;
     }
-*/
+
+    if (newREyeLoc.x < (this->rightRg.width*0.3) || newREyeLoc.x > (this->rightRg.width*0.7)
+        || newREyeLoc.y < (this->rightRg.height*0.3) || newREyeLoc.y > (this->rightRg.height*0.7)) {
+        // reposition rightRg so that rEye will be in the middle
+        unsigned int idealX = this->leftRg.width/2, idealY = this->leftRg.height/2;
+        int moveX = newREyeLoc.x-idealX, moveY = newREyeLoc.y-idealY;
+        printf("pR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
+        this->rightRg.x += moveX; this->rightRg.y += moveY;
+        this->rightRg = this->rightRg;
+        printf("aR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
+        firePreprocess = true;
+    }
+    if (firePreprocess == true) {
+        cv::Mat leftRg = gray(this->leftRg).clone();
+        cv::Mat rightRg = gray(this->rightRg).clone();
+        this->preprocess(leftRg, rightRg, timestamp, frameNum);
+        this->pleft = leftRg; this->pright = rightRg;
+        //pause = 1;
+    }
+
     // if (newREyeLoc.x < (this->rightE.width*0.3) || newREyeLoc.x > (this->rightE.width*0.7)
     //     || newREyeLoc.y < (this->rightE.height*0.3) || newREyeLoc.y > (this->rightE.height*0.7)) {
     //     // TODO window edges
@@ -228,12 +234,12 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
         }
     } else {
         if ((frameNum % 2) == 0) {
-            return;
+            //return;
         }
+        this->rePupil(gray, frameNum, timestamp);
         this->method(gray, left, right, flowLeft, flowRight, leftB, rightB, frameNum, timestamp);
         this->drawOptFlowMap(this->leftRg, flowLeft, out, 5, cv::Scalar(0, 255, 0), 0);
         this->drawOptFlowMap(this->rightRg, flowRight, out, 5, cv::Scalar(0, 255, 0), 1);
-        this->rePupil(gray, frameNum, timestamp);
     }
 
     if ((frameNum % 30) == 0) {
@@ -241,8 +247,8 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
     }
 
     // draw
-    cv::Point lTmp = cv::Point(this->leftSr.x+this->lEye.x, this->leftSr.y+this->lEye.y);
-    cv::Point rTmp = cv::Point(this->rightSr.x+this->rEye.x, this->rightSr.y+this->rEye.y);
+    cv::Point lTmp = cv::Point(this->leftRg.x+this->lEye.x, this->leftRg.y+this->lEye.y);
+    cv::Point rTmp = cv::Point(this->rightRg.x+this->rEye.x, this->rightRg.y+this->rEye.y);
     circle(out, lTmp, 3, cv::Scalar(0,255,0), -1, 8);
     circle(out, rTmp, 3, cv::Scalar(0,255,0), -1, 8);
 
@@ -252,9 +258,14 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
     cv::rectangle(out, cv::Rect(this->leftRg.x+leftB.x, this->leftRg.y+leftB.y, leftB.width, leftB.height), coolor, 1, 8, 0);
     cv::rectangle(out, cv::Rect(this->rightRg.x+rightB.x, this->rightRg.y+rightB.y, rightB.width, rightB.height), coolor, 1, 8, 0);
 
+    if (frameNum > 1) {
+        imshowWrapper("leftR", this->pleft, debug_show_img_templ_eyes_tmpl);
+        imshowWrapper("rightR", this->pright, debug_show_img_templ_eyes_tmpl);
+    }
     imshowWrapper("left", left, debug_show_img_templ_eyes_tmpl);
     imshowWrapper("right", right, debug_show_img_templ_eyes_tmpl);
     imshow("main", out);
+    imshow("gray", gray);
 
     this->pleft = left;
     this->pright = right;

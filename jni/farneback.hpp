@@ -17,7 +17,7 @@ class Farneback {
         cv::Point lEye, rEye;
         double lLastTime, rLastTime;
         cv::Mat pleft, pright;
-        cv::Rect leftRg, rightRg, leftSr, rightSr;
+        cv::Rect leftRg, rightRg;
         
         //cv::Rect face, leftEyeRegion, rightEyeRegion;
         bool flagReinit = true, flagPupilSearch = false;
