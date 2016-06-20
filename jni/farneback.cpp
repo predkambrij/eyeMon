@@ -19,33 +19,35 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/video/background_segm.hpp>
 
-//#include <eyeLike/src/main.cpp>
 #include "eyeLike/src/findEyeCenter.h"
 
 
 #include <common.hpp>
 #include <farneback.hpp>
 
-void fbDrawOptFlowMap (cv::Rect face, cv::Rect eyeE, const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, int eye) {
+void Farneback::drawOptFlowMap (cv::Rect eyeE, const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, int eye) {
     cv::circle(cflowmap, cv::Point2f((float)15, (float)15), 10, cv::Scalar(0,255,0), -1, 8);
     int xo, yo;
-    xo = face.x+eyeE.x;
-    yo = face.y+eyeE.y;
+    xo = eyeE.x;
+    yo = eyeE.y;
     for(int y = 0; y < flow.rows; y += step) {
         for(int x = 0; x < flow.cols; x += step) {
-            
             const cv::Point2f& fxy = flow.at< cv::Point2f>(y, x);
             int px = x+xo, py = y+yo;
             cv::line(cflowmap, cv::Point(px,py), cv::Point(cvRound(px+fxy.x), cvRound(py+fxy.y)), color);
             //circle(cflowmap, Point(cvRound(x+fxy.x), cvRound(y+fxy.y)), 1, color, -1);
             cv::circle(cflowmap, cv::Point(cvRound(px+fxy.x), cvRound(py+fxy.y)), 1, color, -1, 8);
-
             //circle( image, points[1][i], 3, Scalar(0,255,0), -1, 8);
-            printf("%.0f ", fxy.y);
         }
-        printf("\n");
     }
-    printf("\n\n\n");
+    // for(int y = 0; y < flow.rows; y += step) {
+    //     for(int x = 0; x < flow.cols; x += step) {
+    //         const cv::Point2f& fxy = flow.at< cv::Point2f>(y, x);
+    //         printf("%.0f ", fxy.y);
+    //     }
+    //     printf("\n");
+    // }
+    // printf("\n\n\n");
 }
 
 
@@ -69,43 +71,49 @@ bool Farneback::preprocess(cv::Mat& left, cv::Mat& right, double timestamp, unsi
     cv::equalizeHist(left, left);
     cv::equalizeHist(right, right);
 }
-bool Farneback::reinit(cv::Mat gray, cv::Mat& faceROI, cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum) {
-    int fdRes = this->faceDetect(gray, &this->faceRef);
+bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum) {
+    cv::Rect face;
+    cv::Mat faceROI, leftSr, rightSr;
+    int fdRes = this->faceDetect(gray, &face);
 
     if (fdRes != 0) {
         return false;
     }
 
-    faceROI = gray(this->faceRef);
-    imshowWrapper("face", faceROI, debug_show_img_face);
+    // farneback region definition derived from face size and location
+    int rowsO = face.height/4.3;
+    int colsO = face.width/5.5;
+    int rows2 = face.height/4.3;
+    int cols2 = face.width/3.7;
 
-    // pupil search region definition TODO make it bigger
-    int rowsO = (this->faceRef).height/4.3;
-    int colsO = (this->faceRef).width/5.5;
-    int rows2 = (this->faceRef).height/4.3;
-    int cols2 = (this->faceRef).width/3.7;
-    // int rowsO = (face).height/4.3;
-    // int colsO = (face).width/5.5;
-    // int rows2 = (face).height/4.3;
-    // int cols2 = (face).width/3.7;
-    this->leftE = cv::Rect(colsO, rowsO, cols2, rows2);
-    this->rightE = cv::Rect((this->faceRef).width-colsO-cols2, rowsO, cols2, rows2);
+    this->leftRg = cv::Rect(colsO, rowsO, cols2, rows2);
+    this->rightRg = cv::Rect(face.width-colsO-cols2, rowsO, cols2, rows2);
+    this->leftRg.x += face.x; this->leftRg.y += face.y;
+    this->rightRg.x += face.x; this->rightRg.y += face.y;
+
+    // pupil search region definition
+    this->leftSr = cv::Rect(this->leftRg.x-(this->leftRg.width*0.15), this->leftRg.y-(this->leftRg.height*0.3),
+        this->leftRg.width*1.25, this->leftRg.height*1.5);
+    this->rightSr = cv::Rect(this->rightRg.x-(this->rightRg.width*0.15), this->rightRg.y-(this->rightRg.height*0.3),
+        this->rightRg.width*1.25, this->rightRg.height*1.5);
 
     // preprocess only eye region(blur, eqHist)
-    left  = faceROI(this->leftE);
-    right = faceROI(this->rightE);
+    left  = gray(this->leftRg).clone();
+    right = gray(this->rightRg).clone();
     this->preprocess(left, right, timestamp, frameNum);
 
+    leftSr = gray(this->leftSr); rightSr = gray(this->rightSr);
+    this->preprocess(leftSr, rightSr, timestamp, frameNum);
+    imshowWrapper("leftSR", leftSr, debug_show_img_templ_eyes_tmpl);
+    imshowWrapper("rightSR", rightSr, debug_show_img_templ_eyes_tmpl);
+
     // locate and save pupil location
-    this->eyeCenters(faceROI, this->leftE, this->rightE, this->lEye, this->rEye);
-    //this->lEye.x = leftPupil.x; this->lEye.y = leftPupil.y;
-    //this->rEye.x = rightPupil.x; this->rEye.y = rightPupil.y;
+    this->eyeCenters(gray, this->leftSr, this->rightSr, this->lEye, this->rEye);
     this->lLastTime = timestamp;
     this->rLastTime = timestamp;
 
-    // farneback region definition derived from pupil location TODO update based on search region
-    this->leftE = cv::Rect(colsO, rowsO, cols2, rows2);
-    this->rightE = cv::Rect((this->faceRef).width-colsO-cols2, rowsO, cols2, rows2);
+    faceROI = gray(face);
+    imshowWrapper("face", faceROI, debug_show_img_face);
 
     doLog(debug_fb_log1, "debug_fb_log1: F %u T %.3lf lEye %d %d rEye %d %d lLastTime %lf rLastTime %lf\n",
         frameNum, timestamp, this->lEye.x, this->lEye.y, this->rEye.x, this->rEye.y, this->lLastTime, this->rLastTime);
@@ -132,71 +140,123 @@ void Farneback::updateSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv::Rect& rT
     rTemplSearchR = cv::Rect(rTemplSearchSX, rTemplSearchSY, this->rightTemplate.cols*1.8, this->rightTemplate.rows*2);
 */
 }
-void Farneback::rePupil() {
-    // this->eyeCenters(faceROI, leftE, rightE, leftPupil, rightPupil);
+void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
+    cv::Point newLEyeLoc, newREyeLoc;
+    cv::Mat leftSr, rightSr;
+    leftSr = gray(this->leftSr); rightSr = gray(this->rightSr);
+    this->preprocess(leftSr, rightSr, timestamp, frameNum);
+    imshowWrapper("leftSR", leftSr, debug_show_img_templ_eyes_tmpl);
+    imshowWrapper("rightSR", rightSr, debug_show_img_templ_eyes_tmpl);
 
-    // leftPupil.x += leftE.x; leftPupil.y += leftE.y;
-    // rightPupil.x += rightE.x; rightPupil.y += rightE.y;
-    // leftPupil.x += face.x; leftPupil.y += face.y;
-    // rightPupil.x += face.x; rightPupil.y += face.y;
+    this->eyeCenters(gray, this->leftSr, this->rightSr, newLEyeLoc, newREyeLoc);
+/*
+    if (newLEyeLoc.x < (this->leftE.width*0.3) || newLEyeLoc.x > (this->leftE.width*0.7)
+        || newLEyeLoc.y < (this->leftE.height*0.3) || newLEyeLoc.y > (this->leftE.height*0.7)) {
+        // TODO window edges
+        this->leftE.x = newLEyeLoc.x - (this->leftE.width/2);
+        this->leftE.y = newLEyeLoc.y + (this->leftE.height/2);
+        pause = 1;
+    }
+*/
+    // if (newREyeLoc.x < (this->rightE.width*0.3) || newREyeLoc.x > (this->rightE.width*0.7)
+    //     || newREyeLoc.y < (this->rightE.height*0.3) || newREyeLoc.y > (this->rightE.height*0.7)) {
+    //     // TODO window edges
+    //     this->rightE.x = newLEyeLoc.x;
+    //     this->rightE.y = newLEyeLoc.y;
+    //     this->rightE.x -= (this->rightE.width/2);
+    //     this->rightE.y -= (this->rightE.height/2);
+    // }
+    this->lEye = newLEyeLoc;
+    this->rEye = newREyeLoc;
 
-    // circle(out, rightPupil, 3, cv::Scalar(0,255,0), -1, 8);
-    // circle(out, leftPupil, 3, cv::Scalar(0,255,0), -1, 8);
+    // update eye locs
+//    this->rePupil(faceROI);
+    // cv::Point leftUpdateLoc, rightUpdateLoc;
+    // this->dominantDirection(flowLeft, leftUpdateLoc);
+    // this->dominantDirection(flowRight, rightUpdateLoc);
+    // this->lEye.x += leftUpdateLoc.x;
+    // this->lEye.y += leftUpdateLoc.y;
+    // this->rEye.x += rightUpdateLoc.x;
+    // this->rEye.y += rightUpdateLoc.y;
+    // printf("%d,%d %d,%d \n", leftUpdateLoc.x, leftUpdateLoc.y, rightUpdateLoc.x, rightUpdateLoc.y);
+
 }
-void Farneback::method(cv::Mat gray, cv::Mat& faceROI, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight) {
-    cv::Rect leftB, rightB;
-    cv::Mat pleft, pright, pfaceROI;
+void Farneback::dominantDirection(cv::Mat flow, cv::Point& updateLoc) {
+    double totalX=0, totalY=0;
+    for(int y = 0; y < flow.rows; y += 1) {
+        for(int x = 0; x < flow.cols; x += 1) {
+            const cv::Point2f& flowVector = flow.at<cv::Point2f>(y, x);
+            totalX += flowVector.x;
+            totalY += flowVector.y;
+        }
+    }
+    totalX /= flow.cols;
+    totalY /= flow.cols;
+    totalX /= flow.rows;
+    totalY /= flow.rows;
+    updateLoc = cv::Point(totalX, totalY);
+}
+void Farneback::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
+    left = gray(this->leftRg).clone();
+    right = gray(this->rightRg).clone();
 
-    pfaceROI = this->pgray(this->faceRef);
-    faceROI = gray(this->faceRef);
-    pleft = pfaceROI(this->leftE);
-    pright = pfaceROI(this->rightE);
-    left = faceROI(this->leftE);
-    right = faceROI(this->rightE);
+    // preprocess only eye region(blur, eqHist)
+    this->preprocess(left, right, timestamp, frameNum);
 
-    cv::calcOpticalFlowFarneback(pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
-    cv::calcOpticalFlowFarneback(pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
+    cv::calcOpticalFlowFarneback(this->pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
+    cv::calcOpticalFlowFarneback(this->pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
 
-    // // bounding boxes
-    // int leftBw = leftE.width*0.75, leftBh = leftE.height*0.4;
-    // int rightBw = rightE.width*0.75, rightBh = rightE.height*0.4;
-    // leftB = cv::Rect(leftPupil.x-(leftBw/2), leftPupil.y-(leftBh/2), leftBw, leftBh);
-    // rightB = cv::Rect(rightPupil.x-(rightBw/2), rightPupil.y-(rightBh/2), rightBw, rightBh);
-    // // draw eyes bounding boxes
-    // cv::RNG rng(12345);
-    // cv::Scalar coolor = cv::Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
-    // cv::rectangle(out, cv::Rect(face.x+leftE.x+leftB.x,face.y+leftE.y+leftB.y,leftB.width,leftB.height), coolor, 1, 8, 0);
-    // cv::rectangle(out, cv::Rect(face.x+rightE.x+rightB.x,face.y+rightE.y+rightB.y,rightB.width,rightB.height), coolor, 1, 8, 0);
-    // cv::rectangle(left, cv::Rect(leftB.x,leftB.y,leftB.width,leftB.height), coolor, 1, 8, 0);
-    // cv::rectangle(right, cv::Rect(rightB.x,rightB.y,rightB.width,rightB.height), coolor, 1, 8, 0);
+    // bounding boxes
+    int leftBw = this->leftRg.width*0.75, leftBh = this->leftRg.height*0.4;
+    int rightBw = this->rightRg.width*0.75, rightBh = this->rightRg.height*0.4;
+    leftB = cv::Rect(this->lEye.x-(leftBw/2), this->lEye.y-(leftBh/2), leftBw, leftBh);
+    rightB = cv::Rect(this->rEye.x-(rightBw/2), this->rEye.y-(rightBh/2), rightBw, rightBh);
 }
 void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
-    cv::Mat faceROI, left, right, flowLeft, flowRight;
+    cv::Mat left, right, flowLeft, flowRight;
+    cv::Rect leftB, rightB;
 
     if (flagReinit == true) {
-        if (this->reinit(gray, faceROI, left, right, timestamp, frameNum) != true) {
+        if (this->reinit(gray, left, right, timestamp, frameNum) != true) {
             doLog(debug_fb_log1, "debug_fb_log1: reinit failed frameNum %u timestamp %lf\n", frameNum, timestamp);
             return;
         } else {
             this->flagReinit = false;
         }
     } else {
-        this->method(gray, faceROI, left, right, flowLeft, flowRight);
-        fbDrawOptFlowMap(this->faceRef, this->leftE, flowLeft, out, 5, cv::Scalar(0, 255, 0), 0);
-        fbDrawOptFlowMap(this->faceRef, this->rightE, flowRight, out, 5, cv::Scalar(0, 255, 0), 1);
+        if ((frameNum % 2) == 0) {
+            return;
+        }
+        this->method(gray, left, right, flowLeft, flowRight, leftB, rightB, frameNum, timestamp);
+        this->drawOptFlowMap(this->leftRg, flowLeft, out, 5, cv::Scalar(0, 255, 0), 0);
+        this->drawOptFlowMap(this->rightRg, flowRight, out, 5, cv::Scalar(0, 255, 0), 1);
+        this->rePupil(gray, frameNum, timestamp);
     }
 
     if ((frameNum % 30) == 0) {
-        this->flagReinit = true;
+//        this->flagReinit = true;
     }
 
-    this->pgray = gray.clone();
+    // draw
+    cv::Point lTmp = cv::Point(this->leftSr.x+this->lEye.x, this->leftSr.y+this->lEye.y);
+    cv::Point rTmp = cv::Point(this->rightSr.x+this->rEye.x, this->rightSr.y+this->rEye.y);
+    circle(out, lTmp, 3, cv::Scalar(0,255,0), -1, 8);
+    circle(out, rTmp, 3, cv::Scalar(0,255,0), -1, 8);
+
+    // draw eyes bounding boxes
+    // cv::RNG rng(12345);
+    // cv::Scalar coolor = cv::Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
+    // cv::rectangle(out, cv::Rect(face.x+leftE.x+leftB.x, face.y+leftE.y+leftB.y, leftB.width, leftB.height), coolor, 1, 8, 0);
+    // cv::rectangle(out, cv::Rect(face.x+rightE.x+rightB.x, face.y+rightE.y+rightB.y, rightB.width, rightB.height), coolor, 1, 8, 0);
+    // cv::rectangle(left, cv::Rect(leftB.x, leftB.y, leftB.width, leftB.height), coolor, 1, 8, 0);
+    // cv::rectangle(right, cv::Rect(rightB.x, rightB.y, rightB.width, rightB.height), coolor, 1, 8, 0);
     imshowWrapper("left", left, debug_show_img_templ_eyes_tmpl);
     imshowWrapper("right", right, debug_show_img_templ_eyes_tmpl);
-    imshowWrapper("face", faceROI, debug_show_img_face);
     imshow("main", out);
+
+    this->pleft = left;
+    this->pright = right;
     return;
-    //cv::Point leftPupil, rightPupil;
 }
 
 Farneback::Farneback () {
