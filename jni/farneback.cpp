@@ -97,6 +97,7 @@ bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double times
 
     // locate and save pupil location
     this->eyeCenters(gray, this->leftRg, this->rightRg, this->lEye, this->rEye);
+    this->initEyesDistance = (this->rightRg.x+this->rEye.x)-(this->leftRg.x+this->lEye.x);
     this->lLastTime = timestamp;
     this->rLastTime = timestamp;
 
@@ -131,6 +132,7 @@ void Farneback::updateSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv::Rect& rT
 void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
     bool firePreprocess = false, canUpdateL = false, canUpdateR = false;
     cv::Point newLEyeLoc, newREyeLoc;
+    unsigned int curXEyesDistance, curYEyesDistance;
     const int maxDiff = 20;
 
     this->eyeCenters(gray, this->leftRg, this->rightRg, newLEyeLoc, newREyeLoc);
@@ -143,6 +145,17 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
     if (abs(newREyeLoc.x-this->rEye.x) < maxDiff && abs(newREyeLoc.y-this->rEye.y) < maxDiff) {
             this->rLastTime = timestamp;
             canUpdateR = true;
+    }
+    if (canUpdateL == true && canUpdateR == true) {
+        curXEyesDistance = (this->rightRg.x+newREyeLoc.x)-(this->leftRg.x+newLEyeLoc.x);
+        curYEyesDistance = abs((this->rightRg.y+newREyeLoc.y)-(this->leftRg.y+newLEyeLoc.y));
+        if (curXEyesDistance < (this->initEyesDistance*0.75)
+            || curXEyesDistance > (this->initEyesDistance*1.30)
+            || curYEyesDistance > this->initEyesDistance*0.30) {
+            printf("initEyesDistance %u curXEyesDistance %u curYEyesDistance %u\n",
+                this->initEyesDistance, curXEyesDistance, curYEyesDistance);
+            this->flagReinit = true;
+        }
     }
     if ((this->lLastTime+1000) < timestamp || (this->rLastTime+1000) < timestamp) {
         // we lost eyes, request reinit
@@ -159,26 +172,38 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
         // reposition leftRg so that lEye will be in the middle
         unsigned int idealX = this->leftRg.width/2, idealY = this->leftRg.height/2;
         int moveX = newLEyeLoc.x-idealX, moveY = newLEyeLoc.y-idealY;
-        printf("pL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
-        this->leftRg.x += moveX; this->leftRg.y += moveY;
-        // update newLEyeLoc because we changed leftRg's location
-        newLEyeLoc.x -= moveX; newLEyeLoc.y -= moveY;
-        printf("aL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
-        firePreprocess = true;
+        if ((this->leftRg.x + moveX) < 0 || (this->leftRg.y + moveY) < 0
+            || (this->leftRg.x + moveX + this->leftRg.width) > gray.cols
+            || (this->leftRg.y + moveY + this->leftRg.height) > gray.rows) {
+            this->flagReinit = true;
+        } else {
+            printf("pL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
+            this->leftRg.x += moveX; this->leftRg.y += moveY;
+            // update newLEyeLoc because we changed leftRg's location
+            newLEyeLoc.x -= moveX; newLEyeLoc.y -= moveY;
+            printf("aL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
+            firePreprocess = true;
+        }
     }
 
     if (canUpdateR == true
         && (newREyeLoc.x < (this->rightRg.width*0.3) || newREyeLoc.x > (this->rightRg.width*0.7)
             || newREyeLoc.y < (this->rightRg.height*0.3) || newREyeLoc.y > (this->rightRg.height*0.7))) {
         // reposition rightRg so that rEye will be in the middle
-        unsigned int idealX = this->leftRg.width/2, idealY = this->leftRg.height/2;
+        unsigned int idealX = this->rightRg.width/2, idealY = this->rightRg.height/2;
         int moveX = newREyeLoc.x-idealX, moveY = newREyeLoc.y-idealY;
-        printf("pR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
-        this->rightRg.x += moveX; this->rightRg.y += moveY;
-        // update newREyeLoc because we changed rightRg's location
-        newREyeLoc.x -= moveX; newREyeLoc.y -= moveY;
-        printf("aR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
-        firePreprocess = true;
+        if ((this->rightRg.x + moveX) < 0 || (this->rightRg.y + moveY) < 0
+            || (this->rightRg.x + moveX + this->rightRg.width) > gray.cols
+            || (this->rightRg.y + moveY + this->rightRg.height) > gray.rows) {
+            this->flagReinit = true;
+        } else {
+            printf("pR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
+            this->rightRg.x += moveX; this->rightRg.y += moveY;
+            // update newREyeLoc because we changed rightRg's location
+            newREyeLoc.x -= moveX; newREyeLoc.y -= moveY;
+            printf("aR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
+            firePreprocess = true;
+        }
     }
     if (firePreprocess == true) {
         cv::Mat leftRg = gray(this->leftRg).clone();
