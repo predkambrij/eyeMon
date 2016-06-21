@@ -29,7 +29,6 @@ class Farneback {
         void method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum);
         void rePupil(cv::Mat gray, double timestamp, unsigned int frameNum);
         void dominantDirection(cv::Mat flow, cv::Point& updateLoc);
-        void updateSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv::Rect& rTemplSearchR, cv::Mat& lTemplSearch, cv::Mat& rTemplSearch);
         bool reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum);
         int run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum);
         int setup(const char* cascadeFileName);

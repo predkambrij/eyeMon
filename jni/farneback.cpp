@@ -109,26 +109,7 @@ bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double times
 
     return true;
 }
-void Farneback::updateSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv::Rect& rTemplSearchR, cv::Mat& lTemplSearch, cv::Mat& rTemplSearch) {
-    //TODO check eyeCenters every n ms (if farneback didn't recognire much movement)
-/*    int lColsHalf = leftE.width/2;
-    int lRowsHalf = leftE.height/2;
-    int rColsHalf = rightE.width/2;
-    int rRowsHalf = rightE.height/2;
-    int lSearchSX = this->lEye.x-lColsHalf;
-    int rSearchSX = this->rEye.x-rColsHalf;
-    int lSearchSY = this->lEye.y-lRowsHalf;
-    int rSearchSY = this->rEye.y-rRowsHalf;
-    lSearchR = cv::Rect(lSearchSX, lSearchSY, leftE.width*1.8, leftE.height*2);
-    rSearchR = cv::Rect(rSearchSX, rSearchSY, rightE.width*1.8, rightE.height*2);
-    doLog(debug_tmpl_log, "debug_tmpl_log: AAA lTemplSearchR %d %d %d %d\n", lTemplSearchR.x, lTemplSearchR.y, lTemplSearchR.width, lTemplSearchR.height);
-    doLog(debug_tmpl_log, "debug_tmpl_log: AAA rTemplSearchR %d %d %d %d\n", rTemplSearchR.x, rTemplSearchR.y, rTemplSearchR.width, rTemplSearchR.height);
-    lTemplSearch = gray(lTemplSearchR);
-    rTemplSearch = gray(rTemplSearchR);
-    lTemplSearchR = cv::Rect(leftE.x, leftE.y, this->leftTemplate.cols*1.8, this->leftTemplate.rows*2);
-    rTemplSearchR = cv::Rect(rTemplSearchSX, rTemplSearchSY, this->rightTemplate.cols*1.8, this->rightTemplate.rows*2);
-*/
-}
+
 void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
     bool firePreprocess = false, canUpdateL = false, canUpdateR = false;
     cv::Point newLEyeLoc, newREyeLoc;
@@ -136,12 +117,12 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
     const int maxDiff = 20;
 
     this->eyeCenters(gray, this->leftRg, this->rightRg, newLEyeLoc, newREyeLoc);
-    printf("L diff x %d y %d\n", newLEyeLoc.x-this->lEye.x, newLEyeLoc.y-this->lEye.y);
+    doLog(debug_fb_log1, "debug_fb_log1: L diff x %d y %d\n", newLEyeLoc.x-this->lEye.x, newLEyeLoc.y-this->lEye.y);
     if (abs(newLEyeLoc.x-this->lEye.x) < maxDiff && abs(newLEyeLoc.y-this->lEye.y) < maxDiff) {
             this->lLastTime = timestamp;
             canUpdateL = true;
     }
-    printf("R diff x %d y %d\n", newREyeLoc.x-this->rEye.x, newREyeLoc.y-this->rEye.y);
+    doLog(debug_fb_log1, "debug_fb_log1: R diff x %d y %d\n", newREyeLoc.x-this->rEye.x, newREyeLoc.y-this->rEye.y);
     if (abs(newREyeLoc.x-this->rEye.x) < maxDiff && abs(newREyeLoc.y-this->rEye.y) < maxDiff) {
             this->rLastTime = timestamp;
             canUpdateR = true;
@@ -152,7 +133,7 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
         if (curXEyesDistance < (this->initEyesDistance*0.75)
             || curXEyesDistance > (this->initEyesDistance*1.30)
             || curYEyesDistance > this->initEyesDistance*0.30) {
-            printf("initEyesDistance %u curXEyesDistance %u curYEyesDistance %u\n",
+            doLog(debug_fb_log1, "initEyesDistance %u curXEyesDistance %u curYEyesDistance %u\n",
                 this->initEyesDistance, curXEyesDistance, curYEyesDistance);
             this->flagReinit = true;
         }
@@ -160,10 +141,10 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
     if ((this->lLastTime+1000) < timestamp || (this->rLastTime+1000) < timestamp) {
         // we lost eyes, request reinit
         this->flagReinit = true;
-        doLog(debug_tmpl_log, "debug_tmpl_log: reinit: eyes were displaced timestamp %lf lLastTime %lf rLastTime %lf\n",
+        doLog(debug_fb_log1, "debug_fb_log1: reinit: eyes were displaced timestamp %lf lLastTime %lf rLastTime %lf\n",
             timestamp, this->lLastTime, this->rLastTime);
     } else {
-        printf("timestamp diff L %lf R %lf\n", timestamp-this->lLastTime, timestamp-this->rLastTime);
+        doLog(debug_fb_log1, "debug_fb_log1: T diff L %lf R %lf\n", timestamp-this->lLastTime, timestamp-this->rLastTime);
     }
 
     if (canUpdateL == true
@@ -177,11 +158,11 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
             || (this->leftRg.y + moveY + this->leftRg.height) > gray.rows) {
             this->flagReinit = true;
         } else {
-            printf("pL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
+            doLog(debug_fb_log1, "debug_fb_log1: pL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
             this->leftRg.x += moveX; this->leftRg.y += moveY;
             // update newLEyeLoc because we changed leftRg's location
             newLEyeLoc.x -= moveX; newLEyeLoc.y -= moveY;
-            printf("aL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
+            doLog(debug_fb_log1, "debug_fb_log1: aL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
             firePreprocess = true;
         }
     }
@@ -197,11 +178,11 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
             || (this->rightRg.y + moveY + this->rightRg.height) > gray.rows) {
             this->flagReinit = true;
         } else {
-            printf("pR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
+            doLog(debug_fb_log1, "debug_fb_log1: pR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
             this->rightRg.x += moveX; this->rightRg.y += moveY;
             // update newREyeLoc because we changed rightRg's location
             newREyeLoc.x -= moveX; newREyeLoc.y -= moveY;
-            printf("aR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
+            doLog(debug_fb_log1, "debug_fb_log1: aR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
             firePreprocess = true;
         }
     }
@@ -315,8 +296,8 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
     }
     imshowWrapper("left", left, debug_show_img_templ_eyes_tmpl);
     imshowWrapper("right", right, debug_show_img_templ_eyes_tmpl);
-    imshow("main", out);
-    imshow("gray", gray);
+    imshowWrapper("main", out, debug_show_img_main);
+    imshowWrapper("gray", gray, debug_show_img_main);
 
     this->pleft = left;
     this->pright = right;
