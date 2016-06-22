@@ -117,12 +117,12 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
     const int maxDiff = 20;
 
     this->eyeCenters(gray, this->leftRg, this->rightRg, newLEyeLoc, newREyeLoc);
-    doLog(debug_fb_log1, "debug_fb_log1: L diff x %d y %d\n", newLEyeLoc.x-this->lEye.x, newLEyeLoc.y-this->lEye.y);
+    doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf L diff x %d y %d\n", frameNum, timestamp, newLEyeLoc.x-this->lEye.x, newLEyeLoc.y-this->lEye.y);
     if (abs(newLEyeLoc.x-this->lEye.x) < maxDiff && abs(newLEyeLoc.y-this->lEye.y) < maxDiff) {
             this->lLastTime = timestamp;
             canUpdateL = true;
     }
-    doLog(debug_fb_log1, "debug_fb_log1: R diff x %d y %d\n", newREyeLoc.x-this->rEye.x, newREyeLoc.y-this->rEye.y);
+    doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf R diff x %d y %d\n", frameNum, timestamp, newREyeLoc.x-this->rEye.x, newREyeLoc.y-this->rEye.y);
     if (abs(newREyeLoc.x-this->rEye.x) < maxDiff && abs(newREyeLoc.y-this->rEye.y) < maxDiff) {
             this->rLastTime = timestamp;
             canUpdateR = true;
@@ -133,18 +133,18 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
         if (curXEyesDistance < (this->initEyesDistance*0.75)
             || curXEyesDistance > (this->initEyesDistance*1.30)
             || curYEyesDistance > this->initEyesDistance*0.30) {
-            doLog(debug_fb_log1, "initEyesDistance %u curXEyesDistance %u curYEyesDistance %u\n",
-                this->initEyesDistance, curXEyesDistance, curYEyesDistance);
+            doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf initEyesDistance %u curXEyesDistance %u curYEyesDistance %u\n",
+                frameNum, timestamp, this->initEyesDistance, curXEyesDistance, curYEyesDistance);
             this->flagReinit = true;
         }
     }
     if ((this->lLastTime+1000) < timestamp || (this->rLastTime+1000) < timestamp) {
         // we lost eyes, request reinit
         this->flagReinit = true;
-        doLog(debug_fb_log1, "debug_fb_log1: reinit: eyes were displaced timestamp %lf lLastTime %lf rLastTime %lf\n",
-            timestamp, this->lLastTime, this->rLastTime);
+        doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf reinit: eyes were displaced lLastTime %lf rLastTime %lf\n",
+            frameNum, timestamp, this->lLastTime, this->rLastTime);
     } else {
-        doLog(debug_fb_log1, "debug_fb_log1: T diff L %lf R %lf\n", timestamp-this->lLastTime, timestamp-this->rLastTime);
+        doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf diff L %lf R %lf\n", frameNum, timestamp, timestamp-this->lLastTime, timestamp-this->rLastTime);
     }
 
     if (canUpdateL == true
@@ -158,11 +158,11 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
             || (this->leftRg.y + moveY + this->leftRg.height) > gray.rows) {
             this->flagReinit = true;
         } else {
-            doLog(debug_fb_log1, "debug_fb_log1: pL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
+            //doLog(debug_fb_log1, "debug_fb_log1: pL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
             this->leftRg.x += moveX; this->leftRg.y += moveY;
             // update newLEyeLoc because we changed leftRg's location
             newLEyeLoc.x -= moveX; newLEyeLoc.y -= moveY;
-            doLog(debug_fb_log1, "debug_fb_log1: aL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
+            //doLog(debug_fb_log1, "debug_fb_log1: aL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
             firePreprocess = true;
         }
     }
@@ -178,11 +178,11 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
             || (this->rightRg.y + moveY + this->rightRg.height) > gray.rows) {
             this->flagReinit = true;
         } else {
-            doLog(debug_fb_log1, "debug_fb_log1: pR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
+            //doLog(debug_fb_log1, "debug_fb_log1: pR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
             this->rightRg.x += moveX; this->rightRg.y += moveY;
             // update newREyeLoc because we changed rightRg's location
             newREyeLoc.x -= moveX; newREyeLoc.y -= moveY;
-            doLog(debug_fb_log1, "debug_fb_log1: aR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
+            //doLog(debug_fb_log1, "debug_fb_log1: aR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
             firePreprocess = true;
         }
     }
@@ -222,22 +222,31 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
     // printf("%d,%d %d,%d \n", leftUpdateLoc.x, leftUpdateLoc.y, rightUpdateLoc.x, rightUpdateLoc.y);
 
 }
-void Farneback::dominantDirection(cv::Mat flow, cv::Point& updateLoc) {
-    double totalX=0, totalY=0;
+void Farneback::dominantDirection(cv::Mat flow, cv::Rect bounding, cv::Point2d& totalP, cv::Point2d& boundingP, cv::Point2d& diffP) {
+    double totalX=0, totalY=0, btotalX=0, btotalY=0;
     for(int y = 0; y < flow.rows; y += 1) {
         for(int x = 0; x < flow.cols; x += 1) {
             const cv::Point2f& flowVector = flow.at<cv::Point2f>(y, x);
-            totalX += flowVector.x;
-            totalY += flowVector.y;
+            if (x >= bounding.x && x < (bounding.x+bounding.width)
+                && y >= bounding.y && y < (bounding.y+bounding.height)) {
+                btotalX += flowVector.x;
+                btotalY += flowVector.y;
+            } else {
+                totalX += flowVector.x;
+                totalY += flowVector.y;
+            }
         }
     }
-    totalX /= flow.cols;
-    totalY /= flow.cols;
-    totalX /= flow.rows;
-    totalY /= flow.rows;
-    updateLoc = cv::Point(totalX, totalY);
+    totalX /= (flow.cols*flow.rows-bounding.width*bounding.height);
+    totalY /= (flow.cols*flow.rows-bounding.width*bounding.height);
+    btotalX /= (bounding.width*bounding.height);
+    btotalY /= (bounding.width*bounding.height);
+    totalP = cv::Point2d(totalX, totalY);
+    boundingP = cv::Point2d(btotalX, btotalY);
+    diffP = cv::Point2d(btotalX-totalX, btotalY-totalY);
 }
 void Farneback::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
+    cv::Point2d lTotalP, lBoundingP, lDiffP, rTotalP, rBoundingP, rDiffP;
     left = gray(this->leftRg);
     right = gray(this->rightRg);
 
@@ -254,6 +263,13 @@ void Farneback::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& flo
     int rightBw = this->rightRg.width*0.75, rightBh = this->rightRg.height*0.4;
     leftB = cv::Rect(this->lEye.x-(leftBw/2), this->lEye.y-(leftBh/2), leftBw, leftBh);
     rightB = cv::Rect(this->rEye.x-(rightBw/2), this->rEye.y-(rightBh/2), rightBw, rightBh);
+    this->dominantDirection(flowLeft, leftB, lTotalP, lBoundingP, lDiffP);
+    this->dominantDirection(flowRight, rightB, rTotalP, rBoundingP, rDiffP);
+    doLog(debug_fb_log_flow, "debug_fb_log_flow: F %u T %lf L total %5.2lf %5.2lf btotal %5.2lf %5.2lf diff %5.2lf %5.2lf\n",
+        frameNum, timestamp, lTotalP.x, lTotalP.y, lBoundingP.x, lBoundingP.y, lDiffP.x, lDiffP.y);
+    doLog(debug_fb_log_flow, "debug_fb_log_flow: F %u T %lf R total %5.2lf %5.2lf btotal %5.2lf %5.2lf diff %5.2lf %5.2lf\n",
+        frameNum, timestamp, rTotalP.x, rTotalP.y, rBoundingP.x, rBoundingP.y, rDiffP.x, rDiffP.y);
+
 }
 void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
     cv::Mat left, right, flowLeft, flowRight;
@@ -261,7 +277,7 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
 
     if (flagReinit == true) {
         if (this->reinit(gray, left, right, timestamp, frameNum) != true) {
-            doLog(debug_fb_log1, "debug_fb_log1: reinit failed frameNum %u timestamp %lf\n", frameNum, timestamp);
+            doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf reinit failed\n", frameNum, timestamp);
             return;
         } else {
             this->flagReinit = false;
