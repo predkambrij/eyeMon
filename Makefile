@@ -4,7 +4,7 @@ PROJDIR = .
 
 include test/Makefile
 
-FILES_TO_COMPILE = common.cpp main.cpp blinkmeasure.cpp templatebased.cpp optflow.cpp farneback.cpp
+FILES_TO_COMPILE = common.cpp main.cpp blinkmeasure.cpp templatebased.cpp optflow.cpp farneback.cpp blackpixels.cpp
 # -Werror -Wall -Wextra
 COMPILER_FLAGS = -std=c++11 -Wextra
 OUTPUT_BIN =

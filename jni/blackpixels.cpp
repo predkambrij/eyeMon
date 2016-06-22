@@ -25,30 +25,6 @@
 #include <common.hpp>
 #include <blackpixels.hpp>
 
-void Blackpixels::drawOptFlowMap (cv::Rect eyeE, const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, int eye) {
-    cv::circle(cflowmap, cv::Point2f((float)15, (float)15), 10, cv::Scalar(0,255,0), -1, 8);
-    int xo, yo;
-    xo = eyeE.x;
-    yo = eyeE.y;
-    for(int y = 0; y < flow.rows; y += step) {
-        for(int x = 0; x < flow.cols; x += step) {
-            const cv::Point2f& fxy = flow.at< cv::Point2f>(y, x);
-            int px = x+xo, py = y+yo;
-            cv::line(cflowmap, cv::Point(px,py), cv::Point(cvRound(px+fxy.x), cvRound(py+fxy.y)), color);
-            //circle(cflowmap, Point(cvRound(x+fxy.x), cvRound(y+fxy.y)), 1, color, -1);
-            cv::circle(cflowmap, cv::Point(cvRound(px+fxy.x), cvRound(py+fxy.y)), 1, color, -1, 8);
-            //circle( image, points[1][i], 3, Scalar(0,255,0), -1, 8);
-        }
-    }
-    // for(int y = 0; y < flow.rows; y += step) {
-    //     for(int x = 0; x < flow.cols; x += step) {
-    //         const cv::Point2f& fxy = flow.at< cv::Point2f>(y, x);
-    //         printf("%.0f ", fxy.y);
-    //     }
-    //     printf("\n");
-    // }
-    // printf("\n\n\n");
-}
 
 
 
@@ -222,31 +198,21 @@ void Blackpixels::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum)
     // printf("%d,%d %d,%d \n", leftUpdateLoc.x, leftUpdateLoc.y, rightUpdateLoc.x, rightUpdateLoc.y);
 
 }
-void Blackpixels::dominantDirection(cv::Mat flow, cv::Rect bounding, cv::Point2d& totalP, cv::Point2d& boundingP, cv::Point2d& diffP) {
-    double totalX=0, totalY=0, btotalX=0, btotalY=0;
-    for(int y = 0; y < flow.rows; y += 1) {
-        for(int x = 0; x < flow.cols; x += 1) {
-            const cv::Point2f& flowVector = flow.at<cv::Point2f>(y, x);
+double Blackpixels::countPixels(cv::Mat eye, cv::Rect bounding) {
+    double totalGray=0;
+    for(int y = 0; y < eye.rows; y += 1) {
+        for(int x = 0; x < eye.cols; x += 1) {
+            int grayPixel = eye.at<uchar>(y, x);
             if (x >= bounding.x && x < (bounding.x+bounding.width)
                 && y >= bounding.y && y < (bounding.y+bounding.height)) {
-                btotalX += flowVector.x;
-                btotalY += flowVector.y;
-            } else {
-                totalX += flowVector.x;
-                totalY += flowVector.y;
+                totalGray += grayPixel;
             }
         }
     }
-    totalX /= (flow.cols*flow.rows-bounding.width*bounding.height);
-    totalY /= (flow.cols*flow.rows-bounding.width*bounding.height);
-    btotalX /= (bounding.width*bounding.height);
-    btotalY /= (bounding.width*bounding.height);
-    totalP = cv::Point2d(totalX, totalY);
-    boundingP = cv::Point2d(btotalX, btotalY);
-    diffP = cv::Point2d(totalX-btotalX, totalY-btotalY);
+    totalGray /= (bounding.width*bounding.height);
+    return 255-totalGray;
 }
-void Blackpixels::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
-    cv::Point2d lTotalP, lBoundingP, lDiffP, rTotalP, rBoundingP, rDiffP;
+void Blackpixels::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
     left = gray(this->leftRg);
     right = gray(this->rightRg);
 
@@ -255,24 +221,20 @@ void Blackpixels::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& f
     left = left.clone();
     right = right.clone();
 
-    cv::calcOpticalFlowFarneback(this->pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
-    cv::calcOpticalFlowFarneback(this->pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
+    //cv::calcOpticalFlowFarneback(this->pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
+    //cv::calcOpticalFlowFarneback(this->pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
 
     // bounding boxes
     int leftBw = this->leftRg.width*0.75, leftBh = this->leftRg.height*0.4;
     int rightBw = this->rightRg.width*0.75, rightBh = this->rightRg.height*0.4;
     leftB = cv::Rect(this->lEye.x-(leftBw/2), this->lEye.y-(leftBh/2), leftBw, leftBh);
     rightB = cv::Rect(this->rEye.x-(rightBw/2), this->rEye.y-(rightBh/2), rightBw, rightBh);
-    this->dominantDirection(flowLeft, leftB, lTotalP, lBoundingP, lDiffP);
-    this->dominantDirection(flowRight, rightB, rTotalP, rBoundingP, rDiffP);
-    doLog(debug_fb_log_flow, "debug_fb_log_flow: F %u T %lf lTotal %5.2lf %5.2lf lbtotal %5.2lf %5.2lf lDiff %5.2lf %5.2lf rTotal %5.2lf %5.2lf rbtotal %5.2lf %5.2lf rDiff %5.2lf %5.2lf\n",
-        frameNum, timestamp, lTotalP.x, lTotalP.y, lBoundingP.x, lBoundingP.y, lDiffP.x, lDiffP.y,
-        rTotalP.x, rTotalP.y, rBoundingP.x, rBoundingP.y, rDiffP.x, rDiffP.y);
-
-
+    double lNum = this->countPixels(left, leftB);
+    double rNum = this->countPixels(right, rightB);
+    doLog(debug_bp_log_pix, "debug_bp_log_pix: F %u T %lf lNum %5.2lf rNum %5.2lf\n", frameNum, timestamp, lNum, rNum);
 }
 void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
-    cv::Mat left, right, flowLeft, flowRight;
+    cv::Mat left, right;
     cv::Rect leftB, rightB;
 
     if (flagReinit == true) {
@@ -287,9 +249,7 @@ void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned 
             //return;
         }
         this->rePupil(gray, timestamp, frameNum);
-        this->method(gray, left, right, flowLeft, flowRight, leftB, rightB, timestamp, frameNum);
-        this->drawOptFlowMap(this->leftRg, flowLeft, out, 5, cv::Scalar(0, 255, 0), 0);
-        this->drawOptFlowMap(this->rightRg, flowRight, out, 5, cv::Scalar(0, 255, 0), 1);
+        this->method(gray, left, right, leftB, rightB, timestamp, frameNum);
     }
 
     if ((frameNum % 30) == 0) {

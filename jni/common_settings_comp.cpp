@@ -16,6 +16,7 @@ bool debug_tmpl_perf1 = true;
 bool debug_tmpl_perf2 = true;
 bool debug_fb_log1 = true;
 bool debug_fb_log_flow = true;
+bool debug_bp_log_pix = true;
 bool debug_notifications_log1 = true;
 bool debug_blinks_d1 = true;
 bool debug_blinks_d2 = true;
