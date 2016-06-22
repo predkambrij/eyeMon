@@ -7,6 +7,7 @@
 #include <optflow.hpp>
 #include <templatebased.hpp>
 #include <farneback.hpp>
+#include <blackpixels.hpp>
 
 #include <main_settings.hpp>
 
@@ -97,6 +98,7 @@ void captureFrames() {
 
 OptFlow optf;
 Farneback farneback;
+Blackpixels blackpixels;
 TemplateBased templ;
 
 void doProcessing() {
@@ -164,6 +166,7 @@ void doProcessing() {
         t2 = std::chrono::steady_clock::now();
         switch (method) {
             case METHOD_FARNEBACK:
+            case METHOD_BLACKPIXELS:
             case METHOD_OPTFLOW:
             case METHOD_TEMPLATE_BASED:
             getGray(frame, &gray);
@@ -177,8 +180,12 @@ void doProcessing() {
         switch (method) {
             case METHOD_OPTFLOW:
             optf.run(gray, frame, timestamp, fc.frameNum);
+            break;
             case METHOD_FARNEBACK:
             farneback.run(gray, frame, timestamp, fc.frameNum);
+            break;
+            case METHOD_BLACKPIXELS:
+            blackpixels.run(gray, frame, timestamp, fc.frameNum);
             break;
             case METHOD_TEMPLATE_BASED:
             templ.run(gray, frame, timestamp, fc.frameNum);
@@ -259,6 +266,9 @@ int main() { // int argc, char * argv[]
         optf.setup(faceDetector);
         case METHOD_FARNEBACK:
         farneback.setup(faceDetector);
+        break;
+        case METHOD_BLACKPIXELS:
+        blackpixels.setup(faceDetector);
         break;
         case METHOD_TEMPLATE_BASED:
         templ.setup(faceDetector);

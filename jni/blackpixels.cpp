@@ -23,9 +23,9 @@
 
 
 #include <common.hpp>
-#include <farneback.hpp>
+#include <blackpixels.hpp>
 
-void Farneback::drawOptFlowMap (cv::Rect eyeE, const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, int eye) {
+void Blackpixels::drawOptFlowMap (cv::Rect eyeE, const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, int eye) {
     cv::circle(cflowmap, cv::Point2f((float)15, (float)15), 10, cv::Scalar(0,255,0), -1, 8);
     int xo, yo;
     xo = eyeE.x;
@@ -52,7 +52,7 @@ void Farneback::drawOptFlowMap (cv::Rect eyeE, const cv::Mat flow, cv::Mat cflow
 
 
 
-int Farneback::faceDetect(cv::Mat gray, cv::Rect *face) {
+int Blackpixels::faceDetect(cv::Mat gray, cv::Rect *face) {
     std::vector<cv::Rect> faces;
     face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
     if (faces.size() != 1) {
@@ -61,17 +61,17 @@ int Farneback::faceDetect(cv::Mat gray, cv::Rect *face) {
     *face = faces[0];
     return 0;
 }
-void Farneback::eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point &leftPupil, cv::Point &rightPupil) {
+void Blackpixels::eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point &leftPupil, cv::Point &rightPupil) {
     leftPupil  = findEyeCenter(faceROI, leftEyeRegion);
     rightPupil = findEyeCenter(faceROI, rightEyeRegion);
 }
-bool Farneback::preprocess(cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum) {
+bool Blackpixels::preprocess(cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum) {
     GaussianBlur(left, left, cv::Size(3,3), 0);
     GaussianBlur(left, left, cv::Size(3,3), 0);
     cv::equalizeHist(left, left);
     cv::equalizeHist(right, right);
 }
-bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum) {
+bool Blackpixels::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum) {
     cv::Rect face;
     int fdRes = this->faceDetect(gray, &face);
 
@@ -110,7 +110,7 @@ bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double times
     return true;
 }
 
-void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
+void Blackpixels::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
     bool firePreprocess = false, canUpdateL = false, canUpdateR = false;
     cv::Point newLEyeLoc, newREyeLoc;
     unsigned int curXEyesDistance, curYEyesDistance;
@@ -222,7 +222,7 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
     // printf("%d,%d %d,%d \n", leftUpdateLoc.x, leftUpdateLoc.y, rightUpdateLoc.x, rightUpdateLoc.y);
 
 }
-void Farneback::dominantDirection(cv::Mat flow, cv::Rect bounding, cv::Point2d& totalP, cv::Point2d& boundingP, cv::Point2d& diffP) {
+void Blackpixels::dominantDirection(cv::Mat flow, cv::Rect bounding, cv::Point2d& totalP, cv::Point2d& boundingP, cv::Point2d& diffP) {
     double totalX=0, totalY=0, btotalX=0, btotalY=0;
     for(int y = 0; y < flow.rows; y += 1) {
         for(int x = 0; x < flow.cols; x += 1) {
@@ -245,7 +245,7 @@ void Farneback::dominantDirection(cv::Mat flow, cv::Rect bounding, cv::Point2d& 
     boundingP = cv::Point2d(btotalX, btotalY);
     diffP = cv::Point2d(totalX-btotalX, totalY-btotalY);
 }
-void Farneback::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
+void Blackpixels::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
     cv::Point2d lTotalP, lBoundingP, lDiffP, rTotalP, rBoundingP, rDiffP;
     left = gray(this->leftRg);
     right = gray(this->rightRg);
@@ -271,7 +271,7 @@ void Farneback::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& flo
 
 
 }
-void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
+void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
     cv::Mat left, right, flowLeft, flowRight;
     cv::Rect leftB, rightB;
 
@@ -320,10 +320,10 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
     return;
 }
 
-Farneback::Farneback () {
+Blackpixels::Blackpixels () {
 };
 
-int Farneback::setup(const char* cascadeFileName) {
+int Blackpixels::setup(const char* cascadeFileName) {
     try {
         if(!face_cascade.load(cascadeFileName)) {
             throw "--(!)Error loading face cascade, please change face_cascade_name in source code.\n";
@@ -336,11 +336,11 @@ int Farneback::setup(const char* cascadeFileName) {
 };
 
 #ifdef IS_PHONE
-int Farneback::setJni(JNIEnv* jenv) {
+int Blackpixels::setJni(JNIEnv* jenv) {
 };
 #endif
 
-int Farneback::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
+int Blackpixels::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
     //cvtColor(rgb, grayx, COLOR_BGR2GRAY);
     //process(rgb, grayx, rgb);
     this->process(gray, out, timestamp, frameNum);
