@@ -77,9 +77,17 @@ bool TemplateBased::eyesInit(cv::Mat& gray, double timestamp) {
     this->rLastTime = timestamp;
     doLog(debug_tmpl_log, "debug_tmpl_log: lEye %d %d rEye %d %d\n", lEye.x, lEye.y, rEye.x, rEye.y);
 
+
     cv::Mat left  = faceROI(leftE);
     cv::Mat right = faceROI(rightE);
 // TODO - should wait for initial blink, so that eyes are open for sure
+    left.copyTo(this->leftTemplate);
+    right.copyTo(this->rightTemplate);
+
+cv::Mat lTemplSearch, rTemplSearch;
+cv::Rect lTemplSearchR, rTemplSearchR;
+
+this->updateTemplSearch(gray, lTemplSearchR, rTemplSearchR, lTemplSearch, rTemplSearch);
     left.copyTo(this->leftTemplate);
     right.copyTo(this->rightTemplate);
 
@@ -106,9 +114,13 @@ void TemplateBased::updateTemplSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv:
     doLog(debug_tmpl_log, "debug_tmpl_log: AAA rTemplSearchR %d %d %d %d\n", rTemplSearchR.x, rTemplSearchR.y, rTemplSearchR.width, rTemplSearchR.height);
     lTemplSearch = gray(lTemplSearchR);
     rTemplSearch = gray(rTemplSearchR);
+    //cv::equalizeHist(lTemplSearch, lTemplSearch);
+    //cv::equalizeHist(rTemplSearch, rTemplSearch);
+    //GaussianBlur(lTemplSearch, lTemplSearch, cv::Size(3,3), 0);
+    //GaussianBlur(rTemplSearch, rTemplSearch, cv::Size(3,3), 0);
 };
 void TemplateBased::checkTracking(double timestamp) {
-    if ((this->lLastTime+1000) < timestamp || (this->rLastTime+1000) < timestamp) {
+    if ((this->lLastTime+500) < timestamp || (this->rLastTime+500) < timestamp) {
         // we lost eyes, request reinit
         this->hasTemplate = false;
         doLog(debug_tmpl_log, "debug_tmpl_log: reinit: eyes were displaced timestamp %lf lLastTime %lf rLastTime %lf\n",

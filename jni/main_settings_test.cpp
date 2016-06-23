@@ -25,9 +25,9 @@
 //char fileName[100] = "/home/developer/other/posnetki/o4_97.mp4"; // svetloba od zadej knjiznica fri
 //char fileName[100] = "/home/developer/other/posnetki/o4_98.mp4"; // svetloba od strani knjiznica fri spodaj
 //char fileName[100] = "/home/developer/other/posnetki/o4_99.mp4"; // svetloba od zadaj knjiznica (veliko suma)
-char fileName[100] = "/home/developer/other/posnetki/o4_100.mp4"; // svetloba od zadaj knjiznica (zelo veliko suma)
+//char fileName[100] = "/home/developer/other/posnetki/o4_100.mp4"; // svetloba od zadaj knjiznica (zelo veliko suma)
 
-//char fileName[100] = "/home/developer/other/posnetki/talking.avi";
+char fileName[100] = "/home/developer/other/posnetki/talking.avi";
 //char fileName[100] = "/home/developer/other/posnetki/sk/eyeblink8/1/26122013_223310_cam.avi"; // punca od dalec
 //char fileName[100] = "/home/developer/other/posnetki/sk/NightOfResearchers15/test/14/26092014_211047_cam.avi"; // ful partial
 
