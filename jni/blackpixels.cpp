@@ -212,7 +212,7 @@ double Blackpixels::countPixels(cv::Mat eye, cv::Rect bounding) {
     totalGray /= (bounding.width*bounding.height);
     return 255-totalGray;
 }
-void Blackpixels::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
+void Blackpixels::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& tLeft, cv::Mat& tRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
     left = gray(this->leftRg);
     right = gray(this->rightRg);
 
@@ -220,6 +220,9 @@ void Blackpixels::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Rect& 
     this->preprocess(left, right, timestamp, frameNum);
     left = left.clone();
     right = right.clone();
+
+    cv::threshold(left, tLeft, 27, 255, CV_THRESH_BINARY);
+    cv::threshold(right, tRight, 27, 255, CV_THRESH_BINARY);
 
     //cv::calcOpticalFlowFarneback(this->pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
     //cv::calcOpticalFlowFarneback(this->pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
@@ -229,12 +232,12 @@ void Blackpixels::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Rect& 
     int rightBw = this->rightRg.width*0.75, rightBh = this->rightRg.height*0.4;
     leftB = cv::Rect(this->lEye.x-(leftBw/2), this->lEye.y-(leftBh/2), leftBw, leftBh);
     rightB = cv::Rect(this->rEye.x-(rightBw/2), this->rEye.y-(rightBh/2), rightBw, rightBh);
-    double lNum = this->countPixels(left, leftB);
-    double rNum = this->countPixels(right, rightB);
+    double lNum = this->countPixels(tLeft, leftB);
+    double rNum = this->countPixels(tRight, rightB);
     doLog(debug_bp_log_pix, "debug_bp_log_pix: F %u T %lf lNum %5.2lf rNum %5.2lf\n", frameNum, timestamp, lNum, rNum);
 }
 void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
-    cv::Mat left, right;
+    cv::Mat left, right, tLeft, tRight;
     cv::Rect leftB, rightB;
 
     if (flagReinit == true) {
@@ -249,7 +252,7 @@ void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned 
             //return;
         }
         this->rePupil(gray, timestamp, frameNum);
-        this->method(gray, left, right, leftB, rightB, timestamp, frameNum);
+        this->method(gray, left, right, tLeft, tRight, leftB, rightB, timestamp, frameNum);
     }
 
     if ((frameNum % 30) == 0) {
@@ -269,6 +272,8 @@ void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned 
     if (frameNum > 1) {
         imshowWrapper("leftR", this->pleft, debug_show_img_templ_eyes_tmpl);
         imshowWrapper("rightR", this->pright, debug_show_img_templ_eyes_tmpl);
+        imshowWrapper("leftSR", tLeft, debug_show_img_templ_eyes_tmpl);
+        imshowWrapper("rightSR", tRight, debug_show_img_templ_eyes_tmpl);
     }
     imshowWrapper("left", left, debug_show_img_templ_eyes_tmpl);
     imshowWrapper("right", right, debug_show_img_templ_eyes_tmpl);

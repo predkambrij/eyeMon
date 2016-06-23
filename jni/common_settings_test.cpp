@@ -25,8 +25,8 @@ bool debug_blinks_d4 = true;
 
 //int method = METHOD_OPTFLOW;
 //int method = METHOD_TEMPLATE_BASED;
-//int method = METHOD_FARNEBACK;
-int method = METHOD_BLACKPIXELS;
+int method = METHOD_FARNEBACK;
+//int method = METHOD_BLACKPIXELS;
 double previousFrameTime = -1;
 
 // optical flow
