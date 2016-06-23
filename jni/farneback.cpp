@@ -24,6 +24,7 @@
 
 #include <common.hpp>
 #include <farneback.hpp>
+#include <blinkmeasuref.hpp>
 
 void Farneback::drawOptFlowMap (cv::Rect eyeE, const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, int eye) {
     cv::circle(cflowmap, cv::Point2f((float)15, (float)15), 10, cv::Scalar(0,255,0), -1, 8);
@@ -265,6 +266,11 @@ void Farneback::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& flo
     rightB = cv::Rect(this->rEye.x-(rightBw/2), this->rEye.y-(rightBh/2), rightBw, rightBh);
     this->dominantDirection(flowLeft, leftB, lTotalP, lBoundingP, lDiffP);
     this->dominantDirection(flowRight, rightB, rTotalP, rBoundingP, rDiffP);
+
+    // blink measure
+    //BlinkMeasureF bm(frameNum, timestamp, lDiffP, rDiffP);
+    //blinkMeasuref.push_back(bm);
+
     doLog(debug_fb_log_flow, "debug_fb_log_flow: F %u T %lf lTotal %5.2lf %5.2lf lbtotal %5.2lf %5.2lf lDiff %5.2lf %5.2lf rTotal %5.2lf %5.2lf rbtotal %5.2lf %5.2lf rDiff %5.2lf %5.2lf\n",
         frameNum, timestamp, lTotalP.x, lTotalP.y, lBoundingP.x, lBoundingP.y, lDiffP.x, lDiffP.y,
         rTotalP.x, rTotalP.y, rBoundingP.x, rBoundingP.y, rDiffP.x, rDiffP.y);

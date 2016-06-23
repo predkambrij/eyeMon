@@ -8,6 +8,7 @@
 #include <opencv2/objdetect/objdetect.hpp>
 
 #include <blinkmeasure.hpp>
+#include <blinkmeasuref.hpp>
 
 void doLog(bool shouldPrint, const std::string fmt, ...);
 void diffclock(char const *title, clock_t clock2);
@@ -86,5 +87,14 @@ extern std::list<Blink> lBlinkChunks;
 extern std::list<Blink> rBlinkChunks;
 extern std::list<Blink> lBlinkTimeframeChunks;
 extern std::list<Blink> rBlinkTimeframeChunks;
+
+/// farne
+extern int maxFramesShortListf;
+extern std::list<BlinkMeasureF> blinkMeasuref;
+extern std::list<BlinkMeasureF> blinkMeasureShortf;
+extern std::list<BlinkF> lBlinkChunksf;
+extern std::list<BlinkF> rBlinkChunksf;
+extern std::list<BlinkF> lBlinkTimeframeChunksf;
+extern std::list<BlinkF> rBlinkTimeframeChunksf;
 
 #endif

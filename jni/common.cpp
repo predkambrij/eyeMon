@@ -16,6 +16,15 @@
 #include <android/log.h>
 #endif
 
+/// farne
+int maxFramesShortListf = 0;
+std::list<BlinkMeasureF> blinkMeasuref;
+std::list<BlinkMeasureF> blinkMeasureShortf;
+std::list<BlinkF> lBlinkChunksf;
+std::list<BlinkF> rBlinkChunksf;
+std::list<BlinkF> lBlinkTimeframeChunksf;
+std::list<BlinkF> rBlinkTimeframeChunksf;
+///
 
 std::list<BlinkMeasure> blinkMeasure;
 std::list<BlinkMeasure> blinkMeasureShort;
