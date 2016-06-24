@@ -140,6 +140,8 @@ void BlinkMeasureF::measureBlinks() {
     } else if (bm.canProceedL == false && bm.canProceedR == true) {
         doLog(debug_blinks_d1, "debug_blinks_d1: F %d T %.2lf logType r Ra %lf %.8lf lrSD %lf plrSD12 %lf %lf mlrSD12 %lf %lf\n",
             bm.frameNum, bm.timestamp, bm.rDiffP.y, ravg, rSD, prsd1, prsd2, mrsd1, mrsd2);
+    } else if (bm.canProceedL == false && bm.canProceedR == false) {
+        doLog(debug_blinks_d1, "debug_blinks_d1: F %d T %.2lf logType n\n", bm.frameNum, bm.timestamp);
     }
 
     // if (bm.lDiffP.y < lsd2) {
