@@ -42,6 +42,10 @@ _setAnnotVars :
 	$(eval FILES_TO_COMPILE = annot.cpp)
 	$(eval OUTPUT_BIN = bins/annot)
 
+_setTestVars :
+	$(eval FILES_TO_COMPILE = test.cpp)
+	$(eval OUTPUT_BIN = bins/test)
+
 run/% :
 	bins/$*
 
@@ -49,6 +53,7 @@ dco : _setDesktopSettings _setEyelikeFiles _compile
 d : _setDesktopSettings _setEyelikeFiles _compile run/d
 dt : _setTestSettings _setEyelikeFiles _compile run/t
 annot : _setAnnotVars _compile run/annot
+test : _setTestVars _compile run/test
 
 # tests (it doesn't work, see Makefile in test directory)
 #_setTestTempl : $(TB)/gtest_main.a
