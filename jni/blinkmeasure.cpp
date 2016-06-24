@@ -30,7 +30,7 @@ void BlinkMeasure::measureBlinksSD(int shortBmSize, double lavg, double ravg, do
     while(iter != blinkMeasureShort.end()) {
         BlinkMeasure& bm = *iter;
         *lSD = *lSD+pow(lavg-bm.lcor, 2);
-        *rSD = *rSD+pow(ravg-bm.lcor, 2);
+        *rSD = *rSD+pow(ravg-bm.rcor, 2);
         iter++;
     }
     *lSD = pow(*lSD/shortBmSize, 0.5);

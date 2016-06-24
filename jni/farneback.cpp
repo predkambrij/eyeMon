@@ -111,11 +111,12 @@ bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double times
     return true;
 }
 
-void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
+std::array<bool, 2> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
     bool firePreprocess = false, canUpdateL = false, canUpdateR = false;
     cv::Point newLEyeLoc, newREyeLoc;
     unsigned int curXEyesDistance, curYEyesDistance;
     const int maxDiff = 20;
+    bool canProceedL = true, canProceedR = true;
 
     this->eyeCenters(gray, this->leftRg, this->rightRg, newLEyeLoc, newREyeLoc);
     doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf L diff x %d y %d\n", frameNum, timestamp, newLEyeLoc.x-this->lEye.x, newLEyeLoc.y-this->lEye.y);
@@ -165,6 +166,7 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
             newLEyeLoc.x -= moveX; newLEyeLoc.y -= moveY;
             //doLog(debug_fb_log1, "debug_fb_log1: aL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
             firePreprocess = true;
+            canProceedL = false;
         }
     }
 
@@ -185,6 +187,7 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
             newREyeLoc.x -= moveX; newREyeLoc.y -= moveY;
             //doLog(debug_fb_log1, "debug_fb_log1: aR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
             firePreprocess = true;
+            canProceedR = false;
         }
     }
     if (firePreprocess == true) {
@@ -201,6 +204,10 @@ void Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
     if (canUpdateR == true) {
         this->rEye = newREyeLoc;
     }
+    std::array<bool, 2> ret;
+    ret[0] = canProceedL;
+    ret[1] = canProceedR;
+    return ret;
 
     // if (newREyeLoc.x < (this->rightE.width*0.3) || newREyeLoc.x > (this->rightE.width*0.7)
     //     || newREyeLoc.y < (this->rightE.height*0.3) || newREyeLoc.y > (this->rightE.height*0.7)) {
@@ -246,7 +253,7 @@ void Farneback::dominantDirection(cv::Mat flow, cv::Rect bounding, cv::Point2d& 
     boundingP = cv::Point2d(btotalX, btotalY);
     diffP = cv::Point2d(totalX-btotalX, totalY-btotalY);
 }
-void Farneback::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
+void Farneback::method(cv::Mat gray, bool canProceedL, bool canProceedR, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
     cv::Point2d lTotalP, lBoundingP, lDiffP, rTotalP, rBoundingP, rDiffP;
     left = gray(this->leftRg);
     right = gray(this->rightRg);
@@ -256,26 +263,26 @@ void Farneback::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& flo
     left = left.clone();
     right = right.clone();
 
-    cv::calcOpticalFlowFarneback(this->pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
-    cv::calcOpticalFlowFarneback(this->pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
-
-    // bounding boxes
-    int leftBw = this->leftRg.width*0.75, leftBh = this->leftRg.height*0.4;
-    int rightBw = this->rightRg.width*0.75, rightBh = this->rightRg.height*0.4;
-    leftB = cv::Rect(this->lEye.x-(leftBw/2), this->lEye.y-(leftBh/2), leftBw, leftBh);
-    rightB = cv::Rect(this->rEye.x-(rightBw/2), this->rEye.y-(rightBh/2), rightBw, rightBh);
-    this->dominantDirection(flowLeft, leftB, lTotalP, lBoundingP, lDiffP);
-    this->dominantDirection(flowRight, rightB, rTotalP, rBoundingP, rDiffP);
+    if (canProceedL == true) {
+        cv::calcOpticalFlowFarneback(this->pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
+        int leftBw = this->leftRg.width*0.75, leftBh = this->leftRg.height*0.4;
+        leftB = cv::Rect(this->lEye.x-(leftBw/2), this->lEye.y-(leftBh/2), leftBw, leftBh);
+        this->dominantDirection(flowLeft, leftB, lTotalP, lBoundingP, lDiffP);
+    }
+    if (canProceedR == true) {
+        cv::calcOpticalFlowFarneback(this->pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
+        int rightBw = this->rightRg.width*0.75, rightBh = this->rightRg.height*0.4;
+        rightB = cv::Rect(this->rEye.x-(rightBw/2), this->rEye.y-(rightBh/2), rightBw, rightBh);
+        this->dominantDirection(flowRight, rightB, rTotalP, rBoundingP, rDiffP);
+    }
 
     // blink measure
-    //BlinkMeasureF bm(frameNum, timestamp, lDiffP, rDiffP);
-    //blinkMeasuref.push_back(bm);
+    BlinkMeasureF bm(frameNum, timestamp, lDiffP, rDiffP, canProceedL, canProceedR);
+    blinkMeasuref.push_back(bm);
 
     doLog(debug_fb_log_flow, "debug_fb_log_flow: F %u T %lf lTotal %5.2lf %5.2lf lbtotal %5.2lf %5.2lf lDiff %5.2lf %5.2lf rTotal %5.2lf %5.2lf rbtotal %5.2lf %5.2lf rDiff %5.2lf %5.2lf\n",
         frameNum, timestamp, lTotalP.x, lTotalP.y, lBoundingP.x, lBoundingP.y, lDiffP.x, lDiffP.y,
         rTotalP.x, rTotalP.y, rBoundingP.x, rBoundingP.y, rDiffP.x, rDiffP.y);
-
-
 }
 void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
     cv::Mat left, right, flowLeft, flowRight;
@@ -292,8 +299,8 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
         if ((frameNum % 2) == 0) {
             //return;
         }
-        this->rePupil(gray, timestamp, frameNum);
-        this->method(gray, left, right, flowLeft, flowRight, leftB, rightB, timestamp, frameNum);
+        std::array<bool, 2> repupilRes = this->rePupil(gray, timestamp, frameNum);
+        this->method(gray, repupilRes[0], repupilRes[1], left, right, flowLeft, flowRight, leftB, rightB, timestamp, frameNum);
         this->drawOptFlowMap(this->leftRg, flowLeft, out, 5, cv::Scalar(0, 255, 0), 0);
         this->drawOptFlowMap(this->rightRg, flowRight, out, 5, cv::Scalar(0, 255, 0), 1);
     }
@@ -346,10 +353,16 @@ int Farneback::setJni(JNIEnv* jenv) {
 };
 #endif
 
+void Farneback::measureBlinks() {
+    BlinkMeasureF::measureBlinks();
+};
+
 int Farneback::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
     //cvtColor(rgb, grayx, COLOR_BGR2GRAY);
     //process(rgb, grayx, rgb);
     this->process(gray, out, timestamp, frameNum);
+
+    this->measureBlinks();
 
     //cv::swap(prevLeft, left);
     //cv::swap(prevRight, right);

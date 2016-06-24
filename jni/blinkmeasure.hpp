@@ -2,7 +2,6 @@
 #ifndef BLINKMEASURE_H
 #define BLINKMEASURE_H
 
-void cMeasureBlinks();
 
 class BlinkMeasure {
     public:

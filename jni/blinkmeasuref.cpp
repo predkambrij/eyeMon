@@ -1,44 +1,82 @@
 #include <list>
 #include <stdio.h>
 
+#include <opencv2/core/core.hpp>
+
 #include <math.h>
 #include <common.hpp>
 #include <blinkmeasuref.hpp>
 
 
-BlinkMeasureF::BlinkMeasureF(unsigned int frameNum, double timestamp, double lcor, double rcor) {
+BlinkMeasureF::BlinkMeasureF(unsigned int frameNum, double timestamp, cv::Point2d lDiffP, cv::Point2d rDiffP, bool canProceedL, bool canProceedR) {
     this->frameNum  = frameNum;
     this->timestamp = timestamp;
-    this->lcor      = lcor;
-    this->rcor      = rcor;
+    this->lDiffP    = lDiffP;
+    this->rDiffP    = rDiffP;
+    this->canProceedL = canProceedL;
+    this->canProceedR = canProceedR;
 };
 
-void BlinkMeasureF::measureBlinksAVG(int shortBmSize, double *lavg, double *ravg) {
+void BlinkMeasureF::measureBlinksAVG(double *lavg, double *ravg) {
+    int lSize = 0, rSize = 0;
     std::list<BlinkMeasureF>::iterator iter = blinkMeasureShortf.begin();
     while(iter != blinkMeasureShortf.end()) {
         BlinkMeasureF& bm = *iter;
-        *lavg += bm.lcor;
-        *ravg += bm.rcor;
+        if (bm.canProceedL == true) {
+            *lavg += bm.lDiffP.y;
+            lSize++;
+        }
+        if (bm.canProceedR == true) {
+            *ravg += bm.rDiffP.y;
+            rSize++;
+        }
         iter++;
     }
-    *lavg = *lavg/shortBmSize;
-    *ravg = *ravg/shortBmSize;
+    if (lSize > 0) {
+        *lavg = *lavg/lSize;
+    } else {
+        *lavg = 0;
+    }
+    if (rSize > 0) {
+        *ravg = *ravg/rSize;
+    } else {
+        *ravg = 0;
+    }
 };
 
-void BlinkMeasureF::measureBlinksSD(int shortBmSize, double lavg, double ravg, double *lSD, double *rSD, double *lsd1, double *rsd1, double *lsd2, double *rsd2) {
+void BlinkMeasureF::measureBlinksSD(double lavg, double ravg, double *lSD, double *rSD, double *plsd1, double *prsd1, double *plsd2, double *prsd2, double *mlsd1, double *mrsd1, double *mlsd2, double *mrsd2) {
+    int lSize = 0, rSize = 0;
     std::list<BlinkMeasureF>::iterator iter = blinkMeasureShortf.begin();
     while(iter != blinkMeasureShortf.end()) {
         BlinkMeasureF& bm = *iter;
-        *lSD = *lSD+pow(lavg-bm.lcor, 2);
-        *rSD = *rSD+pow(ravg-bm.lcor, 2);
+        if (bm.canProceedL == true) {
+            *lSD = *lSD+pow(lavg-bm.lDiffP.y, 2);
+            lSize++;
+        }
+        if (bm.canProceedR == true) {
+            *rSD = *rSD+pow(ravg-bm.rDiffP.y, 2);
+            rSize++;
+        }
         iter++;
     }
-    *lSD = pow(*lSD/shortBmSize, 0.5);
-    *rSD = pow(*rSD/shortBmSize, 0.5);
-    *lsd1 = lavg-(1*(*lSD));
-    *rsd1 = ravg-(1*(*rSD));
-    *lsd2 = lavg-(2*(*lSD));
-    *rsd2 = ravg-(2*(*rSD));
+    if (lSize > 0) {
+        *lSD = pow(*lSD/lSize, 0.5);
+    } else {
+        *lSD = 0;
+    }
+    if (rSize > 0) {
+        *rSD = pow(*rSD/rSize, 0.5);
+    } else {
+        *rSD = 0;
+    }
+    *plsd1 = lavg+(1*(*lSD));
+    *prsd1 = ravg+(1*(*rSD));
+    *plsd2 = lavg+(2*(*lSD));
+    *prsd2 = ravg+(2*(*rSD));
+    *mlsd1 = lavg-(1*(*lSD));
+    *mrsd1 = ravg-(1*(*rSD));
+    *mlsd2 = lavg-(2*(*lSD));
+    *mrsd2 = ravg-(2*(*rSD));
 };
 
 void BlinkMeasureF::measureBlinks() {
@@ -88,31 +126,36 @@ void BlinkMeasureF::measureBlinks() {
 
     double lavg = 0;
     double ravg = 0;
-    BlinkMeasureF::measureBlinksAVG(shortBmSize, &lavg, &ravg);
-    double lSD = 0;
-    double rSD = 0;
-    double lsd1 = 0;
-    double rsd1 = 0;
-    double lsd2 = 0;
-    double rsd2 = 0;
-    BlinkMeasureF::measureBlinksSD(shortBmSize, lavg, ravg, &lSD, &rSD, &lsd1, &rsd1, &lsd2, &rsd2);
-    doLog(debug_blinks_d1, "debug_blinks_d1: lastF %d T %.2lf La %lf %.8lf Ra %lf %.8lf lSD12 %lf %lf %lf rSD12 %lf %lf %lf\n",
-        bm.frameNum, bm.timestamp, bm.lcor, lavg, bm.rcor, ravg, lSD, lsd1, lsd2, rSD, rsd1, rsd2);
+    BlinkMeasureF::measureBlinksAVG(&lavg, &ravg);
+    double lSD = 0, rSD = 0;
+    double plsd1 = 0, prsd1 = 0, mlsd1 = 0, mrsd1 = 0;
+    double plsd2 = 0, prsd2 = 0, mlsd2 = 0, mrsd2 = 0;
+    BlinkMeasureF::measureBlinksSD(lavg, ravg, &lSD, &rSD, &plsd1, &prsd1, &plsd2, &prsd2, &mlsd1, &mrsd1, &mlsd2, &mrsd2);
+    if (bm.canProceedL == true && bm.canProceedR == true) {
+        doLog(debug_blinks_d1, "debug_blinks_d1: F %d T %.2lf logType b La %lf %.8lf Ra %lf %.8lf lrSD %lf %lf plrSD12 %lf %lf %lf %lf mlrSD12 %lf %lf %lf %lf\n",
+            bm.frameNum, bm.timestamp, bm.lDiffP.y, lavg, bm.rDiffP.y, ravg, lSD, rSD, plsd1, plsd2, prsd1, prsd2, mlsd1, mlsd2, mrsd1, mrsd2);
+    } else if (bm.canProceedL == true && bm.canProceedR == false) {
+        doLog(debug_blinks_d1, "debug_blinks_d1: F %d T %.2lf logType l La %lf %.8lf lrSD %lf plrSD12 %lf %lf mlrSD12 %lf %lf\n",
+            bm.frameNum, bm.timestamp, bm.lDiffP.y, lavg, lSD, plsd1, plsd2, mlsd1, mlsd2);
+    } else if (bm.canProceedL == false && bm.canProceedR == true) {
+        doLog(debug_blinks_d1, "debug_blinks_d1: F %d T %.2lf logType r Ra %lf %.8lf lrSD %lf plrSD12 %lf %lf mlrSD12 %lf %lf\n",
+            bm.frameNum, bm.timestamp, bm.rDiffP.y, ravg, rSD, prsd1, prsd2, mrsd1, mrsd2);
+    }
 
-    if (bm.lcor < lsd2) {
-        doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf L %lf SD1 %lf SD2 %lf\n", bm.frameNum, bm.timestamp, bm.lcor, lsd1, lsd2);
-        // check whether we can create a new blink (chunk)
-        BlinkMeasureF::makeChunk(true, (double)bm.timestamp, true, bm.frameNum);
-    } else {
-        BlinkMeasureF::makeChunk(true, (double)bm.timestamp, false, bm.frameNum);
-    }
-    if (bm.rcor < rsd2) {
-        doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf R %lf SD1 %lf SD2 %lf\n", bm.frameNum, bm.timestamp, bm.rcor, rsd1, rsd2);
-        // check whether we can create a new blink (chunk)
-        BlinkMeasureF::makeChunk(false, (double)bm.timestamp, true, bm.frameNum);
-    } else {
-        BlinkMeasureF::makeChunk(false, (double)bm.timestamp, false, bm.frameNum);
-    }
+    // if (bm.lDiffP.y < lsd2) {
+    //     doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf L %lf SD1 %lf SD2 %lf\n", bm.frameNum, bm.timestamp, bm.lDiffP.y, lsd1, lsd2);
+    //     // check whether we can create a new blink (chunk)
+    //     BlinkMeasureF::makeChunk(true, (double)bm.timestamp, true, bm.frameNum);
+    // } else {
+    //     BlinkMeasureF::makeChunk(true, (double)bm.timestamp, false, bm.frameNum);
+    // }
+    // if (bm.rDiffP.y < rsd2) {
+    //     doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf R %lf SD1 %lf SD2 %lf\n", bm.frameNum, bm.timestamp, bm.rDiffP.y, rsd1, rsd2);
+    //     // check whether we can create a new blink (chunk)
+    //     BlinkMeasureF::makeChunk(false, (double)bm.timestamp, true, bm.frameNum);
+    // } else {
+    //     BlinkMeasureF::makeChunk(false, (double)bm.timestamp, false, bm.frameNum);
+    // }
 }
 
 double BlinkMeasureF::maxNonBlinkT = 0.03;
