@@ -72,27 +72,29 @@ void captureFrames() {
         }
 
         long int listSize = frameList.size();
-        doLog(debug_t1_log, "size %ld\n", frameList.size());
+        doLog(debug_t1_log, "debug_t1_log: size %ld\n", frameList.size());
 
         if (listSize >= maxSize && disable_max_size != true) {
-            doLog(debug_t1_log, "T1 reached max size %d\n", maxSize);
+            doLog(debug_t1_log, "debug_t1_log: reached max size %d\n", maxSize);
             canAdd = false;
-        } else {
-            if (canAdd == true) {
-                double frameTimeMs;
-                if (isVideoCapture == true) {
-                    long int ft = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
-                    frameTimeMs = (double) ft;
-                } else {
-                    frameTimeMs = (double) stream1.get(CV_CAP_PROP_POS_MSEC);
-                }
-                FrameCarrier fc(frame.clone(), frameTimeMs, frameNum);
-                frameNum++;
-                frameList.push_back(fc);
-                doLog(debug_t1_log, "debug_t1_log: frameTime %lf diff %lf\n", frameTimeMs, frameTimeMs-prevFrameMs);
-                prevFrameMs = frameTimeMs;
-            }
         }
+        while (canAdd == false) {
+            doLog(debug_t1_log, "debug_t1_log: waiting...\n", frameList.size());
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        canAdd = true;
+        double frameTimeMs;
+        if (isVideoCapture == true) {
+            long int ft = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
+            frameTimeMs = (double) ft;
+        } else {
+            frameTimeMs = (double) stream1.get(CV_CAP_PROP_POS_MSEC);
+        }
+        FrameCarrier fc(frame.clone(), frameTimeMs, frameNum);
+        frameNum++;
+        frameList.push_back(fc);
+        doLog(debug_t1_log, "debug_t1_log: F %d T %lf diff %lf\n", frameNum, frameTimeMs, frameTimeMs-prevFrameMs);
+        prevFrameMs = frameTimeMs;
     }
 }
 
