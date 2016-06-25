@@ -61,9 +61,9 @@ void captureFrames() {
     double prevFrameMs = 0;
     while (grabbing) {
 #ifdef IS_TEST
-        while (canAdd != true && grabbing) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        }
+//        while (canAdd != true && grabbing) {
+//            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+//        }
 #endif
         if(!(stream1.read(frame))) {
             doLog(debug_t1_log, "debug_t1_log: No captured frame, exiting!\n");
@@ -78,7 +78,7 @@ void captureFrames() {
             doLog(debug_t1_log, "debug_t1_log: reached max size %d\n", maxSize);
             canAdd = false;
         }
-        while (canAdd == false) {
+        while (canAdd == false && grabbing) {
             doLog(debug_t1_log, "debug_t1_log: waiting...\n", frameList.size());
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }

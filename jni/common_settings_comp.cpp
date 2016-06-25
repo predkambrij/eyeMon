@@ -7,7 +7,7 @@ bool debug_show_img_face = true;
 bool debug_show_img_templ_eyes_cor = true;
 bool debug_show_img_templ_eyes_tmpl = true;
 bool debug_show_img_optfl_eyes = false;
-bool debug_t1_log = false;
+bool debug_t1_log = true;
 bool debug_t2_log = true;
 bool debug_t2_perf_method = true;
 bool debug_t2_perf_whole = true;
@@ -25,8 +25,8 @@ bool debug_blinks_d4 = true;
 
 //int method = METHOD_OPTFLOW;
 //int method = METHOD_TEMPLATE_BASED;
-//int method = METHOD_FARNEBACK;
-int method = METHOD_BLACKPIXELS;
+int method = METHOD_FARNEBACK;
+//int method = METHOD_BLACKPIXELS;
 double previousFrameTime = -1;
 
 // optical flow

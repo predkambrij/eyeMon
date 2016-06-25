@@ -5,4 +5,4 @@ cv::VideoCapture stream1(0);   //0 is the id of video device.0 if you have only 
 bool isVideoCapture = true;
 bool disable_max_size = false;
 
-int maxSize = 900;
+int maxSize = 90;
