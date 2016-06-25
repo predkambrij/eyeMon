@@ -78,6 +78,10 @@ void BlinkMeasureF::measureBlinksSD(double lavg, double ravg, double *lSD, doubl
     *mlsd2 = lavg-(2*(*lSD));
     *mrsd2 = ravg-(2*(*rSD));
 };
+int    BlinkMeasureF::lCurState = 0;
+double BlinkMeasureF::lLastVal = 0;
+int    BlinkMeasureF::lZeroCrossPosToNegF = 0;
+double BlinkMeasureF::lZeroCrossPosToNegT = 0;
 
 void BlinkMeasureF::measureBlinks() {
     if (blinkMeasuref.size() == 0) {
@@ -144,6 +148,8 @@ void BlinkMeasureF::measureBlinks() {
         doLog(debug_blinks_d1, "debug_blinks_d1: F %d T %.2lf logType n\n", bm.frameNum, bm.timestamp);
     }
 
+    BlinkMeasureF::stateMachine(bm.frameNum, bm.timestamp, bm.lDiffP.y, mlsd2, plsd2, bm.rDiffP.y, mrsd2, prsd2);
+
     // if (bm.lDiffP.y < lsd2) {
     //     doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf L %lf SD1 %lf SD2 %lf\n", bm.frameNum, bm.timestamp, bm.lDiffP.y, lsd1, lsd2);
     //     // check whether we can create a new blink (chunk)
@@ -158,6 +164,54 @@ void BlinkMeasureF::measureBlinks() {
     // } else {
     //     BlinkMeasureF::makeChunk(false, (double)bm.timestamp, false, bm.frameNum);
     // }
+}
+
+void BlinkMeasureF::stateMachine(unsigned int frameNum, double timestamp, double leftY, double leftLowSD, double leftHighSD, double rightY, double rightLowSD, double rightHighSD) {
+    if (BlinkMeasureF::lCurState == 0) {
+        if (BlinkMeasureF::lLastVal == 0) {
+            if (leftY == 0) {
+                return;
+            }
+            // first loop only
+            BlinkMeasureF::lLastVal = leftY;
+        }
+        if (BlinkMeasureF::lLastVal > 0 && leftY < 0) {
+            BlinkMeasureF::lZeroCrossPosToNegF = frameNum;
+            BlinkMeasureF::lZeroCrossPosToNegT = timestamp;
+        }
+        if (leftY < leftLowSD) {
+            BlinkMeasureF::lCurState = 1;
+        }
+    } else if (BlinkMeasureF::lCurState == 1) {
+        if ((timestamp-BlinkMeasureF::lZeroCrossPosToNegT) > 500) {
+            BlinkMeasureF::lCurState = 0;
+        } else {
+            if (leftY > leftHighSD) {
+                BlinkMeasureF::lCurState = 2;
+            }
+        }
+    } else if (BlinkMeasureF::lCurState == 2) {
+        if ((timestamp-BlinkMeasureF::lZeroCrossPosToNegT) > 500) {
+            BlinkMeasureF::lCurState = 0;
+        } else {
+            if (BlinkMeasureF::lLastVal > 0 && leftY < 0) {
+                BlinkF b(BlinkMeasureF::lZeroCrossPosToNegF, frameNum, BlinkMeasureF::lZeroCrossPosToNegT, timestamp, 0);
+                lBlinkChunksf.push_back(b);
+                doLog(debug_blinks_d4, "debug_blinks_d4: adding_lBlinkChunksf fs %d fe %d start %.2lf end %lf duration %lf\n",
+                    BlinkMeasureF::lZeroCrossPosToNegF, frameNum, BlinkMeasureF::lZeroCrossPosToNegT, timestamp, timestamp-BlinkMeasureF::lZeroCrossPosToNegT);
+
+                BlinkMeasureF::lZeroCrossPosToNegF = frameNum;
+                BlinkMeasureF::lZeroCrossPosToNegT = timestamp;
+                BlinkMeasureF::lCurState = 0;
+            }
+        }
+    }
+
+    // update last value
+    if (leftY != 0) {
+        BlinkMeasureF::lLastVal = leftY;
+    }
+    return;
 }
 
 double BlinkMeasureF::maxNonBlinkT = 0.03;
