@@ -33,7 +33,8 @@ CXXFLAGS += -g -Wall -Wextra -pthread -std=c++11
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-TESTS = $(TB)/sample1_unittest_run
+#TESTS = $(TB)/sample1_unittest_run
+TESTS = $(TB)/blinkmeasuref_unittest_run
 #TESTS = $(TB)/templatebased_unittest_run
 
 # All Google Test headers.  Usually you shouldn't change this
@@ -88,6 +89,9 @@ $(TB)/common_settings_test.o : $(USER_DIR)/common_settings_test.cpp $(USER_DIR)/
 $(TB)/blinkmeasure.o : $(USER_DIR)/blinkmeasure.cpp $(USER_DIR)/blinkmeasure.hpp $(USER_DIR)/common.hpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $$(pkg-config --cflags opencv) -I$(USER_DIR) -c $(USER_DIR)/blinkmeasure.cpp -o $@
 
+$(TB)/blinkmeasuref.o : $(USER_DIR)/blinkmeasuref.cpp $(USER_DIR)/blinkmeasuref.hpp $(USER_DIR)/common.hpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $$(pkg-config --cflags opencv) -I$(USER_DIR) -c $(USER_DIR)/blinkmeasuref.cpp -o $@
+
 $(TB)/templatebased.o : $(USER_DIR)/templatebased.cpp $(USER_DIR)/templatebased.hpp \
         $(USER_DIR)/common.hpp $(USER_DIR)/blinkmeasure.hpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $$(pkg-config --cflags opencv) -I$(USER_DIR) -c $(USER_DIR)/templatebased.cpp -o $@
@@ -99,4 +103,15 @@ $(TB)/templatebased_unittest.o : $(TEST_DIR)/templatebased_unittest.cpp $(USER_D
 $(TB)/templatebased_unittest : $(TB)/templatebased.o $(TB)/templatebased_unittest.o $(TB)/common.o $(TB)/common_settings_test.o $(TB)/blinkmeasure.o $(TB)/gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@ $$(pkg-config --cflags --libs opencv| tr ' ' '\n' |grep -v /usr/local/lib/libopencv_ts.a|tr '\n' ' ')
 
+$(TB)/templatebased_unittest_run : $(TB)/templatebased_unittest
+	$(TB)/templatebased_unittest
+
+$(TB)/blinkmeasuref_unittest.o : $(TEST_DIR)/blinkmeasuref_unittest.cpp $(USER_DIR)/blinkmeasuref.hpp $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $$(pkg-config --cflags opencv) -I$(USER_DIR) $(TEST_DIR)/blinkmeasuref_unittest.cpp -o $@
+
+$(TB)/blinkmeasuref_unittest : $(TB)/blinkmeasuref_unittest.o $(TB)/common.o $(TB)/common_settings_test.o $(TB)/blinkmeasuref.o $(TB)/gtest_main.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@ $$(pkg-config --cflags --libs opencv| tr ' ' '\n' |grep -v /usr/local/lib/libopencv_ts.a|tr '\n' ' ')
+
+$(TB)/blinkmeasuref_unittest_run : $(TB)/blinkmeasuref_unittest
+	$(TB)/blinkmeasuref_unittest
 
