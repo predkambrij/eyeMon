@@ -11,6 +11,10 @@ class BlinkMeasureF {
         static double lLastVal;
         static int lZeroCrossPosToNegF;
         static double lZeroCrossPosToNegT;
+        static int rCurState;
+        static double rLastVal;
+        static int rZeroCrossPosToNegF;
+        static double rZeroCrossPosToNegT;
 
         unsigned int frameNum;
         double timestamp;

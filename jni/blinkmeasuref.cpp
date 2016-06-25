@@ -82,6 +82,10 @@ int    BlinkMeasureF::lCurState = 0;
 double BlinkMeasureF::lLastVal = 0;
 int    BlinkMeasureF::lZeroCrossPosToNegF = 0;
 double BlinkMeasureF::lZeroCrossPosToNegT = 0;
+int    BlinkMeasureF::rCurState = 0;
+double BlinkMeasureF::rLastVal = 0;
+int    BlinkMeasureF::rZeroCrossPosToNegF = 0;
+double BlinkMeasureF::rZeroCrossPosToNegT = 0;
 
 void BlinkMeasureF::measureBlinks() {
     if (blinkMeasuref.size() == 0) {
@@ -206,10 +210,54 @@ void BlinkMeasureF::stateMachine(unsigned int frameNum, double timestamp, double
             }
         }
     }
-
     // update last value
     if (leftY != 0) {
         BlinkMeasureF::lLastVal = leftY;
+    }
+    //
+    if (BlinkMeasureF::rCurState == 0) {
+        if (BlinkMeasureF::rLastVal == 0) {
+            if (rightY == 0) {
+                return;
+            }
+            // first loop only
+            BlinkMeasureF::rLastVal = rightY;
+        }
+        if (BlinkMeasureF::rLastVal > 0 && rightY < 0) {
+            BlinkMeasureF::rZeroCrossPosToNegF = frameNum;
+            BlinkMeasureF::rZeroCrossPosToNegT = timestamp;
+        }
+        if (rightY < rightLowSD) {
+            BlinkMeasureF::rCurState = 1;
+        }
+    } else if (BlinkMeasureF::rCurState == 1) {
+        if ((timestamp-BlinkMeasureF::rZeroCrossPosToNegT) > 500) {
+            BlinkMeasureF::rCurState = 0;
+        } else {
+            if (rightY > rightHighSD) {
+                BlinkMeasureF::rCurState = 2;
+            }
+        }
+    } else if (BlinkMeasureF::rCurState == 2) {
+        if ((timestamp-BlinkMeasureF::rZeroCrossPosToNegT) > 500) {
+            BlinkMeasureF::rCurState = 0;
+        } else {
+            if (BlinkMeasureF::rLastVal > 0 && rightY < 0) {
+                BlinkF b(BlinkMeasureF::rZeroCrossPosToNegF, frameNum, BlinkMeasureF::rZeroCrossPosToNegT, timestamp, 0);
+                rBlinkChunksf.push_back(b);
+                doLog(debug_blinks_d4, "debug_blinks_d4: adding_rBlinkChunksf fs %d fe %d start %.2lf end %lf duration %lf\n",
+                    BlinkMeasureF::rZeroCrossPosToNegF, frameNum, BlinkMeasureF::rZeroCrossPosToNegT, timestamp, timestamp-BlinkMeasureF::rZeroCrossPosToNegT);
+
+                BlinkMeasureF::rZeroCrossPosToNegF = frameNum;
+                BlinkMeasureF::rZeroCrossPosToNegT = timestamp;
+                BlinkMeasureF::rCurState = 0;
+            }
+        }
+    }
+
+    // update last value
+    if (rightY != 0) {
+        BlinkMeasureF::rLastVal = rightY;
     }
     return;
 }
