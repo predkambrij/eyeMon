@@ -112,21 +112,31 @@ void doProcessing() {
         cv::namedWindow("debug4",CV_WINDOW_NORMAL); cv::moveWindow("debug4", 60, 30);
     }
     if (debug_show_img_main == true) {
-        cv::namedWindow("gray",CV_WINDOW_NORMAL); cv::moveWindow("gray", 400, 100); cv::resizeWindow("gray",1280, 960);
         cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 400, 30); cv::resizeWindow("main",1280, 960);
+    }
+    if (debug_show_img_gray == true) {
+        cv::namedWindow("gray",CV_WINDOW_NORMAL); cv::moveWindow("gray", 400, 100); cv::resizeWindow("gray",1280, 960);
     }
     if (debug_show_img_face == true) {
         cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 60, 30);
     }
-    if (debug_show_img_templ_eyes_tmpl == true) {
+    if (debug_show_img_farne_eyes == true && method == METHOD_FARNEBACK) {
+        cv::namedWindow("leftR",CV_WINDOW_NORMAL); cv::moveWindow("leftR", 1300, 800);
+        cv::namedWindow("rightR",CV_WINDOW_NORMAL); cv::moveWindow("rightR", 1600, 800);
+        cv::namedWindow("left",CV_WINDOW_NORMAL); cv::moveWindow("left", 1300, 500);
+        cv::namedWindow("right",CV_WINDOW_NORMAL); cv::moveWindow("right", 1600, 500);
         cv::namedWindow("leftSR",CV_WINDOW_NORMAL); cv::moveWindow("leftSR", 1300, 200);
         cv::namedWindow("rightSR",CV_WINDOW_NORMAL); cv::moveWindow("rightSR", 1600, 200);
     }
-    if (debug_show_img_templ_eyes_tmpl == true) {
+    if (debug_show_img_templ_eyes_tmpl == true && method == METHOD_TEMPLATE_BASED) {
+        cv::namedWindow("leftSR",CV_WINDOW_NORMAL); cv::moveWindow("leftSR", 1300, 200);
+        cv::namedWindow("rightSR",CV_WINDOW_NORMAL); cv::moveWindow("rightSR", 1600, 200);
+    }
+    if (debug_show_img_templ_eyes_tmpl == true && method == METHOD_TEMPLATE_BASED) {
         cv::namedWindow("left",CV_WINDOW_NORMAL); cv::moveWindow("left", 1300, 500);
         cv::namedWindow("right",CV_WINDOW_NORMAL); cv::moveWindow("right", 1600, 500);
     }
-    if (debug_show_img_templ_eyes_cor == true) {
+    if (debug_show_img_templ_eyes_cor == true && method == METHOD_TEMPLATE_BASED) {
         cv::namedWindow("leftR",CV_WINDOW_NORMAL); cv::moveWindow("leftR", 1300, 800);
         cv::namedWindow("rightR",CV_WINDOW_NORMAL); cv::moveWindow("rightR", 1600, 800);
     }
@@ -195,7 +205,7 @@ void doProcessing() {
             case METHOD_BLACK_PIXELS:
             break;
         }
-        difftime("T2 run", t2, debug_t2_perf_method);
+        difftime("debug_t2_perf_method:", t2, debug_t2_perf_method);
 
 
         if (debug_show_img_main == true) {
@@ -227,7 +237,7 @@ void doProcessing() {
                 }
             }
         }
-        difftime("T2 whole loop:", t1, debug_t2_perf_whole);
+        difftime("debug_t2_perf_whole:", t1, debug_t2_perf_whole);
         t1 = std::chrono::steady_clock::now();
     }
 }

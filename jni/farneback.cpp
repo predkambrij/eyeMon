@@ -349,13 +349,13 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
     cv::rectangle(out, cv::Rect(this->rightRg.x+rightB.x, this->rightRg.y+rightB.y, rightB.width, rightB.height), coolor, 1, 8, 0);
 
     if (frameNum > 1) {
-        imshowWrapper("leftR", this->pleft, debug_show_img_templ_eyes_tmpl);
-        imshowWrapper("rightR", this->pright, debug_show_img_templ_eyes_tmpl);
+        imshowWrapper("leftR", this->pleft, debug_show_img_farne_eyes);
+        imshowWrapper("rightR", this->pright, debug_show_img_farne_eyes);
     }
-    imshowWrapper("left", left, debug_show_img_templ_eyes_tmpl);
-    imshowWrapper("right", right, debug_show_img_templ_eyes_tmpl);
+    imshowWrapper("left", left, debug_show_img_farne_eyes);
+    imshowWrapper("right", right, debug_show_img_farne_eyes);
     imshowWrapper("main", out, debug_show_img_main);
-    imshowWrapper("gray", gray, debug_show_img_main);
+    imshowWrapper("gray", gray, debug_show_img_gray);
 
     this->pleft = left;
     this->pright = right;
