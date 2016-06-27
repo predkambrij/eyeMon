@@ -162,7 +162,9 @@ void doProcessing() {
             if (canAdd == false) {
                 canAdd = true;
             }
+            t2 = std::chrono::steady_clock::now();
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            difftime("debug_t2_perf: waiting for frames", t2, debug_t2_perf);
             continue;
         }
 
@@ -171,9 +173,7 @@ void doProcessing() {
         cv::Mat frame = fc.frame;
         // cv::flip(frame, frame, 1);
         double timestamp = fc.timestamp;
-        if (debug_t2_log == true) {
-            doLog(true, "T2 frame time: %lf\n", timestamp);
-        }
+        doLog(debug_t2_log, "debug_t2_log: frame time: %lf\n", timestamp);
 
         t2 = std::chrono::steady_clock::now();
         switch (method) {
@@ -186,7 +186,7 @@ void doProcessing() {
             case METHOD_BLACK_PIXELS:
             break;
         }
-        difftime("T2 getGray", t2, debug_t2_log);
+        difftime("debug_t2_perf: getGray", t2, debug_t2_perf);
 
         t2 = std::chrono::steady_clock::now();
         switch (method) {
@@ -208,9 +208,10 @@ void doProcessing() {
         difftime("debug_t2_perf_method:", t2, debug_t2_perf_method);
 
 
+        t2 = std::chrono::steady_clock::now();
         if (debug_show_img_main == true) {
             // flow control
-            int c = cv::waitKey(10);
+            int c = cv::waitKey(1);
             if((char)c == 'q') {
                 doLog(true, "exiting\n");
                 grabbing = false;
@@ -237,6 +238,7 @@ void doProcessing() {
                 }
             }
         }
+        difftime("debug_t2_perf: waitkey", t2, debug_t2_perf);
         difftime("debug_t2_perf_whole:", t1, debug_t2_perf_whole);
         t1 = std::chrono::steady_clock::now();
     }

@@ -13,6 +13,7 @@ bool debug_t1_log = true;
 bool debug_t2_log = true;
 bool debug_t2_perf_method = true;
 bool debug_t2_perf_whole = true;
+bool debug_t2_perf = true;
 bool debug_tmpl_log = true;
 bool debug_tmpl_perf1 = true;
 bool debug_tmpl_perf2 = true;

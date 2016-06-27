@@ -45,6 +45,7 @@ extern bool debug_t1_log;
 extern bool debug_t2_log;
 extern bool debug_t2_perf_method;
 extern bool debug_t2_perf_whole;
+extern bool debug_t2_perf;
 extern bool debug_tmpl_log;
 extern bool debug_tmpl_perf1;
 extern bool debug_tmpl_perf2;

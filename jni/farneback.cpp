@@ -127,8 +127,9 @@ std::array<bool, 2> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
     cv::Point newLEyeLoc, newREyeLoc;
     unsigned int curXEyesDistance, curYEyesDistance;
     const int maxDiff = 20;
+    int proceedDelay = 110;
     bool canProceedL = true, canProceedR = true;
-    if (((this->lLastTime+70) > timestamp || (this->rLastTime+70) > timestamp) && (this->lastRepupilTime+70) > timestamp) {
+    if (((this->lLastTime+proceedDelay) > timestamp || (this->rLastTime+proceedDelay) > timestamp) && (this->lastRepupilTime+proceedDelay) > timestamp) {
         std::array<bool, 2> ret;
         ret[0] = true;
         ret[1] = true;
@@ -292,17 +293,21 @@ void Farneback::method(cv::Mat gray, bool canProceedL, bool canProceedR, cv::Mat
         t1 = std::chrono::steady_clock::now();
         cv::calcOpticalFlowFarneback(this->pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
         difftime("debug_fb_perf2: method:calcOpticalFlowFarnebackL", t1, debug_fb_perf2);
+        t1 = std::chrono::steady_clock::now();
         int leftBw = this->leftRg.width*0.75, leftBh = this->leftRg.height*0.4;
         leftB = cv::Rect(this->lEye.x-(leftBw/2), this->lEye.y-(leftBh/2), leftBw, leftBh);
         this->dominantDirection(flowLeft, leftB, lTotalP, lBoundingP, lDiffP);
+        difftime("debug_fb_perf2: method:leftDominant", t1, debug_fb_perf2);
     }
     if (canProceedR == true) {
         t1 = std::chrono::steady_clock::now();
         cv::calcOpticalFlowFarneback(this->pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
         difftime("debug_fb_perf2: method:calcOpticalFlowFarnebackR", t1, debug_fb_perf2);
+        t1 = std::chrono::steady_clock::now();
         int rightBw = this->rightRg.width*0.75, rightBh = this->rightRg.height*0.4;
         rightB = cv::Rect(this->rEye.x-(rightBw/2), this->rEye.y-(rightBh/2), rightBw, rightBh);
         this->dominantDirection(flowRight, rightB, rTotalP, rBoundingP, rDiffP);
+        difftime("debug_fb_perf2: method:rightDominant", t1, debug_fb_perf2);
     }
 
     // blink measure
@@ -314,6 +319,7 @@ void Farneback::method(cv::Mat gray, bool canProceedL, bool canProceedR, cv::Mat
         rTotalP.x, rTotalP.y, rBoundingP.x, rBoundingP.y, rDiffP.x, rDiffP.y);
 }
 void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
+    std::chrono::time_point<std::chrono::steady_clock> t1;
     cv::Mat left, right, flowLeft, flowRight;
     cv::Rect leftB, rightB;
 
@@ -328,34 +334,52 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
         if ((frameNum % 2) == 0) {
             //return;
         }
+        t1 = std::chrono::steady_clock::now();
         std::array<bool, 2> repupilRes = this->rePupil(gray, timestamp, frameNum);
+        difftime("debug_fb_perf2: process:rePupil", t1, debug_fb_perf2);
+
+        t1 = std::chrono::steady_clock::now();
         this->method(gray, repupilRes[0], repupilRes[1], left, right, flowLeft, flowRight, leftB, rightB, timestamp, frameNum);
-        this->drawOptFlowMap(this->leftRg, flowLeft, out, 5, cv::Scalar(0, 255, 0), 0);
-        this->drawOptFlowMap(this->rightRg, flowRight, out, 5, cv::Scalar(0, 255, 0), 1);
+        difftime("debug_fb_perf2: process:method", t1, debug_fb_perf2);
+
+        if (debug_show_img_main == true) {
+            t1 = std::chrono::steady_clock::now();
+            this->drawOptFlowMap(this->leftRg, flowLeft, out, 5, cv::Scalar(0, 255, 0), 0);
+            this->drawOptFlowMap(this->rightRg, flowRight, out, 5, cv::Scalar(0, 255, 0), 1);
+            difftime("debug_fb_perf2: process:drawOptFlowMap", t1, debug_fb_perf2);
+        }
     }
 
     if ((frameNum % 30) == 0) {
 //        this->flagReinit = true;
     }
 
-    // draw pupil location
-    circle(out, cv::Point(this->leftRg.x+this->lEye.x, this->leftRg.y+this->lEye.y), 3, cv::Scalar(0,255,0), -1, 8);
-    circle(out, cv::Point(this->rightRg.x+this->rEye.x, this->rightRg.y+this->rEye.y), 3, cv::Scalar(0,255,0), -1, 8);
+    // drawing and showing Mat out
+    if (debug_show_img_main == true) {
+        t1 = std::chrono::steady_clock::now();
+        // draw pupil location
+        circle(out, cv::Point(this->leftRg.x+this->lEye.x, this->leftRg.y+this->lEye.y), 3, cv::Scalar(0,255,0), -1, 8);
+        circle(out, cv::Point(this->rightRg.x+this->rEye.x, this->rightRg.y+this->rEye.y), 3, cv::Scalar(0,255,0), -1, 8);
 
-    // draw eyes bounding boxes
-    cv::RNG rng(12345);
-    cv::Scalar coolor = cv::Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
-    cv::rectangle(out, cv::Rect(this->leftRg.x+leftB.x, this->leftRg.y+leftB.y, leftB.width, leftB.height), coolor, 1, 8, 0);
-    cv::rectangle(out, cv::Rect(this->rightRg.x+rightB.x, this->rightRg.y+rightB.y, rightB.width, rightB.height), coolor, 1, 8, 0);
-
-    if (frameNum > 1) {
-        imshowWrapper("leftR", this->pleft, debug_show_img_farne_eyes);
-        imshowWrapper("rightR", this->pright, debug_show_img_farne_eyes);
+        // draw eyes bounding boxes
+        cv::RNG rng(12345);
+        cv::Scalar coolor = cv::Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
+        cv::rectangle(out, cv::Rect(this->leftRg.x+leftB.x, this->leftRg.y+leftB.y, leftB.width, leftB.height), coolor, 1, 8, 0);
+        cv::rectangle(out, cv::Rect(this->rightRg.x+rightB.x, this->rightRg.y+rightB.y, rightB.width, rightB.height), coolor, 1, 8, 0);
+        difftime("debug_fb_perf2: process:drawing_out", t1, debug_fb_perf2);
     }
-    imshowWrapper("left", left, debug_show_img_farne_eyes);
-    imshowWrapper("right", right, debug_show_img_farne_eyes);
-    imshowWrapper("main", out, debug_show_img_main);
-    imshowWrapper("gray", gray, debug_show_img_gray);
+    if ((frameNum % 2) == 0) {
+        t1 = std::chrono::steady_clock::now();
+        if (frameNum > 1) {
+            imshowWrapper("leftR", this->pleft, debug_show_img_farne_eyes);
+            imshowWrapper("rightR", this->pright, debug_show_img_farne_eyes);
+        }
+        imshowWrapper("left", left, debug_show_img_farne_eyes);
+        imshowWrapper("right", right, debug_show_img_farne_eyes);
+        imshowWrapper("main", out, debug_show_img_main);
+        imshowWrapper("gray", gray, debug_show_img_gray);
+        difftime("debug_fb_perf2: process:showimgs", t1, debug_fb_perf2);
+    }
 
     this->pleft = left;
     this->pright = right;
