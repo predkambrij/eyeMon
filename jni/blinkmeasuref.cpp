@@ -97,7 +97,7 @@ void BlinkMeasureF::measureBlinks() {
     blinkMeasuref.pop_front();
 
     blinkMeasureShortf.push_back(bm);
-    int timeWindow = 5;
+    int timeWindow = 15;
     while (true) {
         BlinkMeasureF oldestBm = blinkMeasureShortf.front();
         if (oldestBm.timestamp > (bm.timestamp - (timeWindow*1000))) {

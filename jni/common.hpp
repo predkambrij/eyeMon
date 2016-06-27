@@ -48,6 +48,8 @@ extern bool debug_tmpl_perf1;
 extern bool debug_tmpl_perf2;
 extern bool debug_fb_log1;
 extern bool debug_fb_log_flow;
+extern bool debug_fb_perf1;
+extern bool debug_fb_perf2;
 extern bool debug_bp_log_pix;
 extern bool debug_notifications_log1;
 extern bool debug_blinks_d1;

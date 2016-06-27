@@ -16,6 +16,7 @@ class Farneback {
     public:
         cv::Point lEye, rEye;
         double lLastTime, rLastTime;
+        double lastRepupilTime = 0;
         unsigned int initEyesDistance;
         cv::Mat pleft, pright;
         cv::Rect leftRg, rightRg;
