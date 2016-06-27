@@ -41,11 +41,12 @@ void Blackpixels::eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect r
     leftPupil  = findEyeCenter(faceROI, leftEyeRegion);
     rightPupil = findEyeCenter(faceROI, rightEyeRegion);
 }
-bool Blackpixels::preprocess(cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum) {
+bool Blackpixels::preprocess(cv::Mat& left, cv::Mat& right, __attribute__((unused)) double timestamp, __attribute__((unused)) unsigned int frameNum) {
     GaussianBlur(left, left, cv::Size(3,3), 0);
     GaussianBlur(left, left, cv::Size(3,3), 0);
     cv::equalizeHist(left, left);
     cv::equalizeHist(right, right);
+    return true;
 }
 bool Blackpixels::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum) {
     cv::Rect face;

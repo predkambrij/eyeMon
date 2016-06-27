@@ -26,7 +26,7 @@
 #include <farneback.hpp>
 #include <blinkmeasuref.hpp>
 
-void Farneback::drawOptFlowMap (cv::Rect eyeE, const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, int eye) {
+void Farneback::drawOptFlowMap (cv::Rect eyeE, const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, __attribute__((unused)) int eye) {
     cv::circle(cflowmap, cv::Point2f((float)15, (float)15), 10, cv::Scalar(0,255,0), -1, 8);
     int xo, yo;
     xo = eyeE.x;
@@ -66,11 +66,12 @@ void Farneback::eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rig
     leftPupil  = findEyeCenter(faceROI, leftEyeRegion);
     rightPupil = findEyeCenter(faceROI, rightEyeRegion);
 }
-bool Farneback::preprocess(cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum) {
+bool Farneback::preprocess(cv::Mat& left, cv::Mat& right, __attribute__((unused)) double timestamp, __attribute__((unused)) unsigned int frameNum) {
     GaussianBlur(left, left, cv::Size(3,3), 0);
     GaussianBlur(left, left, cv::Size(3,3), 0);
     cv::equalizeHist(left, left);
     cv::equalizeHist(right, right);
+    return true;
 }
 bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum) {
     cv::Rect face;

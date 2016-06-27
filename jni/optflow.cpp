@@ -26,7 +26,7 @@
 #include <common.hpp>
 #include <optflow.hpp>
 
-void drawOptFlowMap (cv::Rect face, cv::Rect eyeE, const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, int eye) {
+void drawOptFlowMap (cv::Rect face, cv::Rect eyeE, const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, __attribute__((unused)) int eye) {
     //cv::circle(cflowmap, cv::Point2f((float)10, (float)10), 3, cv::Scalar(0,255,0), -1, 8);
     cv::circle(cflowmap, cv::Point2f((float)15, (float)15), 10, cv::Scalar(0,255,0), -1, 8);
     int xo, yo;
@@ -56,7 +56,7 @@ void drawOptFlowMap (cv::Rect face, cv::Rect eyeE, const cv::Mat flow, cv::Mat c
     printf("\n\n\n");
 }
 
-void getLeftRightEyeMat(cv::Mat gray, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Mat *left, cv::Mat *right) {
+void getLeftRightEyeMat(cv::Mat gray, __attribute__((unused)) cv::Rect leftEyeRegion, __attribute__((unused)) cv::Rect rightEyeRegion, cv::Mat *left, cv::Mat *right) {
     // printf("eye_region_width %d, eye_region_height %d\n", eye_region_width, eye_region_height);
     // printf("leftEyeRegion %d, leftEyeRegion %d\n", leftEyeRegion.x, leftEyeRegion.y);
     // printf("rightEyeRegion %d, rightEyeRegion %d\n", rightEyeRegion.x, rightEyeRegion.y);
@@ -83,11 +83,12 @@ int faceDetect(cv::Mat gray, cv::Rect *face) {
 //     (*rightEyeRegion) = cv::Rect(face.width - eye_region_width - face.width*(kEyePercentSide/100.0), eye_region_top, eye_region_width, eye_region_height);
 // }
 void eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point &leftPupil, cv::Point &rightPupil) {
-    //leftPupil  = findEyeCenter(faceROI, leftEyeRegion);
+    leftPupil  = findEyeCenter(faceROI, leftEyeRegion);
     rightPupil = findEyeCenter(faceROI, rightEyeRegion);
 }
 
-void showResult(cv::Mat cflow, cv::Rect face, cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil) {
+void showResult(cv::Mat cflow) {
+    // , cv::Rect face, cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point leftPupil, cv::Point rightPupil
     // // change eye centers to face coordinates
     // rightPupil.x += rightEyeRegion.x; rightPupil.y += rightEyeRegion.y;
     // leftPupil.x += leftEyeRegion.x; leftPupil.y += leftEyeRegion.y;
@@ -123,7 +124,7 @@ void showResult(cv::Mat cflow, cv::Rect face, cv::Mat faceROI, cv::Rect leftEyeR
     }
 }
 
-void OptFlow::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
+void OptFlow::process(cv::Mat gray, cv::Mat out, __attribute__((unused)) double timestamp, unsigned int frameNum) {
     clock_t start;
     cv::Point leftPupil, rightPupil;
 //    cv::Rect face, leftEyeRegion, rightEyeRegion;
@@ -449,7 +450,7 @@ cv::RNG rng(12345);
     pleft = left.clone(); pright = right.clone();
     pgray = gray.clone();
     start = clock();
-    showResult(out, face, faceROI, leftEyeRegion, rightEyeRegion, leftPupil, rightPupil);
+    showResult(out);//, face, faceROI, leftEyeRegion, rightEyeRegion, leftPupil, rightPupil
     diffclock("- showResult", start);
 
 }

@@ -70,16 +70,17 @@ void difftime(char const *title, std::chrono::time_point<std::chrono::steady_clo
         return;
     }
     std::chrono::time_point<std::chrono::steady_clock> t2 = std::chrono::steady_clock::now();
-    std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-
-    doLogClock1("PERF %s: %ld\n", title, duration.count());
+    std::chrono::microseconds duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
+    long int cnt = duration.count();
+    double mils = cnt/((double)1000);
+    doLogClock1("PERF %s: %.3lf\n", title, mils);
 }
 
 void doLogClock(const char* format, const char* title, double diffms) {
     doLog(true, format, title, diffms);// TODO newline?
 }
 
-void doLogClock1(const char* format, const char* title, long int diffms) {
+void doLogClock1(const char* format, const char* title, double diffms) {
     doLog(true, format, title, diffms);// TODO newline?
 }
 
