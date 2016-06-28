@@ -96,6 +96,11 @@ void captureFrames() {
             doLog(debug_t1_log, "debug_t1_log: F %d T %lf diff %lf\n", frameNum, frameTimeMs, frameTimeMs-prevFrameMs);
             prevFrameMs = frameTimeMs;
         }
+        if (frameNum == endingFrameNum && endingFrameNum != 0) {
+            doLog(debug_t1_log, "debug_t1_log: F %d T %lf  finished by endingFrameNum\n", frameNum, frameTimeMs);
+            finished = true;
+            return;
+        }
         frameNum++;
     }
 }
