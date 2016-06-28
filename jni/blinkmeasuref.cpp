@@ -89,7 +89,7 @@ double BlinkMeasureF::rZeroCrossPosToNegT = 0;
 
 void BlinkMeasureF::measureBlinks() {
     if (blinkMeasuref.size() == 0) {
-        doLog(debug_blinks_d1, "debug_blinks_d1: blinkMeasureSize is zero\n");
+        doLog(debug_blinks_d2, "debug_blinks_d2: blinkMeasureSize is zero\n");
         return;
     }
 
@@ -117,19 +117,19 @@ void BlinkMeasureF::measureBlinks() {
         double tsDiff = last.timestamp-first.timestamp;
         double fps = shortBmSize/(tsDiff/1000);
         maxFramesShortList = fps*timeWindow*0.80;
-        doLog(debug_blinks_d1, "debug_blinks_d1: F %d fps of the first 30 frames %lf current maxFramesShortList %d\n",
+        doLog(debug_blinks_d2, "debug_blinks_d2: F %d fps of the first 30 frames %lf current maxFramesShortList %d\n",
             bm.frameNum, fps, maxFramesShortList);
     } else {
         if (shortBmSize > maxFramesShortList) {
             maxFramesShortList = shortBmSize;
-            doLog(debug_blinks_d1, "debug_blinks_d1: updated maxFramesShortList %d\n", maxFramesShortList);
+            doLog(debug_blinks_d2, "debug_blinks_d2: updated maxFramesShortList %d\n", maxFramesShortList);
         }
     }
     if (shortBmSize < (maxFramesShortList/2)) {
-        doLog(debug_blinks_d1, "debug_blinks_d1: F %d shortBmSize is less than max/2 %d T %lf\n", bm.frameNum, shortBmSize, bm.timestamp);
+        doLog(debug_blinks_d2, "debug_blinks_d2: F %d shortBmSize is less than max/2 %d T %lf\n", bm.frameNum, shortBmSize, bm.timestamp);
         return;
     } else {
-        doLog(debug_blinks_d1, "debug_blinks_d1: F %d shortBmSize is big enough %d\n", bm.frameNum, shortBmSize);
+        doLog(debug_blinks_d2, "debug_blinks_d2: F %d shortBmSize is big enough %d\n", bm.frameNum, shortBmSize);
     }
 
     double lavg = 0;

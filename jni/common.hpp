@@ -55,10 +55,10 @@ extern bool debug_fb_perf1;
 extern bool debug_fb_perf2;
 extern bool debug_bp_log_pix;
 extern bool debug_notifications_log1;
-extern bool debug_blinks_d1;
-extern bool debug_blinks_d2;
-extern bool debug_blinks_d3;
-extern bool debug_blinks_d4;
+extern bool debug_blinks_d1; // log last, avg, SD
+extern bool debug_blinks_d2; // shortBmSize
+extern bool debug_blinks_d3; // progress of blink detection state machine
+extern bool debug_blinks_d4; // adding chuncks
 // optical flow
 extern int flg;
 
