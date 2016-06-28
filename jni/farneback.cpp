@@ -88,7 +88,12 @@ bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double times
     // farneback region definition derived from face size and location
     int rowsO = face.height/4.3;
     int colsO = face.width/5.5;
-    int rows2 = face.height/4.3;
+    int rows2;
+    if (this->onlyLower == true) {
+        rows2 = face.height/4.0;
+    } else {
+        rows2 = face.height/4.3;
+    }
     int cols2 = face.width/3.7;
 
     this->leftRg = cv::Rect(colsO, rowsO, cols2, rows2);
@@ -177,12 +182,20 @@ std::array<bool, 2> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
     } else {
         doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf diff L %lf R %lf\n", frameNum, timestamp, timestamp-this->lLastTime, timestamp-this->rLastTime);
     }
-
+    double pupilIdealY;
+    double pupilLowerLimit;
+    if (this->onlyLower == true) {
+        pupilIdealY = 2.5;
+        pupilLowerLimit = 0.6;
+    } else {
+        pupilIdealY = 2;
+        pupilLowerLimit = 0.7;
+    }
     if (canUpdateL == true
         && (newLEyeLoc.x < (this->leftRg.width*0.3) || newLEyeLoc.x > (this->leftRg.width*0.7)
-            || newLEyeLoc.y < (this->leftRg.height*0.3) || newLEyeLoc.y > (this->leftRg.height*0.7))) {
+            || newLEyeLoc.y < (this->leftRg.height*0.3) || newLEyeLoc.y > (this->leftRg.height*pupilLowerLimit))) {
         // reposition leftRg so that lEye will be in the middle
-        unsigned int idealX = this->leftRg.width/2, idealY = this->leftRg.height/2;
+        unsigned int idealX = this->leftRg.width/2, idealY = this->leftRg.height/pupilIdealY;
         int moveX = newLEyeLoc.x-idealX, moveY = newLEyeLoc.y-idealY;
         if ((this->leftRg.x + moveX) < 0 || (this->leftRg.y + moveY) < 0
             || (this->leftRg.x + moveX + this->leftRg.width) > gray.cols
@@ -201,9 +214,9 @@ std::array<bool, 2> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
 
     if (canUpdateR == true
         && (newREyeLoc.x < (this->rightRg.width*0.3) || newREyeLoc.x > (this->rightRg.width*0.7)
-            || newREyeLoc.y < (this->rightRg.height*0.3) || newREyeLoc.y > (this->rightRg.height*0.7))) {
+            || newREyeLoc.y < (this->rightRg.height*0.3) || newREyeLoc.y > (this->rightRg.height*pupilLowerLimit))) {
         // reposition rightRg so that rEye will be in the middle
-        unsigned int idealX = this->rightRg.width/2, idealY = this->rightRg.height/2;
+        unsigned int idealX = this->rightRg.width/2, idealY = this->rightRg.height/pupilIdealY;
         int moveX = newREyeLoc.x-idealX, moveY = newREyeLoc.y-idealY;
         if ((this->rightRg.x + moveX) < 0 || (this->rightRg.y + moveY) < 0
             || (this->rightRg.x + moveX + this->rightRg.width) > gray.cols
@@ -262,6 +275,8 @@ std::array<bool, 2> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
 
 }
 void Farneback::dominantDirection(cv::Mat flow, cv::Rect bounding, cv::Point2d& totalP, cv::Point2d& boundingP, cv::Point2d& diffP) {
+    cv::Point2d upper=cv::Point2d(0, 0), lower=cv::Point2d(0, 0);
+    int upperPointsNum = 0, lowerPointsNum = 0;
     double totalX=0, totalY=0, btotalX=0, btotalY=0;
     for(int y = 0; y < flow.rows; y += 1) {
         for(int x = 0; x < flow.cols; x += 1) {
@@ -273,6 +288,15 @@ void Farneback::dominantDirection(cv::Mat flow, cv::Rect bounding, cv::Point2d& 
             } else {
                 totalX += flowVector.x;
                 totalY += flowVector.y;
+                if (y < bounding.y) {
+                    upper.x += flowVector.x;
+                    upper.y += flowVector.y;
+                    upperPointsNum++;
+                } else {
+                    lower.x += flowVector.x;
+                    lower.y += flowVector.y;
+                    lowerPointsNum++;
+                }
             }
         }
     }
@@ -280,9 +304,21 @@ void Farneback::dominantDirection(cv::Mat flow, cv::Rect bounding, cv::Point2d& 
     totalY /= (flow.cols*flow.rows-bounding.width*bounding.height);
     btotalX /= (bounding.width*bounding.height);
     btotalY /= (bounding.width*bounding.height);
+    if (lowerPointsNum > 0) {
+        lower.x /= lowerPointsNum;
+        lower.y /= lowerPointsNum;
+    }
+    if (upperPointsNum > 0) {
+        upper.x /= upperPointsNum;
+        upper.y /= upperPointsNum;
+    }
     totalP = cv::Point2d(totalX, totalY);
     boundingP = cv::Point2d(btotalX, btotalY);
-    diffP = cv::Point2d(totalX-btotalX, totalY-btotalY);
+    if (this->onlyLower == true) {
+        diffP = cv::Point2d(lower.x-btotalX, lower.y-btotalY);
+    } else {
+        diffP = cv::Point2d(totalX-btotalX, totalY-btotalY);
+    }
 }
 void Farneback::method(cv::Mat gray, bool canProceedL, bool canProceedR, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
     std::chrono::time_point<std::chrono::steady_clock> t1;

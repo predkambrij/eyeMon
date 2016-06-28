@@ -14,6 +14,7 @@
 
 class Farneback {
     public:
+        bool onlyLower = false;
         cv::Point lEye, rEye;
         double lLastTime, rLastTime;
         double lastRepupilTime = 0;
