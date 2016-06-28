@@ -6,3 +6,4 @@ bool isVideoCapture = true;
 bool disable_max_size = false;
 
 int maxSize = 300;
+unsigned int startingFrameNum = 0;

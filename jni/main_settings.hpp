@@ -8,3 +8,4 @@ extern bool isVideoCapture;
 extern bool disable_max_size;
 
 extern int maxSize;
+extern unsigned int startingFrameNum;

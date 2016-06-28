@@ -90,11 +90,13 @@ void captureFrames() {
         } else {
             frameTimeMs = (double) stream1.get(CV_CAP_PROP_POS_MSEC);
         }
-        FrameCarrier fc(frame.clone(), frameTimeMs, frameNum);
+        if (frameNum >= startingFrameNum) {
+            FrameCarrier fc(frame.clone(), frameTimeMs, frameNum);
+            frameList.push_back(fc);
+            doLog(debug_t1_log, "debug_t1_log: F %d T %lf diff %lf\n", frameNum, frameTimeMs, frameTimeMs-prevFrameMs);
+            prevFrameMs = frameTimeMs;
+        }
         frameNum++;
-        frameList.push_back(fc);
-        doLog(debug_t1_log, "debug_t1_log: F %d T %lf diff %lf\n", frameNum, frameTimeMs, frameTimeMs-prevFrameMs);
-        prevFrameMs = frameTimeMs;
     }
 }
 
