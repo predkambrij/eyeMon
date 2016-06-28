@@ -35,7 +35,7 @@ class BlinkMeasureF {
         static double maxNonBlinkT;
 
         BlinkMeasureF(unsigned int frameNum, double timestamp, cv::Point2d lDiffP, cv::Point2d rDiffP, bool canProceedL, bool canProceedR);
-        static void measureBlinks();
+        static void measureBlinks(BlinkMeasureF bm);
         static void stateMachine(unsigned int frameNum, double timestamp, double leftY, double leftLowSD, double leftHighSD, double rightY, double rightLowSD, double rightHighSD);
         static void measureBlinksAVG(double *lavg, double *ravg);
         static void measureBlinksSD(double lavg, double ravg, double *lSD, double *rSD, double *plsd1, double *prsd1, double *plsd2, double *prsd2, double *mlsd1, double *mrsd1, double *mlsd2, double *mrsd2);

@@ -87,15 +87,7 @@ double BlinkMeasureF::rLastVal = 0;
 int    BlinkMeasureF::rZeroCrossPosToNegF = 0;
 double BlinkMeasureF::rZeroCrossPosToNegT = 0;
 
-void BlinkMeasureF::measureBlinks() {
-    if (blinkMeasuref.size() == 0) {
-        doLog(debug_blinks_d2, "debug_blinks_d2: blinkMeasureSize is zero\n");
-        return;
-    }
-
-    BlinkMeasureF bm = blinkMeasuref.front();
-    blinkMeasuref.pop_front();
-
+void BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
     blinkMeasureShortf.push_back(bm);
     int timeWindow = 15;
     while (true) {
@@ -107,9 +99,10 @@ void BlinkMeasureF::measureBlinks() {
         }
     }
 
+    int firstMeasureQueueSize = 30;
     int shortBmSize = blinkMeasureShortf.size();
     if (maxFramesShortList == 0) {
-        if (shortBmSize < 30) {
+        if (shortBmSize < firstMeasureQueueSize) {
             return;
         }
         BlinkMeasureF first = blinkMeasureShortf.front();
@@ -117,8 +110,8 @@ void BlinkMeasureF::measureBlinks() {
         double tsDiff = last.timestamp-first.timestamp;
         double fps = shortBmSize/(tsDiff/1000);
         maxFramesShortList = fps*timeWindow*0.80;
-        doLog(debug_blinks_d2, "debug_blinks_d2: F %d fps of the first 30 frames %lf current maxFramesShortList %d\n",
-            bm.frameNum, fps, maxFramesShortList);
+        doLog(debug_blinks_d2, "debug_blinks_d2: F %d fps of the first %d frames %lf current maxFramesShortList %d\n",
+            bm.frameNum, firstMeasureQueueSize, fps, maxFramesShortList);
     } else {
         if (shortBmSize > maxFramesShortList) {
             maxFramesShortList = shortBmSize;

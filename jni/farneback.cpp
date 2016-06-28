@@ -118,11 +118,13 @@ bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double times
     this->initEyesDistance = (this->rightRg.x+this->rEye.x)-(this->leftRg.x+this->lEye.x);
     this->lLastTime = timestamp;
     this->rLastTime = timestamp;
+    this->canCallMeasureBlinks = true;
+    blinkMeasuref.clear();
 
     cv::Mat faceROI = gray(face);
     imshowWrapper("face", faceROI, debug_show_img_face);
 
-    doLog(debug_fb_log1, "debug_fb_log1: F %u T %.3lf lEye %d %d rEye %d %d lLastTime %lf rLastTime %lf\n",
+    doLog(debug_fb_log_reinit, "debug_fb_log_reinit: F %u T %.3lf lEye %d %d rEye %d %d lLastTime %lf rLastTime %lf\n",
         frameNum, timestamp, this->lEye.x, this->lEye.y, this->rEye.x, this->rEye.y, this->lLastTime, this->rLastTime);
 
     return true;
@@ -150,19 +152,23 @@ std::array<bool, 2> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
     this->lastRepupilTime = timestamp;
     t1 = std::chrono::steady_clock::now();
     this->eyeCenters(gray, this->leftRg, this->rightRg, newLEyeLoc, newREyeLoc);
-    this->lastRepupilDiffLeft = cv::Point2d(0,0);
-    this->lastRepupilDiffRight = cv::Point2d(0,0);
     difftime("debug_fb_perf2: rePupil:eyeCenters", t1, debug_fb_perf2);
     doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf L diff x %d y %d\n", frameNum, timestamp, newLEyeLoc.x-this->lEye.x, newLEyeLoc.y-this->lEye.y);
+    doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf R diff x %d y %d\n", frameNum, timestamp, newREyeLoc.x-this->rEye.x, newREyeLoc.y-this->rEye.y);
+    this->lastRepupilDiffLeft = cv::Point2d(0,0);
+    this->lastRepupilDiffRight = cv::Point2d(0,0);
     if (abs(newLEyeLoc.x-this->lEye.x) < maxDiff && abs(newLEyeLoc.y-this->lEye.y) < maxDiff) {
             this->lLastTime = timestamp;
             canUpdateL = true;
     }
-    doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf R diff x %d y %d\n", frameNum, timestamp, newREyeLoc.x-this->rEye.x, newREyeLoc.y-this->rEye.y);
     if (abs(newREyeLoc.x-this->rEye.x) < maxDiff && abs(newREyeLoc.y-this->rEye.y) < maxDiff) {
             this->rLastTime = timestamp;
             canUpdateR = true;
     }
+
+    this->canCallMeasureBlinks = (canUpdateL == true && canUpdateR == true);
+
+    // current eye's positions are geometrically unlikely to be correct, so request reinit
     if (canUpdateL == true && canUpdateR == true) {
         curXEyesDistance = (this->rightRg.x+newREyeLoc.x)-(this->leftRg.x+newLEyeLoc.x);
         curYEyesDistance = abs((this->rightRg.y+newREyeLoc.y)-(this->leftRg.y+newLEyeLoc.y));
@@ -173,12 +179,14 @@ std::array<bool, 2> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
                 frameNum, timestamp, this->initEyesDistance, curXEyesDistance, curYEyesDistance);
             this->flagReinit = true;
         }
+    } else {
+        doLog(debug_fb_log_repupil, "debug_fb_log_repupil: F %u T %lf L %d R %d\n", frameNum, timestamp, canUpdateL?1:0, canUpdateR?1:0);
     }
-    if ((this->lLastTime+500) < timestamp || (this->rLastTime+500) < timestamp) {
+    // if we lost eyes for more than half a second, request reinit
+    if ((this->lLastTime+400) < timestamp || (this->rLastTime+400) < timestamp) {
         // we lost eyes, request reinit
         this->flagReinit = true;
-        doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf reinit: eyes were displaced lLastTime %lf rLastTime %lf\n",
-            frameNum, timestamp, this->lLastTime, this->rLastTime);
+        doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf reinit: eyes were displaced lLastTime %lf rLastTime %lf\n", frameNum, timestamp, this->lLastTime, this->rLastTime);
     } else {
         doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf diff L %lf R %lf\n", frameNum, timestamp, timestamp-this->lLastTime, timestamp-this->rLastTime);
     }
@@ -191,6 +199,7 @@ std::array<bool, 2> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
         pupilIdealY = 2;
         pupilLowerLimit = 0.7;
     }
+    // reposition pupil location and optionaly farneback grid
     if (canUpdateL == true
         && (newLEyeLoc.x < (this->leftRg.width*0.3) || newLEyeLoc.x > (this->leftRg.width*0.7)
             || newLEyeLoc.y < (this->leftRg.height*0.3) || newLEyeLoc.y > (this->leftRg.height*pupilLowerLimit))) {
@@ -211,7 +220,6 @@ std::array<bool, 2> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
             canProceedL = false;
         }
     }
-
     if (canUpdateR == true
         && (newREyeLoc.x < (this->rightRg.width*0.3) || newREyeLoc.x > (this->rightRg.width*0.7)
             || newREyeLoc.y < (this->rightRg.height*0.3) || newREyeLoc.y > (this->rightRg.height*pupilLowerLimit))) {
@@ -456,7 +464,12 @@ int Farneback::setJni(JNIEnv* jenv) {
 #endif
 
 void Farneback::measureBlinks() {
-    BlinkMeasureF::measureBlinks();
+    if (this->canCallMeasureBlinks) {
+        while (blinkMeasuref.size() > 0) {
+            BlinkMeasureF::measureBlinks(blinkMeasuref.front());
+            blinkMeasuref.pop_front();
+        }
+    }
 };
 
 int Farneback::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
