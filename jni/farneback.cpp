@@ -108,6 +108,8 @@ bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double times
     this->eyeCenters(gray, this->leftRg, this->rightRg, this->lEye, this->rEye);
     difftime("debug_fb_perf2: reinit:eyeCenters", t1, debug_fb_perf2);
     this->lastRepupilTime = timestamp;
+    this->lastRepupilDiffLeft = cv::Point2d(0,0);
+    this->lastRepupilDiffRight = cv::Point2d(0,0);
     this->initEyesDistance = (this->rightRg.x+this->rEye.x)-(this->leftRg.x+this->lEye.x);
     this->lLastTime = timestamp;
     this->rLastTime = timestamp;
@@ -127,17 +129,24 @@ std::array<bool, 2> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
     cv::Point newLEyeLoc, newREyeLoc;
     unsigned int curXEyesDistance, curYEyesDistance;
     const int maxDiff = 20;
-    int proceedDelay = 110;
+    int proceedDelay = 250;
     bool canProceedL = true, canProceedR = true;
-    if (((this->lLastTime+proceedDelay) > timestamp || (this->rLastTime+proceedDelay) > timestamp) && (this->lastRepupilTime+proceedDelay) > timestamp) {
+    if (((this->lLastTime+proceedDelay) > timestamp || (this->rLastTime+proceedDelay) > timestamp) && (this->lastRepupilTime+proceedDelay) > timestamp
+        && abs(this->lastRepupilDiffLeft.x) < 2 && abs(this->lastRepupilDiffLeft.y) < 2
+        && abs(this->lastRepupilDiffRight.x) < 2 && abs(this->lastRepupilDiffRight.y) < 2
+        ) {
+        //printf("%5.2lf\t%5.2lf\t%5.2lf\t%5.2lf\n", this->lastRepupilDiffLeft.x, this->lastRepupilDiffLeft.y, this->lastRepupilDiffRight.x, this->lastRepupilDiffRight.y);
         std::array<bool, 2> ret;
         ret[0] = true;
         ret[1] = true;
         return ret;
     }
+    //printf("time since last repupil %.2lf\n", timestamp-this->lastRepupilTime);
     this->lastRepupilTime = timestamp;
     t1 = std::chrono::steady_clock::now();
     this->eyeCenters(gray, this->leftRg, this->rightRg, newLEyeLoc, newREyeLoc);
+    this->lastRepupilDiffLeft = cv::Point2d(0,0);
+    this->lastRepupilDiffRight = cv::Point2d(0,0);
     difftime("debug_fb_perf2: rePupil:eyeCenters", t1, debug_fb_perf2);
     doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf L diff x %d y %d\n", frameNum, timestamp, newLEyeLoc.x-this->lEye.x, newLEyeLoc.y-this->lEye.y);
     if (abs(newLEyeLoc.x-this->lEye.x) < maxDiff && abs(newLEyeLoc.y-this->lEye.y) < maxDiff) {
@@ -298,6 +307,8 @@ void Farneback::method(cv::Mat gray, bool canProceedL, bool canProceedR, cv::Mat
         leftB = cv::Rect(this->lEye.x-(leftBw/2), this->lEye.y-(leftBh/2), leftBw, leftBh);
         this->dominantDirection(flowLeft, leftB, lTotalP, lBoundingP, lDiffP);
         difftime("debug_fb_perf2: method:leftDominant", t1, debug_fb_perf2);
+        this->lastRepupilDiffLeft.x +=  lTotalP.x;
+        this->lastRepupilDiffLeft.y +=  lTotalP.y;
     }
     if (canProceedR == true) {
         t1 = std::chrono::steady_clock::now();
@@ -308,6 +319,8 @@ void Farneback::method(cv::Mat gray, bool canProceedL, bool canProceedR, cv::Mat
         rightB = cv::Rect(this->rEye.x-(rightBw/2), this->rEye.y-(rightBh/2), rightBw, rightBh);
         this->dominantDirection(flowRight, rightB, rTotalP, rBoundingP, rDiffP);
         difftime("debug_fb_perf2: method:rightDominant", t1, debug_fb_perf2);
+        this->lastRepupilDiffRight.x +=  rTotalP.x;
+        this->lastRepupilDiffRight.y +=  rTotalP.y;
     }
 
     // blink measure
