@@ -4,6 +4,10 @@
 #include <opencv2/objdetect/objdetect.hpp>
 #include "opencv2/imgproc/imgproc.hpp"
 
+#ifdef IS_PHONE
+#include <jni.h>
+#endif
+
 class TemplateBased {
     public:
         cv::CascadeClassifier face_cascade;

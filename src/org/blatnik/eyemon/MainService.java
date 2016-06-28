@@ -32,6 +32,7 @@ public class MainService extends Service {
     private static final String TAG = "MainService";
     private CameraPreview mOpenCvCameraView;
     private OptFlow optFlow;
+    private Farneback farneback;
     private TemplateBased templateBased;
     private TemplateBasedJNI templateBasedJni;
 //    public static List<Mat> frameList = Collections.synchronizedList(new LinkedList<Mat>());
@@ -79,6 +80,7 @@ public class MainService extends Service {
 
                         // native library wrapper
                         MainService.this.optFlow = new OptFlow(mCascadeFile.getAbsolutePath());
+                        MainService.this.farneback = new Farneback(mCascadeFile.getAbsolutePath());
                         MainService.this.templateBased = new TemplateBased();
                         MainService.this.templateBased.onCameraViewStarted();
                         MainService.this.templateBasedJni = new TemplateBasedJNI(mCascadeFile.getAbsolutePath());
@@ -162,7 +164,8 @@ public class MainService extends Service {
         static final int METHOD_OPTFLOW      = 0;
         static final int METHOD_TEMPLATE     = 1;
         static final int METHOD_TEMPLATE_JNI = 2;
-        int method = 0;
+        static final int METHOD_FARNEBACK = 3;
+        int method = METHOD_FARNEBACK;
 
         long frameCount      = 0;
         long timeStart       = 0;
@@ -184,6 +187,8 @@ public class MainService extends Service {
             case METHOD_TEMPLATE:
                 break;
             case METHOD_TEMPLATE_JNI:
+                break;
+            case METHOD_FARNEBACK:
                 break;
             }
         }
@@ -226,6 +231,9 @@ public class MainService extends Service {
                 break;
             case METHOD_TEMPLATE_JNI:
                 templateBasedJni.detect(gray, gray);
+                break;
+            case METHOD_FARNEBACK:
+                farneback.detect(gray, gray);
                 break;
             }
             this.methodCallTime += (System.nanoTime()-methodCall);
@@ -280,6 +288,9 @@ public class MainService extends Service {
                 break;
             case METHOD_TEMPLATE_JNI:
                 templateBasedJni.release();
+                break;
+            case METHOD_FARNEBACK:
+                farneback.release();
                 break;
             }
         }

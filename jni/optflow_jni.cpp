@@ -14,9 +14,6 @@
 
 #include <optflow.hpp>
 
-using namespace cv;
-using namespace std;
-
 extern "C" {
 
 long int grabberFrameNumO = 0;
@@ -40,8 +37,8 @@ JNIEXPORT void JNICALL Java_org_blatnik_eyemon_OptFlow_optFlowDestroyObject(JNIE
 
 JNIEXPORT void JNICALL Java_org_blatnik_eyemon_OptFlow_optFlowDetect
                                                                 (JNIEnv * jenv, jclass, jlong imageRGB, jlong imageGray) {
-    Mat rgb = *((Mat*)imageRGB);
-    Mat gray = *((Mat*)imageGray);
+    cv::Mat rgb = *((cv::Mat*)imageRGB);
+    cv::Mat gray = *((cv::Mat*)imageGray);
 
     long int tstp = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
     optf.run(gray, rgb, tstp, grabberFrameNumO);
