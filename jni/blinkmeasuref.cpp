@@ -48,7 +48,8 @@ void BlinkMeasureF::measureBlinksAVG(double *lavg, double *ravg) {
 
 void BlinkMeasureF::measureBlinksSD(double lavg, double ravg, double *lSD, double *rSD, double *plsd1, double *prsd1, double *plsd2, double *prsd2, double *plsdt, double *prsdt, double *mlsd1, double *mrsd1, double *mlsd2, double *mrsd2, double *mlsdt, double *mrsdt) {
     int lSize = 0, rSize = 0;
-    std::list<BlinkMeasureF>::iterator iter = blinkMeasureShortf.begin();
+    std::list<BlinkMeasureF>::iterator iter;
+    iter = blinkMeasureShortf.begin();
     while(iter != blinkMeasureShortf.end()) {
         BlinkMeasureF& bm = *iter;
         if (bm.canProceedL == true) {
@@ -71,18 +72,53 @@ void BlinkMeasureF::measureBlinksSD(double lavg, double ravg, double *lSD, doubl
     } else {
         *rSD = 0;
     }
-    *plsd1 = lavg+(1*(*lSD));
-    *prsd1 = ravg+(1*(*rSD));
     *plsd2 = lavg+(2*(*lSD));
     *prsd2 = ravg+(2*(*rSD));
+    *mlsd2 = lavg-(2*(*lSD));
+    *mrsd2 = ravg-(2*(*rSD));
+    double plTmpSD2 = lavg+(2*(*lSD));
+    double prTmpSD2 = ravg+(2*(*rSD));
+    double mlTmpSD2 = lavg-(2*(*lSD));
+    double mrTmpSD2 = ravg-(2*(*rSD));
+    *lSD = 0;
+    *rSD = 0;
+    lSize = 0, rSize = 0;
+    // second
+    iter = blinkMeasureShortf.begin();
+    while(iter != blinkMeasureShortf.end()) {
+        BlinkMeasureF& bm = *iter;
+        if (bm.canProceedL == true) {
+            if (mlTmpSD2 < bm.lDiffP.y && bm.lDiffP.y < plTmpSD2) {
+                *lSD = *lSD+pow(lavg-bm.lDiffP.y, 2);
+                lSize++;
+            }
+        }
+        if (bm.canProceedR == true) {
+            if (mrTmpSD2 < bm.rDiffP.y && bm.rDiffP.y < prTmpSD2) {
+                *rSD = *rSD+pow(ravg-bm.rDiffP.y, 2);
+                rSize++;
+            }
+        }
+        iter++;
+    }
+    if (lSize > 0) {
+        *lSD = pow(*lSD/lSize, 0.5);
+    } else {
+        *lSD = 0;
+    }
+    if (rSize > 0) {
+        *rSD = pow(*rSD/rSize, 0.5);
+    } else {
+        *rSD = 0;
+    }
+    *plsd1 = lavg+(1*(*lSD));
+    *prsd1 = ravg+(1*(*rSD));
     *plsdt = lavg+(3*(*lSD));
     *prsdt = ravg+(3*(*rSD));
     *mlsd1 = lavg-(1*(*lSD));
     *mrsd1 = ravg-(1*(*rSD));
-    *mlsd2 = lavg-(2*(*lSD));
-    *mrsd2 = ravg-(2*(*rSD));
-    *mlsdt = lavg-(3*(*lSD));
-    *mrsdt = ravg-(3*(*rSD));
+    *mlsdt = lavg-(5*(*lSD));
+    *mrsdt = ravg-(5*(*rSD));
 };
 int    BlinkMeasureF::lCurState = 0;
 double BlinkMeasureF::lLastVal = 0;
@@ -152,8 +188,8 @@ void BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
         doLog(debug_blinks_d1, "debug_blinks_d1: F %d T %.2lf logType n\n", bm.frameNum, bm.timestamp);
     }
 
-    BlinkMeasureF::stateMachine(bm.frameNum, bm.timestamp, bm.lDiffP.y, mlsd2, plsd2, bm.rDiffP.y, mrsd2, prsd2);
-    //BlinkMeasureF::stateMachine(bm.frameNum, bm.timestamp, bm.lDiffP.y, mlsdt, plsdt, bm.rDiffP.y, mrsdt, prsdt);
+    //BlinkMeasureF::stateMachine(bm.frameNum, bm.timestamp, bm.lDiffP.y, mlsd2, plsd2, bm.rDiffP.y, mrsd2, prsd2);
+    BlinkMeasureF::stateMachine(bm.frameNum, bm.timestamp, bm.lDiffP.y, mlsdt, plsdt, bm.rDiffP.y, mrsdt, prsdt);
 
     // if (bm.lDiffP.y < lsd2) {
     //     doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf L %lf SD1 %lf SD2 %lf\n", bm.frameNum, bm.timestamp, bm.lDiffP.y, lsd1, lsd2);
