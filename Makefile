@@ -5,8 +5,7 @@ PROJDIR = .
 include test/Makefile
 
 FILES_TO_COMPILE = common.cpp main.cpp blinkmeasure.cpp blinkmeasuref.cpp templatebased.cpp optflow.cpp farneback.cpp blackpixels.cpp
-# -Werror -Wall -Wextra
-COMPILER_FLAGS = -std=c++11 -Wextra -Wall
+COMPILER_FLAGS = -std=c++11 -Werror -Wall -Wextra
 OUTPUT_BIN =
 MACROS =
 

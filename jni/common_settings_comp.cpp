@@ -21,6 +21,7 @@ bool debug_fb_log1 = true;
 bool debug_fb_log_flow = true;
 bool debug_fb_log_reinit = true;
 bool debug_fb_log_repupil = true;
+bool debug_fb_log_repupil1 = true;
 bool debug_fb_perf1 = true;
 bool debug_fb_perf2 = true;
 bool debug_bp_log_pix = true;

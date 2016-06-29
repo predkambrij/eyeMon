@@ -48,4 +48,4 @@ bool disable_max_size = false;
 int maxSize = 300;
 unsigned int startingFrameNum = 8900; // ruka mizo
 //unsigned int startingFrameNum = 0;
-unsigned int endingFrameNum = 9400;
+unsigned int endingFrameNum = 9600;

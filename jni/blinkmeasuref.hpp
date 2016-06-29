@@ -20,7 +20,7 @@ class BlinkMeasureF {
         double timestamp;
         cv::Point2d lDiffP;
         cv::Point2d rDiffP;
-        bool canProceedL, canProceedR;
+        bool canProceedL, canProceedR, canUpdateL, canUpdateR;
         // converting to chuncks
         static bool lAdding;
         static double lFirstBlinkT;
@@ -34,11 +34,11 @@ class BlinkMeasureF {
         static unsigned int rLastNonBlinkF;
         static double maxNonBlinkT;
 
-        BlinkMeasureF(unsigned int frameNum, double timestamp, cv::Point2d lDiffP, cv::Point2d rDiffP, bool canProceedL, bool canProceedR);
+        BlinkMeasureF(unsigned int frameNum, double timestamp, cv::Point2d lDiffP, cv::Point2d rDiffP, bool canProceedL, bool canProceedR, bool canUpdateL, bool canUpdateR);
         static void measureBlinks(BlinkMeasureF bm);
         static void stateMachine(unsigned int frameNum, double timestamp, double leftY, double leftLowSD, double leftHighSD, double rightY, double rightLowSD, double rightHighSD);
         static void measureBlinksAVG(double *lavg, double *ravg);
-        static void measureBlinksSD(double lavg, double ravg, double *lSD, double *rSD, double *plsd1, double *prsd1, double *plsd2, double *prsd2, double *mlsd1, double *mrsd1, double *mlsd2, double *mrsd2);
+        static void measureBlinksSD(double lavg, double ravg, double *lSD, double *rSD, double *plsd1, double *prsd1, double *plsd2, double *prsd2, double *plsdt, double *prsdt, double *mlsd1, double *mrsd1, double *mlsd2, double *mrsd2, double *mlsdt, double *mrsdt);
         static void makeChunk(bool isLeft, double timestamp, bool isBlink, unsigned int frameNum);
         static void makeNotification(bool isLeft);
 };
