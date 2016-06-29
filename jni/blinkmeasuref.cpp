@@ -72,53 +72,18 @@ void BlinkMeasureF::measureBlinksSD(double lavg, double ravg, double *lSD, doubl
     } else {
         *rSD = 0;
     }
+    *plsd1 = lavg+(1*(*lSD));
+    *prsd1 = ravg+(1*(*rSD));
+    *mlsd1 = lavg-(1*(*lSD));
+    *mrsd1 = ravg-(1*(*rSD));
     *plsd2 = lavg+(2*(*lSD));
     *prsd2 = ravg+(2*(*rSD));
     *mlsd2 = lavg-(2*(*lSD));
     *mrsd2 = ravg-(2*(*rSD));
-    double plTmpSD2 = lavg+(2*(*lSD));
-    double prTmpSD2 = ravg+(2*(*rSD));
-    double mlTmpSD2 = lavg-(2*(*lSD));
-    double mrTmpSD2 = ravg-(2*(*rSD));
-    *lSD = 0;
-    *rSD = 0;
-    lSize = 0, rSize = 0;
-    // second
-    iter = blinkMeasureShortf.begin();
-    while(iter != blinkMeasureShortf.end()) {
-        BlinkMeasureF& bm = *iter;
-        if (bm.canProceedL == true) {
-            if (mlTmpSD2 < bm.lDiffP.y && bm.lDiffP.y < plTmpSD2) {
-                *lSD = *lSD+pow(lavg-bm.lDiffP.y, 2);
-                lSize++;
-            }
-        }
-        if (bm.canProceedR == true) {
-            if (mrTmpSD2 < bm.rDiffP.y && bm.rDiffP.y < prTmpSD2) {
-                *rSD = *rSD+pow(ravg-bm.rDiffP.y, 2);
-                rSize++;
-            }
-        }
-        iter++;
-    }
-    if (lSize > 0) {
-        *lSD = pow(*lSD/lSize, 0.5);
-    } else {
-        *lSD = 0;
-    }
-    if (rSize > 0) {
-        *rSD = pow(*rSD/rSize, 0.5);
-    } else {
-        *rSD = 0;
-    }
-    *plsd1 = lavg+(1*(*lSD));
-    *prsd1 = ravg+(1*(*rSD));
-    *plsdt = lavg+(3*(*lSD));
-    *prsdt = ravg+(3*(*rSD));
-    *mlsd1 = lavg-(1*(*lSD));
-    *mrsd1 = ravg-(1*(*rSD));
-    *mlsdt = lavg-(5*(*lSD));
-    *mrsdt = ravg-(5*(*rSD));
+    *plsdt = lavg+(2*(*lSD));
+    *prsdt = ravg+(2*(*rSD));
+    *mlsdt = lavg-(2.5*(*lSD));
+    *mrsdt = ravg-(2.5*(*rSD));
 };
 int    BlinkMeasureF::lCurState = 0;
 double BlinkMeasureF::lLastVal = 0;

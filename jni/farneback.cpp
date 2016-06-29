@@ -337,7 +337,7 @@ void Farneback::dominantDirection(cv::Mat flow, cv::Rect bounding, cv::Point2d& 
         diffP = cv::Point2d(totalX-btotalX, totalY-btotalY);
     }
 }
-void Farneback::method(cv::Mat gray, bool canProceedL, bool canUpdateL, bool canUpdateR, bool canProceedR, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
+void Farneback::method(cv::Mat gray, bool canProceedL, bool canProceedR, bool canUpdateL, bool canUpdateR, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
     std::chrono::time_point<std::chrono::steady_clock> t1;
     cv::Point2d lTotalP, lBoundingP, lDiffP, rTotalP, rBoundingP, rDiffP;
     left = gray(this->leftRg);
