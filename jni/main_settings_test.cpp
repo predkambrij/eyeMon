@@ -46,6 +46,8 @@ bool disable_max_size = false;
 
 // it can load the whole file in seconds and make huge memory consumption
 int maxSize = 300;
-unsigned int startingFrameNum = 8900; // ruka mizo
-//unsigned int startingFrameNum = 0;
-unsigned int endingFrameNum = 9600;
+unsigned int startingFrameNum = 0;
+unsigned int endingFrameNum = 0;
+// ruka mizo
+//unsigned int startingFrameNum = 8900;
+//unsigned int endingFrameNum = 9600;
