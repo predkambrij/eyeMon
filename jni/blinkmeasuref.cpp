@@ -196,7 +196,7 @@ void BlinkMeasureF::stateMachine(unsigned int frameNum, double timestamp, double
             }
         }
     } else if (BlinkMeasureF::lCurState == 2) {
-        if ((timestamp-BlinkMeasureF::lZeroCrossPosToNegT) > 500) {
+        if ((timestamp-BlinkMeasureF::lZeroCrossPosToNegT) > 800) {
             BlinkMeasureF::lCurState = 0;
         } else {
             if (BlinkMeasureF::lLastVal > 0 && leftY < 0) {
@@ -240,7 +240,7 @@ void BlinkMeasureF::stateMachine(unsigned int frameNum, double timestamp, double
             }
         }
     } else if (BlinkMeasureF::rCurState == 2) {
-        if ((timestamp-BlinkMeasureF::rZeroCrossPosToNegT) > 500) {
+        if ((timestamp-BlinkMeasureF::rZeroCrossPosToNegT) > 800) {
             BlinkMeasureF::rCurState = 0;
         } else {
             if (BlinkMeasureF::rLastVal > 0 && rightY < 0) {
