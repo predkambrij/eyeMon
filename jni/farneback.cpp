@@ -51,8 +51,6 @@ void Farneback::drawOptFlowMap (cv::Rect eyeE, const cv::Mat flow, cv::Mat cflow
     // printf("\n\n\n");
 }
 
-
-
 int Farneback::faceDetect(cv::Mat gray, cv::Rect *face) {
     std::vector<cv::Rect> faces;
     face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
@@ -71,6 +69,8 @@ bool Farneback::preprocess(cv::Mat& left, cv::Mat& right, __attribute__((unused)
     GaussianBlur(left, left, cv::Size(3,3), 0);
     cv::equalizeHist(left, left);
     cv::equalizeHist(right, right);
+/*
+*/
     return true;
 }
 bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum) {
@@ -436,7 +436,16 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
         cv::rectangle(out, cv::Rect(this->rightRg.x+rightB.x, this->rightRg.y+rightB.y, rightB.width, rightB.height), coolor, 1, 8, 0);
         difftime("debug_fb_perf2: process:drawing_out", t1, debug_fb_perf2);
     }
-    if ((frameNum % 2) == 0) {
+    if ((frameNum % 2) == 0 || true) {
+
+        int rowsO = out.rows/4;
+        int colsO = out.cols/4;
+        int rows2 = out.rows/2;
+        int cols2 = out.cols/2;
+
+        cv::Rect mainZoomedRect = cv::Rect(colsO, rowsO, cols2, rows2);
+        cv::Mat mainZoomedMat = out(mainZoomedRect);
+
         t1 = std::chrono::steady_clock::now();
         if (frameNum > 1) {
             imshowWrapper("leftR", this->pleft, debug_show_img_farne_eyes);
@@ -445,7 +454,7 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
         imshowWrapper("left", left, debug_show_img_farne_eyes);
         imshowWrapper("right", right, debug_show_img_farne_eyes);
         imshowWrapper("main", out, debug_show_img_main);
-        imshowWrapper("gray", gray, debug_show_img_gray);
+        imshowWrapper("gray", mainZoomedMat, debug_show_img_gray);
         difftime("debug_fb_perf2: process:showimgs", t1, debug_fb_perf2);
     }
 

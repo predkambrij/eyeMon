@@ -5,7 +5,8 @@ PROJDIR = .
 include test/Makefile
 
 FILES_TO_COMPILE = common.cpp main.cpp blinkmeasure.cpp blinkmeasuref.cpp templatebased.cpp optflow.cpp farneback.cpp blackpixels.cpp
-COMPILER_FLAGS = -std=c++11 -Werror -Wall -Wextra
+# -Werror
+COMPILER_FLAGS = -std=c++11 -Wall -Wextra
 OUTPUT_BIN =
 MACROS =
 
@@ -37,6 +38,11 @@ _setTestSettings :
 	$(eval MACROS = -DIS_TEST)
 	$(eval OUTPUT_BIN = bins/t)
 
+_setTestpySettings :
+	$(eval FILES_TO_COMPILE += common_settings_testpy.cpp main_settings_testpy.cpp)
+	$(eval MACROS = -DIS_TEST -DIS_TESTPY)
+	$(eval OUTPUT_BIN = bins/tp)
+
 _setAnnotVars :
 	$(eval FILES_TO_COMPILE = annot.cpp)
 	$(eval OUTPUT_BIN = bins/annot)
@@ -51,6 +57,7 @@ run/% :
 dco : _setDesktopSettings _setEyelikeFiles _compile
 d : _setDesktopSettings _setEyelikeFiles _compile run/d
 dt : _setTestSettings _setEyelikeFiles _compile run/t
+dtp : _setTestpySettings _setEyelikeFiles _compile run/tp
 annot : _setAnnotVars _compile run/annot
 test : _setTestVars _compile run/test
 
