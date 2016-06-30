@@ -109,7 +109,11 @@ void doLog(bool shouldPrint, const std::string fmt, ...) {
 #ifndef IS_PHONE
     logMutex.lock();
     std::ofstream myfile;
+#ifdef IS_TESTPY
+    myfile.open("/tmp/eyemonpy.log", std::fstream::app);
+#else
     myfile.open("/tmp/testlog.txt", std::fstream::app);
+#endif
     //myfile << "Writing this to a file.\n";
     //myfile << str << std::endl ;
     myfile << str;
