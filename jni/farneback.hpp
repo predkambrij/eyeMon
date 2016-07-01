@@ -14,6 +14,7 @@
 
 class Farneback {
     public:
+        bool hasPLeftRight = false;
         bool canCallMeasureBlinks = true;
         bool onlyLower = false;
         cv::Point lEye, rEye;

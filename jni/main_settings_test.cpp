@@ -28,7 +28,7 @@
 //char fileName[100] = "/home/developer/other/posnetki/o4_100.mp4"; // svetloba od zadaj knjiznica (zelo veliko suma)
 
 //char fileName[100] = "/home/developer/other/posnetki/talking.avi";
-char fileName[100] = "/home/developer/other/posnetki/sk/eyeblink8/1/26122013_223310_cam.avi"; // punca od dalec
+//char fileName[100] = "/home/developer/other/posnetki/sk/eyeblink8/1/26122013_223310_cam.avi"; // punca od dalec
 //char fileName[100] = "/home/developer/other/posnetki/sk/NightOfResearchers15/test/14/26092014_211047_cam.avi"; // ful partial
 
 // challenging
@@ -36,7 +36,8 @@ char fileName[100] = "/home/developer/other/posnetki/sk/eyeblink8/1/26122013_223
 //char fileName[100] = "/home/developer/other/posnetki/sk/NightOfResearchers15/trainval/train/4/26092014_182617_cam.avi"; // moski ocala
 //char fileName[100] = "/home/developer/other/posnetki/sk/NightOfResearchers30/test/11/26092014_173630_cam.avi"; // zenska ocala
 
-
+char fileName[100] = "/home/developer/other/posnetki/sk/eyeblink8/2/26122013_224532_cam.avi"; // creashes
+//char fileName[100] = "/home/developer/other/posnetki/sk/eyeblink8/4/26122013_230654_cam.avi"; // creashes
 
 
 
