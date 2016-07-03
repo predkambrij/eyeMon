@@ -19,6 +19,7 @@ bool debug_tmpl_perf1 = false;
 bool debug_tmpl_perf2 = false;
 bool debug_fb_log1 = false;
 bool debug_fb_log_flow = true;
+bool debug_fb_log_tracking = true;
 bool debug_fb_log_reinit = true;
 bool debug_fb_log_repupil = true;
 bool debug_fb_log_repupil1 = true;

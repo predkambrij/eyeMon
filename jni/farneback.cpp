@@ -397,6 +397,7 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
             return;
         } else {
             this->flagReinit = false;
+            doLog(debug_fb_log_tracking, "debug_fb_log_tracking: F %u T %.3lf status start\n", frameNum, timestamp);
         }
     } else {
         if ((frameNum % 2) == 0) {
@@ -405,6 +406,10 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
         t1 = std::chrono::steady_clock::now();
         std::array<bool, 4> repupilRes = this->rePupil(gray, timestamp, frameNum);
         difftime("debug_fb_perf2: process:rePupil", t1, debug_fb_perf2);
+
+        if (flagReinit == true) {
+            doLog(debug_fb_log_tracking, "debug_fb_log_tracking: F %u T %.3lf status stop\n", frameNum, timestamp);
+        }
 
         t1 = std::chrono::steady_clock::now();
         this->method(gray, repupilRes[0], repupilRes[1], repupilRes[2], repupilRes[4], left, right, flowLeft, flowRight, leftB, rightB, timestamp, frameNum);
