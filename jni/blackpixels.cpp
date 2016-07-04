@@ -87,23 +87,45 @@ bool Blackpixels::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double tim
     return true;
 }
 
-void Blackpixels::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
+std::array<bool, 4> Blackpixels::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
+    std::chrono::time_point<std::chrono::steady_clock> t1;
     bool firePreprocess = false, canUpdateL = false, canUpdateR = false;
     cv::Point newLEyeLoc, newREyeLoc;
     unsigned int curXEyesDistance, curYEyesDistance;
-    const int maxDiff = 20;
-
+    const int maxDiff = 15;
+    int proceedDelay = 250;
+    bool canProceedL = true, canProceedR = true;
+    if ((this->lLastTime+proceedDelay) > timestamp && (this->rLastTime+proceedDelay) > timestamp && (this->lastRepupilTime+proceedDelay) > timestamp
+        && abs(this->lastRepupilDiffLeft.x) < 2 && abs(this->lastRepupilDiffLeft.y) < 2
+        && abs(this->lastRepupilDiffRight.x) < 2 && abs(this->lastRepupilDiffRight.y) < 2
+        ) {
+        //printf("%5.2lf\t%5.2lf\t%5.2lf\t%5.2lf\n", this->lastRepupilDiffLeft.x, this->lastRepupilDiffLeft.y, this->lastRepupilDiffRight.x, this->lastRepupilDiffRight.y);
+        std::array<bool, 4> ret;
+        ret[0] = true;
+        ret[1] = true;
+        ret[2] = true;
+        ret[3] = true;
+        return ret;
+    }
+    //printf("time since last repupil %.2lf\n", timestamp-this->lastRepupilTime);
+    this->lastRepupilTime = timestamp;
+    t1 = std::chrono::steady_clock::now();
     this->eyeCenters(gray, this->leftRg, this->rightRg, newLEyeLoc, newREyeLoc);
-    doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf L diff x %d y %d\n", frameNum, timestamp, newLEyeLoc.x-this->lEye.x, newLEyeLoc.y-this->lEye.y);
-    if (abs(newLEyeLoc.x-this->lEye.x) < maxDiff && abs(newLEyeLoc.y-this->lEye.y) < maxDiff) {
+    difftime("debug_fb_perf2: rePupil:eyeCenters", t1, debug_fb_perf2);
+    doLog(debug_fb_log_repupil1, "debug_fb_log_repupil1: F %u T %lf L diff x %d y %d\n", frameNum, timestamp, newLEyeLoc.x-this->lEye.x, newLEyeLoc.y-this->lEye.y);
+    doLog(debug_fb_log_repupil1, "debug_fb_log_repupil1: F %u T %lf R diff x %d y %d\n", frameNum, timestamp, newREyeLoc.x-this->rEye.x, newREyeLoc.y-this->rEye.y);
+    this->lastRepupilDiffLeft = cv::Point2d(0,0);
+    this->lastRepupilDiffRight = cv::Point2d(0,0);
+    if ((abs(newLEyeLoc.x-this->lEye.x)+abs(newLEyeLoc.y-this->lEye.y)) < maxDiff) {
             this->lLastTime = timestamp;
             canUpdateL = true;
     }
-    doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf R diff x %d y %d\n", frameNum, timestamp, newREyeLoc.x-this->rEye.x, newREyeLoc.y-this->rEye.y);
-    if (abs(newREyeLoc.x-this->rEye.x) < maxDiff && abs(newREyeLoc.y-this->rEye.y) < maxDiff) {
+    if ((abs(newREyeLoc.x-this->rEye.x)+abs(newREyeLoc.y-this->rEye.y)) < maxDiff) {
             this->rLastTime = timestamp;
             canUpdateR = true;
     }
+
+    // current eye's positions are geometrically unlikely to be correct, so request reinit
     if (canUpdateL == true && canUpdateR == true) {
         curXEyesDistance = (this->rightRg.x+newREyeLoc.x)-(this->leftRg.x+newLEyeLoc.x);
         curYEyesDistance = abs((this->rightRg.y+newREyeLoc.y)-(this->leftRg.y+newLEyeLoc.y));
@@ -114,21 +136,38 @@ void Blackpixels::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum)
                 frameNum, timestamp, this->initEyesDistance, curXEyesDistance, curYEyesDistance);
             this->flagReinit = true;
         }
+    } else {
+        doLog(debug_fb_log_repupil, "debug_fb_log_repupil: F %u T %lf L %d R %d\n", frameNum, timestamp, canUpdateL?1:0, canUpdateR?1:0);
     }
-    if ((this->lLastTime+500) < timestamp || (this->rLastTime+500) < timestamp) {
+
+    //this->canCallMeasureBlinks = (canUpdateL == true && canUpdateR == true);
+    this->canCallMeasureBlinks = (canUpdateL == true && canUpdateR == true && this->flagReinit == false);
+
+    //printf("L repupil F %u T %.3lf %d reinit %d canCallMeasureBlinks %d diff %3d %3d\n", frameNum, timestamp, canUpdateL?1:0, this->flagReinit?1:0, this->canCallMeasureBlinks?1:0, newLEyeLoc.x-this->lEye.x, newLEyeLoc.y-this->lEye.y);
+    //printf("R repupil F %u T %.3lf %d reinit %d canCallMeasureBlinks %d diff %3d %3d\n", frameNum, timestamp, canUpdateR?1:0, this->flagReinit?1:0, this->canCallMeasureBlinks?1:0, newREyeLoc.x-this->rEye.x, newREyeLoc.y-this->rEye.y);
+    // if we lost eyes for more than half a second, request reinit
+    if ((this->lLastTime+400) < timestamp || (this->rLastTime+400) < timestamp) {
         // we lost eyes, request reinit
         this->flagReinit = true;
-        doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf reinit: eyes were displaced lLastTime %lf rLastTime %lf\n",
-            frameNum, timestamp, this->lLastTime, this->rLastTime);
+        doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf reinit: eyes were displaced lLastTime %lf rLastTime %lf\n", frameNum, timestamp, this->lLastTime, this->rLastTime);
     } else {
         doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf diff L %lf R %lf\n", frameNum, timestamp, timestamp-this->lLastTime, timestamp-this->rLastTime);
     }
-
+    double pupilIdealY;
+    double pupilLowerLimit;
+    if (this->onlyLower == true) {
+        pupilIdealY = 2.5;
+        pupilLowerLimit = 0.6;
+    } else {
+        pupilIdealY = 2;
+        pupilLowerLimit = 0.7;
+    }
+    // reposition pupil location and optionaly farneback grid
     if (canUpdateL == true
         && (newLEyeLoc.x < (this->leftRg.width*0.3) || newLEyeLoc.x > (this->leftRg.width*0.7)
-            || newLEyeLoc.y < (this->leftRg.height*0.3) || newLEyeLoc.y > (this->leftRg.height*0.7))) {
+            || newLEyeLoc.y < (this->leftRg.height*0.3) || newLEyeLoc.y > (this->leftRg.height*pupilLowerLimit))) {
         // reposition leftRg so that lEye will be in the middle
-        unsigned int idealX = this->leftRg.width/2, idealY = this->leftRg.height/2;
+        unsigned int idealX = this->leftRg.width/2, idealY = this->leftRg.height/pupilIdealY;
         int moveX = newLEyeLoc.x-idealX, moveY = newLEyeLoc.y-idealY;
         if ((this->leftRg.x + moveX) < 0 || (this->leftRg.y + moveY) < 0
             || (this->leftRg.x + moveX + this->leftRg.width) > gray.cols
@@ -141,14 +180,14 @@ void Blackpixels::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum)
             newLEyeLoc.x -= moveX; newLEyeLoc.y -= moveY;
             //doLog(debug_fb_log1, "debug_fb_log1: aL %u %u , %u %u\n", this->leftRg.x, this->leftRg.y, newLEyeLoc.x, newLEyeLoc.y);
             firePreprocess = true;
+            canProceedL = false;
         }
     }
-
     if (canUpdateR == true
         && (newREyeLoc.x < (this->rightRg.width*0.3) || newREyeLoc.x > (this->rightRg.width*0.7)
-            || newREyeLoc.y < (this->rightRg.height*0.3) || newREyeLoc.y > (this->rightRg.height*0.7))) {
+            || newREyeLoc.y < (this->rightRg.height*0.3) || newREyeLoc.y > (this->rightRg.height*pupilLowerLimit))) {
         // reposition rightRg so that rEye will be in the middle
-        unsigned int idealX = this->rightRg.width/2, idealY = this->rightRg.height/2;
+        unsigned int idealX = this->rightRg.width/2, idealY = this->rightRg.height/pupilIdealY;
         int moveX = newREyeLoc.x-idealX, moveY = newREyeLoc.y-idealY;
         if ((this->rightRg.x + moveX) < 0 || (this->rightRg.y + moveY) < 0
             || (this->rightRg.x + moveX + this->rightRg.width) > gray.cols
@@ -161,12 +200,15 @@ void Blackpixels::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum)
             newREyeLoc.x -= moveX; newREyeLoc.y -= moveY;
             //doLog(debug_fb_log1, "debug_fb_log1: aR %u %u , %u %u\n", this->rightRg.x, this->rightRg.y, newLEyeLoc.x, newLEyeLoc.y);
             firePreprocess = true;
+            canProceedR = false;
         }
     }
     if (firePreprocess == true) {
         cv::Mat leftRg = gray(this->leftRg).clone();
         cv::Mat rightRg = gray(this->rightRg).clone();
+        t1 = std::chrono::steady_clock::now();
         this->preprocess(leftRg, rightRg, timestamp, frameNum);
+        difftime("debug_fb_perf2: rePupil:preprocess", t1, debug_fb_perf2);
         this->pleft = leftRg; this->pright = rightRg;
         //pause = 1;
     }
@@ -177,6 +219,12 @@ void Blackpixels::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum)
     if (canUpdateR == true) {
         this->rEye = newREyeLoc;
     }
+    std::array<bool, 4> ret;
+    ret[0] = canProceedL;
+    ret[1] = canProceedR;
+    ret[2] = canUpdateL;
+    ret[3] = canUpdateR;
+    return ret;
 
     // if (newREyeLoc.x < (this->rightE.width*0.3) || newREyeLoc.x > (this->rightE.width*0.7)
     //     || newREyeLoc.y < (this->rightE.height*0.3) || newREyeLoc.y > (this->rightE.height*0.7)) {
@@ -198,7 +246,7 @@ void Blackpixels::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum)
     // this->rEye.y += rightUpdateLoc.y;
     // printf("%d,%d %d,%d \n", leftUpdateLoc.x, leftUpdateLoc.y, rightUpdateLoc.x, rightUpdateLoc.y);
 
-}
+};
 double Blackpixels::countPixels(cv::Mat eye, cv::Rect bounding) {
     double totalGray=0;
     for(int y = 0; y < eye.rows; y += 1) {
@@ -272,18 +320,20 @@ void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned 
     cv::rectangle(out, cv::Rect(this->leftRg.x+leftB.x, this->leftRg.y+leftB.y, leftB.width, leftB.height), coolor, 1, 8, 0);
     cv::rectangle(out, cv::Rect(this->rightRg.x+rightB.x, this->rightRg.y+rightB.y, rightB.width, rightB.height), coolor, 1, 8, 0);
 
-    if (this->hasPLeftRight == true) {
-        imshowWrapper("leftR", this->pleft, debug_show_img_templ_eyes_tmpl);
-        imshowWrapper("rightR", this->pright, debug_show_img_templ_eyes_tmpl);
+    if ((frameNum % 2) == 0) {
+        if (this->hasPLeftRight == true) {
+            imshowWrapper("leftR", this->pleft, debug_show_img_templ_eyes_tmpl);
+            imshowWrapper("rightR", this->pright, debug_show_img_templ_eyes_tmpl);
+        }
+        if (hasTLeftRight == true) {
+            imshowWrapper("leftSR", tLeft, debug_show_img_templ_eyes_tmpl);
+            imshowWrapper("rightSR", tRight, debug_show_img_templ_eyes_tmpl);
+        }
+        imshowWrapper("left", left, debug_show_img_templ_eyes_tmpl);
+        imshowWrapper("right", right, debug_show_img_templ_eyes_tmpl);
+        imshowWrapper("main", out, debug_show_img_main);
+        imshowWrapper("gray", gray, debug_show_img_main);
     }
-    if (hasTLeftRight == true) {
-        imshowWrapper("leftSR", tLeft, debug_show_img_templ_eyes_tmpl);
-        imshowWrapper("rightSR", tRight, debug_show_img_templ_eyes_tmpl);
-    }
-    imshowWrapper("left", left, debug_show_img_templ_eyes_tmpl);
-    imshowWrapper("right", right, debug_show_img_templ_eyes_tmpl);
-    imshowWrapper("main", out, debug_show_img_main);
-    imshowWrapper("gray", gray, debug_show_img_main);
 
     this->hasPLeftRight = true;
     this->pleft = left;

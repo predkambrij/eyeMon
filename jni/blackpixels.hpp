@@ -17,6 +17,10 @@ class Blackpixels {
         cv::Point lEye, rEye;
         double lLastTime, rLastTime;
         unsigned int initEyesDistance;
+        double lastRepupilTime = 0;
+        bool onlyLower = false;
+        cv::Point2d lastRepupilDiffLeft, lastRepupilDiffRight;
+        bool canCallMeasureBlinks = true;
         cv::Mat pleft, pright;
         cv::Rect leftRg, rightRg;
 
@@ -28,7 +32,7 @@ class Blackpixels {
         int faceDetect(cv::Mat gray, cv::Rect *face);
         void eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point& leftPupil, cv::Point& rightPupil);
         void method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& tLeft, cv::Mat& tRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum);
-        void rePupil(cv::Mat gray, double timestamp, unsigned int frameNum);
+        std::array<bool, 4> rePupil(cv::Mat gray, double timestamp, unsigned int frameNum);
         double countPixels(cv::Mat eye, cv::Rect bounding);
         bool reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum);
         int run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum);
