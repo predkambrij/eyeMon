@@ -15,6 +15,7 @@ class TemplateBased {
         int frameNum, frameNumt;
         cv::Mat leftTemplate, rightTemplate;
         bool hasTemplate;
+        double prevTimestamp;
         cv::Point lEye, rEye;
         double lLastTime, rLastTime;
 

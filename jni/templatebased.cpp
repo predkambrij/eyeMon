@@ -222,6 +222,7 @@ void TemplateBased::process(cv::Mat gray, cv::Mat out, double timestamp, unsigne
 
     // we have template if we have template of open eyes
     if (this->hasTemplate == false) {
+        this->prevTimestamp = timestamp;
         if (!this->eyesInit(gray, timestamp)) {
             // it finds eye region based on face detection and (TODO after first blink)
             imshowWrapper("main", out, debug_show_img_main);
@@ -234,6 +235,11 @@ void TemplateBased::process(cv::Mat gray, cv::Mat out, double timestamp, unsigne
         // if we believe that eyes are not in the search area anymore (person turned head or left the computer)
         //                                                                      we reinitialize (set hasTemplate to false)
         this->method(gray, out, timestamp, frameNum);
+    }
+    if (timestamp-this->prevTimestamp > 5000) {
+        // reinitialize on regular intervals
+        printf("T %.2lf\n", timestamp);
+        this->hasTemplate = false;
     }
 };
 void TemplateBased::measureBlinks() {
