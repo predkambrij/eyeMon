@@ -22,7 +22,7 @@ class TemplateBased {
         void setup(const char* cascadeFileName);
         bool preprocessing(cv::Mat& gray);
         bool eyesInit(cv::Mat& gray, double timestamp);
-        void updateTemplSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv::Rect& rTemplSearchR, cv::Mat& lTemplSearch, cv::Mat& rTemplSearch);
+        bool updateTemplSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv::Rect& rTemplSearchR, cv::Mat& lTemplSearch, cv::Mat& rTemplSearch);
         void method(cv::Mat& gray, cv::Mat& out, double timestamp, unsigned int frameNum);
         void process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum);
         void measureBlinks();

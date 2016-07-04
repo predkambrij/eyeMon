@@ -22,6 +22,7 @@ class Blackpixels {
 
         //cv::Rect face, leftEyeRegion, rightEyeRegion;
         bool flagReinit = true, flagPupilSearch = false;
+        bool hasPLeftRight = false;
 
         Blackpixels();
         int faceDetect(cv::Mat gray, cv::Rect *face);

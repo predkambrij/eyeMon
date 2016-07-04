@@ -101,6 +101,9 @@ bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double times
     this->leftRg.x += face.x; this->leftRg.y += face.y;
     this->rightRg.x += face.x; this->rightRg.y += face.y;
 
+    doLog(debug_fb_log_tracking, "debug_fb_log_tracking: F %u T %.3lf size face %d %d eyeR %d %d\n",
+        frameNum, timestamp, face.width, face.height, this->leftRg.width, this->leftRg.height);
+
     // preprocess only eye region(blur, eqHist)
     t1 = std::chrono::steady_clock::now();
     this->preprocess(left, right, timestamp, frameNum);

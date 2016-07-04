@@ -158,12 +158,12 @@ void doProcessing() {
     std::chrono::time_point<std::chrono::steady_clock> t1 = std::chrono::steady_clock::now();
     std::chrono::time_point<std::chrono::steady_clock> t2;
     cv::Mat frame, gray, cflow;
-
+    unsigned int lastFrameNum;
+    double lastTimestamp;
     while (true) {
         long unsigned int listSize = frameList.size();
         if (listSize == 0) {
             if (finished == true) {
-                doLog(true, "exiting\n");
                 break;
             }
             if (canAdd == false) {
@@ -176,6 +176,8 @@ void doProcessing() {
         }
 
         FrameCarrier fc = frameList.front();
+        lastFrameNum = fc.frameNum;
+        lastTimestamp = fc.timestamp;
         frameList.pop_front();
         cv::Mat frame = fc.frame;
         // cv::flip(frame, frame, 1);
@@ -220,7 +222,6 @@ void doProcessing() {
             // flow control
             int c = cv::waitKey(1);
             if((char)c == 'q') {
-                doLog(true, "exiting\n");
                 grabbing = false;
                 break;
             } else if((char)c == 'p') {
@@ -249,6 +250,21 @@ void doProcessing() {
         difftime("debug_t2_perf_whole:", t1, debug_t2_perf_whole);
         t1 = std::chrono::steady_clock::now();
     }
+    // end hook
+    switch (method) {
+        case METHOD_OPTFLOW:
+        break;
+        case METHOD_FARNEBACK:
+        doLog(debug_fb_log_tracking, "debug_fb_log_tracking: F %u T %.3lf status stop\n", lastFrameNum, lastTimestamp);
+        break;
+        case METHOD_BLACKPIXELS:
+        break;
+        case METHOD_TEMPLATE_BASED:
+        break;
+        case METHOD_BLACK_PIXELS:
+        break;
+    }
+    doLog(true, "exiting\n");
 }
 ///
 char* getCmdOption(char** begin, char** end, const std::string& option) {

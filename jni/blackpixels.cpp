@@ -240,6 +240,7 @@ void Blackpixels::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& t
 void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
     cv::Mat left, right, tLeft, tRight;
     cv::Rect leftB, rightB;
+    bool hasTLeftRight = false;
 
     if (flagReinit == true) {
         if (this->reinit(gray, left, right, timestamp, frameNum) != true) {
@@ -254,6 +255,7 @@ void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned 
         }
         this->rePupil(gray, timestamp, frameNum);
         this->method(gray, left, right, tLeft, tRight, leftB, rightB, timestamp, frameNum);
+        hasTLeftRight = true;
     }
 
     if ((frameNum % 30) == 0) {
@@ -270,9 +272,11 @@ void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned 
     cv::rectangle(out, cv::Rect(this->leftRg.x+leftB.x, this->leftRg.y+leftB.y, leftB.width, leftB.height), coolor, 1, 8, 0);
     cv::rectangle(out, cv::Rect(this->rightRg.x+rightB.x, this->rightRg.y+rightB.y, rightB.width, rightB.height), coolor, 1, 8, 0);
 
-    if (frameNum > 1) {
+    if (this->hasPLeftRight == true) {
         imshowWrapper("leftR", this->pleft, debug_show_img_templ_eyes_tmpl);
         imshowWrapper("rightR", this->pright, debug_show_img_templ_eyes_tmpl);
+    }
+    if (hasTLeftRight == true) {
         imshowWrapper("leftSR", tLeft, debug_show_img_templ_eyes_tmpl);
         imshowWrapper("rightSR", tRight, debug_show_img_templ_eyes_tmpl);
     }
@@ -281,6 +285,7 @@ void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned 
     imshowWrapper("main", out, debug_show_img_main);
     imshowWrapper("gray", gray, debug_show_img_main);
 
+    this->hasPLeftRight = true;
     this->pleft = left;
     this->pright = right;
     return;

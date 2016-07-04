@@ -84,10 +84,13 @@ bool TemplateBased::eyesInit(cv::Mat& gray, double timestamp) {
     left.copyTo(this->leftTemplate);
     right.copyTo(this->rightTemplate);
 
-cv::Mat lTemplSearch, rTemplSearch;
-cv::Rect lTemplSearchR, rTemplSearchR;
+    cv::Mat lTemplSearch, rTemplSearch;
+    cv::Rect lTemplSearchR, rTemplSearchR;
 
-this->updateTemplSearch(gray, lTemplSearchR, rTemplSearchR, lTemplSearch, rTemplSearch);
+    bool res = this->updateTemplSearch(gray, lTemplSearchR, rTemplSearchR, lTemplSearch, rTemplSearch);
+    if (res == false) {
+        return false;
+    }
     left.copyTo(this->leftTemplate);
     right.copyTo(this->rightTemplate);
 
@@ -98,7 +101,7 @@ this->updateTemplSearch(gray, lTemplSearchR, rTemplSearchR, lTemplSearch, rTempl
             timestamp, this->lLastTime, this->rLastTime);
     return true;
 };
-void TemplateBased::updateTemplSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv::Rect& rTemplSearchR, cv::Mat& lTemplSearch, cv::Mat& rTemplSearch) {
+bool TemplateBased::updateTemplSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv::Rect& rTemplSearchR, cv::Mat& lTemplSearch, cv::Mat& rTemplSearch) {
 // TODO take care that it won't get outside of gray
     int lTempColsHalf = this->leftTemplate.cols/2;
     int lTempRowsHalf = this->leftTemplate.rows/2;
@@ -108,12 +111,22 @@ void TemplateBased::updateTemplSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv:
     int rTemplSearchSX = this->rEye.x-rTempColsHalf;
     int lTemplSearchSY = this->lEye.y-lTempRowsHalf;
     int rTemplSearchSY = this->rEye.y-rTempRowsHalf;
+    int lTemplSearchEX = lTemplSearchSX+this->leftTemplate.cols*1.8;
+    int lTemplSearchEY = lTemplSearchSY+this->leftTemplate.rows*2;
+    int rTemplSearchEX = rTemplSearchSX+this->rightTemplate.cols*1.8;
+    int rTemplSearchEY = rTemplSearchSY+this->rightTemplate.rows*2;
+    if (lTemplSearchSX < 0 || lTemplSearchSY < 0 || rTemplSearchSX < 0 || rTemplSearchSY < 0
+        || lTemplSearchEX > gray.cols || lTemplSearchEY > gray.rows || rTemplSearchEX > gray.cols || rTemplSearchEY > gray.rows) {
+        this->hasTemplate = false;
+        return false;
+    }
     lTemplSearchR = cv::Rect(lTemplSearchSX, lTemplSearchSY, this->leftTemplate.cols*1.8, this->leftTemplate.rows*2);
     rTemplSearchR = cv::Rect(rTemplSearchSX, rTemplSearchSY, this->rightTemplate.cols*1.8, this->rightTemplate.rows*2);
     doLog(debug_tmpl_log, "debug_tmpl_log: AAA lTemplSearchR %d %d %d %d\n", lTemplSearchR.x, lTemplSearchR.y, lTemplSearchR.width, lTemplSearchR.height);
     doLog(debug_tmpl_log, "debug_tmpl_log: AAA rTemplSearchR %d %d %d %d\n", rTemplSearchR.x, rTemplSearchR.y, rTemplSearchR.width, rTemplSearchR.height);
     lTemplSearch = gray(lTemplSearchR);
     rTemplSearch = gray(rTemplSearchR);
+    return true;
     //cv::equalizeHist(lTemplSearch, lTemplSearch);
     //cv::equalizeHist(rTemplSearch, rTemplSearch);
     //GaussianBlur(lTemplSearch, lTemplSearch, cv::Size(3,3), 0);
@@ -128,12 +141,12 @@ void TemplateBased::checkTracking(double timestamp) {
     }
 };
 void TemplateBased::updateSearchRegion(cv::Point matchLocL, cv::Point matchLocR, double timestamp) {
-    if (abs(matchLocL.x-this->lEye.x) < 10 && abs(matchLocL.y-this->lEye.y) < 10) {
+    if ((abs(matchLocL.x-this->lEye.x) + abs(matchLocL.y-this->lEye.y)) < 15) {
         this->lEye.x = matchLocL.x;
         this->lEye.y = matchLocL.y;
         this->lLastTime = timestamp;
     }
-    if (abs(matchLocR.x-this->rEye.x) < 10 && abs(matchLocR.y-this->rEye.y) < 10) {
+    if ((abs(matchLocR.x-this->rEye.x) + abs(matchLocR.y-this->rEye.y)) < 15) {
         this->rEye.x = matchLocR.x;
         this->rEye.y = matchLocR.y;
         this->rLastTime = timestamp;
@@ -150,7 +163,10 @@ void TemplateBased::method(cv::Mat& gray, cv::Mat& out, double timestamp, unsign
     imshowWrapper("right", this->rightTemplate, debug_show_img_templ_eyes_tmpl);
 
     // define template search region based on eyes' location in previous frame
-    this->updateTemplSearch(gray, lTemplSearchR, rTemplSearchR, lTemplSearch, rTemplSearch);
+    bool res = this->updateTemplSearch(gray, lTemplSearchR, rTemplSearchR, lTemplSearch, rTemplSearch);
+    if (res == false) {
+        return;
+    }
     imshowWrapper("leftSR", lTemplSearch, debug_show_img_templ_eyes_cor);
     imshowWrapper("rightSR", rTemplSearch, debug_show_img_templ_eyes_cor);
 
