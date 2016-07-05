@@ -33,6 +33,13 @@ extern int method;
 extern int pause;
 extern double previousFrameTime;
 
+struct annotEyePosition {
+    int l1x, l1y, l2x, l2y;
+    int r1x, r1y, r2x, r2y;
+};
+extern std::map<int, annotEyePosition> annotEyePositionMap;
+extern bool shouldUseAnnotEyePosition;
+
 extern bool debug_show_img_d1;
 extern bool debug_show_img_main;
 extern bool debug_show_img_gray;

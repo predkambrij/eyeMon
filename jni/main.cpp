@@ -1,6 +1,7 @@
 
 #include <list>
 #include <thread>
+#include <fstream>
 
 #include <common.hpp>
 
@@ -291,10 +292,64 @@ void processOptions(int argc, char* argv[]) {
         // Do interesting things
     }
 }
-
+bool getTagName(std::string& str) {
+    std::string from = ".avi";
+    std::string to = ".tag";
+    size_t start_pos = str.find(from);
+    if(start_pos == std::string::npos)
+        return false;
+    str.replace(start_pos, from.length(), to);
+    return true;
+}
 int main() { // int argc, char * argv[]
     //processOptions(argc, argv);
     //return 0;
+
+    if (shouldUseAnnotEyePosition == true) {
+        std::string tagNameS(fileName);
+        bool res = getTagName(tagNameS);
+        if (res == false) {
+            printf("Cannot provide tag name\n");
+            return 1;
+        }
+        std::ifstream f;
+        f.open(tagNameS.c_str(), std::fstream::in);
+        if (!f.good()) {
+            printf("It seems that annotations doesn't exist\n");
+            return 2;
+        }
+        // skip the header
+        while(true) {
+            char line[1000];
+            f.getline(line, 1000);
+            if (strncmp(line , "#start" , 6) == 0) {
+                break;
+            }
+        }
+        // parse annotations
+        while(true) {
+            char line[1000];
+            f.getline(line, 1000);
+            if (strncmp(line , "#end", 4) == 0) {
+                break;
+            }
+            annotEyePosition annot;
+            long int frameCounter;
+            int blinkID;
+            char nonFrontalFace, leftFullyClosed, leftNonFrontal, rightFullyClosed, rightNonFrontal;
+            int faceX, faceY, faceWidth, faceHeight;
+            sscanf(line, "%ld:%d:%c:%c:%c:%c:%c:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d",
+                &frameCounter, &blinkID, &nonFrontalFace,&leftFullyClosed,&leftNonFrontal,&rightFullyClosed,&rightNonFrontal,
+                &faceX, &faceY, &faceWidth, &faceHeight,
+                &annot.l1x, &annot.l1y, &annot.l2x, &annot.l2y,
+                &annot.r1x, &annot.r1y, &annot.r2x, &annot.r2y);
+            annotEyePositionMap[frameCounter] = annot;
+        }
+
+        //printf("seems we did it %lu\n", annotEyePositionMap.size());
+        //printf("%d %d (%d %d)\n", annotEyePositionMap[1].lx1, annotEyePositionMap[1].ly1, , annotEyePositionMap.find(1)!=annotEyePositionMap.end());
+    }
+
     PHONE = 0;
 
     char faceDetector[200] = "/home/developer/other/android_deps/OpenCV-2.4.10-android-sdk/samples/optical-flow/res/raw/lbpcascade_frontalface.xml";

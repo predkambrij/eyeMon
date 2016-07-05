@@ -16,6 +16,9 @@
 #include <android/log.h>
 #endif
 
+
+std::map<int, annotEyePosition> annotEyePositionMap;
+
 /// farne
 int maxFramesShortListf = 0;
 std::list<BlinkMeasureF> blinkMeasuref;
@@ -32,7 +35,7 @@ std::list<Blink> lBlinkChunks;
 std::list<Blink> rBlinkChunks;
 std::list<Blink> lBlinkTimeframeChunks;
 std::list<Blink> rBlinkTimeframeChunks;
-int pause = 0;
+int pause = 1;
 cv::Mat toSave;
 
 cv::CascadeClassifier face_cascade;

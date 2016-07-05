@@ -60,9 +60,38 @@ int Farneback::faceDetect(cv::Mat gray, cv::Rect *face) {
     *face = faces[0];
     return 0;
 }
-void Farneback::eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point &leftPupil, cv::Point &rightPupil) {
-    leftPupil  = findEyeCenter(faceROI, leftEyeRegion);
-    rightPupil = findEyeCenter(faceROI, rightEyeRegion);
+void Farneback::eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point &leftPupil, cv::Point &rightPupil, __attribute__((unused)) double timestamp, unsigned int frameNum) {
+    if (shouldUseAnnotEyePosition == true) {
+        if (annotEyePositionMap.find((int)frameNum)!=annotEyePositionMap.end()) {
+            annotEyePosition annot = annotEyePositionMap[(int)frameNum];
+            int lx, ly, rx, ry;
+            lx = (annot.l1x+annot.l2x)/2;
+            ly = (annot.l1y+annot.l2y)/2;
+            rx = (annot.r1x+annot.r2x)/2;
+            ry = (annot.r1y+annot.r2y)/2;
+            lx -= this->leftRg.x;
+            ly -= this->leftRg.y;
+            rx -= this->rightRg.x;
+            ry -= this->rightRg.y;
+            if (!(lx < 0 || ly < 0 || lx > leftRg.width || ly > leftRg.height)) {
+                leftPupil = cv::Point(lx, ly);
+            } else {
+                leftPupil = cv::Point(leftEyeRegion.width/2, leftEyeRegion.height/2);
+            }
+            if (!(rx < 0 || ry < 0 || rx > rightRg.width || ry > rightRg.height)) {
+                rightPupil = cv::Point(rx, ry);
+            } else {
+                rightPupil = cv::Point(rightEyeRegion.width/2, rightEyeRegion.height/2);
+            }
+        } else {
+            // if we cannot provide it, say it's in the middle, so region position won't get updated
+            leftPupil = cv::Point(leftEyeRegion.width/2, leftEyeRegion.height/2);
+            rightPupil = cv::Point(rightEyeRegion.width/2, rightEyeRegion.height/2);
+        }
+    } else {
+        leftPupil  = findEyeCenter(faceROI, leftEyeRegion);
+        rightPupil = findEyeCenter(faceROI, rightEyeRegion);
+    }
 }
 bool Farneback::preprocess(cv::Mat& left, cv::Mat& right, __attribute__((unused)) double timestamp, __attribute__((unused)) unsigned int frameNum) {
     GaussianBlur(left, left, cv::Size(3,3), 0);
@@ -113,7 +142,7 @@ bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double times
 
     // locate and save pupil location
     t1 = std::chrono::steady_clock::now();
-    this->eyeCenters(gray, this->leftRg, this->rightRg, this->lEye, this->rEye);
+    this->eyeCenters(gray, this->leftRg, this->rightRg, this->lEye, this->rEye, timestamp, frameNum);
     difftime("debug_fb_perf2: reinit:eyeCenters", t1, debug_fb_perf2);
     this->lastRepupilTime = timestamp;
     this->lastRepupilDiffLeft = cv::Point2d(0,0);
@@ -142,7 +171,7 @@ std::array<bool, 4> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
     const int maxDiff = 15;
     int proceedDelay = 250;
     bool canProceedL = true, canProceedR = true;
-    if ((this->lLastTime+proceedDelay) > timestamp && (this->rLastTime+proceedDelay) > timestamp && (this->lastRepupilTime+proceedDelay) > timestamp
+    if (shouldUseAnnotEyePosition == false &&(this->lLastTime+proceedDelay) > timestamp && (this->rLastTime+proceedDelay) > timestamp && (this->lastRepupilTime+proceedDelay) > timestamp
         && abs(this->lastRepupilDiffLeft.x) < 2 && abs(this->lastRepupilDiffLeft.y) < 2
         && abs(this->lastRepupilDiffRight.x) < 2 && abs(this->lastRepupilDiffRight.y) < 2
         ) {
@@ -157,17 +186,17 @@ std::array<bool, 4> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
     //printf("time since last repupil %.2lf\n", timestamp-this->lastRepupilTime);
     this->lastRepupilTime = timestamp;
     t1 = std::chrono::steady_clock::now();
-    this->eyeCenters(gray, this->leftRg, this->rightRg, newLEyeLoc, newREyeLoc);
+    this->eyeCenters(gray, this->leftRg, this->rightRg, newLEyeLoc, newREyeLoc, timestamp, frameNum);
     difftime("debug_fb_perf2: rePupil:eyeCenters", t1, debug_fb_perf2);
     doLog(debug_fb_log_repupil1, "debug_fb_log_repupil1: F %u T %lf L diff x %d y %d\n", frameNum, timestamp, newLEyeLoc.x-this->lEye.x, newLEyeLoc.y-this->lEye.y);
     doLog(debug_fb_log_repupil1, "debug_fb_log_repupil1: F %u T %lf R diff x %d y %d\n", frameNum, timestamp, newREyeLoc.x-this->rEye.x, newREyeLoc.y-this->rEye.y);
     this->lastRepupilDiffLeft = cv::Point2d(0,0);
     this->lastRepupilDiffRight = cv::Point2d(0,0);
-    if ((abs(newLEyeLoc.x-this->lEye.x)+abs(newLEyeLoc.y-this->lEye.y)) < maxDiff) {
+    if (shouldUseAnnotEyePosition == true || (abs(newLEyeLoc.x-this->lEye.x)+abs(newLEyeLoc.y-this->lEye.y)) < maxDiff) {
             this->lLastTime = timestamp;
             canUpdateL = true;
     }
-    if ((abs(newREyeLoc.x-this->rEye.x)+abs(newREyeLoc.y-this->rEye.y)) < maxDiff) {
+    if (shouldUseAnnotEyePosition == true || (abs(newREyeLoc.x-this->rEye.x)+abs(newREyeLoc.y-this->rEye.y)) < maxDiff) {
             this->rLastTime = timestamp;
             canUpdateR = true;
     }

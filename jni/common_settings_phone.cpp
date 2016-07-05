@@ -32,6 +32,8 @@ bool debug_blinks_d2 = false;
 bool debug_blinks_d3 = false;
 bool debug_blinks_d4 = false;
 
+bool shouldUseAnnotEyePosition = false;
+
 //int method = METHOD_OPTFLOW;
 //int method = METHOD_TEMPLATE_BASED;
 int method = METHOD_FARNEBACK;
