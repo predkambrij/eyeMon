@@ -80,8 +80,8 @@ void BlinkMeasureF::measureBlinksSD(double lavg, double ravg, double *lSD, doubl
     *prsd2 = ravg+(2*(*rSD));
     *mlsd2 = lavg-(2*(*lSD));
     *mrsd2 = ravg-(2*(*rSD));
-    *plsdt = lavg+(2*(*lSD));
-    *prsdt = ravg+(2*(*rSD));
+    *plsdt = lavg+(1.7*(*lSD));
+    *prsdt = ravg+(1.7*(*rSD));
     *mlsdt = lavg-(2.5*(*lSD));
     *mrsdt = ravg-(2.5*(*rSD));
 };

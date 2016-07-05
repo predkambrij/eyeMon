@@ -35,7 +35,7 @@ std::list<Blink> lBlinkChunks;
 std::list<Blink> rBlinkChunks;
 std::list<Blink> lBlinkTimeframeChunks;
 std::list<Blink> rBlinkTimeframeChunks;
-int pause = 1;
+int pause = 0;
 cv::Mat toSave;
 
 cv::CascadeClassifier face_cascade;

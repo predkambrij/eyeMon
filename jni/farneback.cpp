@@ -168,7 +168,7 @@ std::array<bool, 4> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
     bool firePreprocess = false, canUpdateL = false, canUpdateR = false;
     cv::Point newLEyeLoc, newREyeLoc;
     unsigned int curXEyesDistance, curYEyesDistance;
-    const int maxDiff = 15;
+    const int maxDiff = 24;
     int proceedDelay = 250;
     bool canProceedL = true, canProceedR = true;
     if (shouldUseAnnotEyePosition == false &&(this->lLastTime+proceedDelay) > timestamp && (this->rLastTime+proceedDelay) > timestamp && (this->lastRepupilTime+proceedDelay) > timestamp
@@ -196,6 +196,7 @@ std::array<bool, 4> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
             this->lLastTime = timestamp;
             canUpdateL = true;
     }
+    //doLog(true, "diff L %d R %d\n", abs(newLEyeLoc.x-this->lEye.x)+abs(newLEyeLoc.y-this->lEye.y), abs(newREyeLoc.x-this->rEye.x)+abs(newREyeLoc.y-this->rEye.y));
     if (shouldUseAnnotEyePosition == true || (abs(newREyeLoc.x-this->rEye.x)+abs(newREyeLoc.y-this->rEye.y)) < maxDiff) {
             this->rLastTime = timestamp;
             canUpdateR = true;
