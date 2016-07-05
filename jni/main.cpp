@@ -127,7 +127,7 @@ void doProcessing() {
     if (debug_show_img_face == true) {
         cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 60, 30);
     }
-    if (debug_show_img_farne_eyes == true && debug_show_img_main == true && method == METHOD_FARNEBACK) {
+    if (debug_show_img_farne_eyes == true && debug_show_img_main == true && (method == METHOD_FARNEBACK || method == METHOD_BLACKPIXELS)) {
         cv::namedWindow("leftR",CV_WINDOW_NORMAL); cv::moveWindow("leftR", 1300, 800);
         cv::namedWindow("rightR",CV_WINDOW_NORMAL); cv::moveWindow("rightR", 1600, 800);
         cv::namedWindow("left",CV_WINDOW_NORMAL); cv::moveWindow("left", 1300, 500);

@@ -93,7 +93,7 @@ std::array<bool, 4> Blackpixels::rePupil(cv::Mat gray, double timestamp, unsigne
     cv::Point newLEyeLoc, newREyeLoc;
     unsigned int curXEyesDistance, curYEyesDistance;
     const int maxDiff = 15;
-    int proceedDelay = 250;
+    int proceedDelay = 1;
     bool canProceedL = true, canProceedR = true;
     if ((this->lLastTime+proceedDelay) > timestamp && (this->rLastTime+proceedDelay) > timestamp && (this->lastRepupilTime+proceedDelay) > timestamp
         && abs(this->lastRepupilDiffLeft.x) < 2 && abs(this->lastRepupilDiffLeft.y) < 2
@@ -320,7 +320,7 @@ void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned 
     cv::rectangle(out, cv::Rect(this->leftRg.x+leftB.x, this->leftRg.y+leftB.y, leftB.width, leftB.height), coolor, 1, 8, 0);
     cv::rectangle(out, cv::Rect(this->rightRg.x+rightB.x, this->rightRg.y+rightB.y, rightB.width, rightB.height), coolor, 1, 8, 0);
 
-    if ((frameNum % 2) == 0) {
+    if ((frameNum % 2) == 0||true) {
         if (this->hasPLeftRight == true) {
             imshowWrapper("leftR", this->pleft, debug_show_img_templ_eyes_tmpl);
             imshowWrapper("rightR", this->pright, debug_show_img_templ_eyes_tmpl);
@@ -332,7 +332,7 @@ void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned 
         imshowWrapper("left", left, debug_show_img_templ_eyes_tmpl);
         imshowWrapper("right", right, debug_show_img_templ_eyes_tmpl);
         imshowWrapper("main", out, debug_show_img_main);
-        imshowWrapper("gray", gray, debug_show_img_main);
+        //imshowWrapper("gray", gray, debug_show_img_main);
     }
 
     this->hasPLeftRight = true;
