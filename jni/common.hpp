@@ -95,6 +95,8 @@ extern cv::CascadeClassifier face_cascade;
 
 ///
 extern int maxFramesShortList;
+extern std::map<unsigned int, double> toChunksLeft;
+extern std::map<unsigned int, double> toChunksRight;
 
 
 extern std::list<BlinkMeasure> blinkMeasure;

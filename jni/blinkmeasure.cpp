@@ -5,7 +5,8 @@
 #include <common.hpp>
 #include <blinkmeasure.hpp>
 
-
+BlinkMeasure::BlinkMeasure() {
+}
 BlinkMeasure::BlinkMeasure(unsigned int frameNum, double timestamp, double lcor, double rcor) {
     this->frameNum  = frameNum;
     this->timestamp = timestamp;
@@ -51,7 +52,7 @@ void BlinkMeasure::measureBlinks() {
     blinkMeasure.pop_front();
 
     blinkMeasureShort.push_back(bm);
-    int timeWindow = 5;
+    int timeWindow = 10;
     while (true) {
         BlinkMeasure oldestBm = blinkMeasureShort.front();
         if (oldestBm.timestamp > (bm.timestamp - (timeWindow*1000))) {
@@ -79,6 +80,7 @@ void BlinkMeasure::measureBlinks() {
             doLog(debug_blinks_d1, "debug_blinks_d1: updated maxFramesShortList %d\n", maxFramesShortList);
         }
     }
+
     if (shortBmSize < (maxFramesShortList/2)) {
         doLog(debug_blinks_d1, "debug_blinks_d1: F %d shortBmSize is less than max/2 %d T %lf\n", bm.frameNum, shortBmSize, bm.timestamp);
         return;
@@ -99,6 +101,57 @@ void BlinkMeasure::measureBlinks() {
     doLog(debug_blinks_d1, "debug_blinks_d1: lastF %d T %.2lf La %lf %.8lf Ra %lf %.8lf lSD12 %lf %lf %lf rSD12 %lf %lf %lf\n",
         bm.frameNum, bm.timestamp, bm.lcor, lavg, bm.rcor, ravg, lSD, lsd1, lsd2, rSD, rsd1, rsd2);
 
+    // spike detection
+    BlinkMeasure spikeEndBm = blinkMeasureShort.back();
+    BlinkMeasure spikeStartBm;
+    //double maxTimediffBetweenFrames = 150;
+    int skipElements = shortBmSize-(maxFramesShortList/timeWindow);
+    if (skipElements < 0) {
+        skipElements = 0;
+    }
+    int i=0;
+    std::list<BlinkMeasure>::iterator iter = blinkMeasureShort.begin();
+    while(iter != blinkMeasureShort.end()) {
+        BlinkMeasure& bm = *iter;
+        if (i == skipElements) {
+            // frames might repeat because maxFramesShortList might extend
+            // preventing that by using (l/r)LastAddedFN
+            if (bm.frameNum > BlinkMeasure::lLastAddedFN) {
+                if (toChunksLeft.find(bm.frameNum) != toChunksLeft.end()) {
+                    doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf L %lf\n", bm.frameNum, bm.timestamp, bm.lcor);
+                    BlinkMeasure::makeChunk(true, bm.timestamp, true, bm.frameNum);
+                    toChunksLeft.erase (bm.frameNum);
+                } else {
+                    BlinkMeasure::makeChunk(true, bm.timestamp, false, bm.frameNum);
+                }
+                BlinkMeasure::lLastAddedFN = bm.frameNum;
+            }
+            if (bm.frameNum > BlinkMeasure::rLastAddedFN) {
+                if (toChunksRight.find(bm.frameNum) != toChunksRight.end()) {
+                    doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf R %lf\n", bm.frameNum, bm.timestamp, bm.rcor);
+                    BlinkMeasure::makeChunk(false, bm.timestamp, true, bm.frameNum);
+                    toChunksLeft.erase (bm.frameNum);
+                } else {
+                    BlinkMeasure::makeChunk(false, bm.timestamp, false, bm.frameNum);
+                }
+                BlinkMeasure::rLastAddedFN = bm.frameNum;
+            }
+            spikeStartBm = bm;
+        }
+        double sdMultip = 2;
+        if (i > skipElements) {
+            if (bm.lcor < (spikeStartBm.lcor-(lSD*sdMultip)) && bm.lcor < (spikeEndBm.lcor-(lSD*sdMultip))) {
+                toChunksLeft[bm.frameNum] = bm.timestamp;
+            }
+            if (bm.rcor < (spikeStartBm.rcor-(rSD*sdMultip)) && bm.rcor < (spikeEndBm.rcor-(lSD*sdMultip))) {
+                toChunksRight[bm.frameNum] = bm.timestamp;
+            }
+        }
+        i++;
+        iter++;
+    }
+
+/*
     if (bm.lcor < lsd2) {
         doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf L %lf SD1 %lf SD2 %lf\n", bm.frameNum, bm.timestamp, bm.lcor, lsd1, lsd2);
         // check whether we can create a new blink (chunk)
@@ -113,6 +166,7 @@ void BlinkMeasure::measureBlinks() {
     } else {
         BlinkMeasure::makeChunk(false, (double)bm.timestamp, false, bm.frameNum);
     }
+*/
 }
 
 double BlinkMeasure::maxNonBlinkT = 0.03;
@@ -122,6 +176,9 @@ double BlinkMeasure::lLastNonBlinkT = -1;
 double BlinkMeasure::rLastNonBlinkT = -1;
 unsigned int BlinkMeasure::lLastNonBlinkF = 0;
 unsigned int BlinkMeasure::rLastNonBlinkF = 0;
+
+unsigned int BlinkMeasure::lLastAddedFN = 0;
+unsigned int BlinkMeasure::rLastAddedFN = 0;
 
 double BlinkMeasure::lFirstBlinkT = 0;
 double BlinkMeasure::rFirstBlinkT = 0;

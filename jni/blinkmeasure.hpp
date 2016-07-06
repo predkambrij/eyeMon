@@ -20,8 +20,11 @@ class BlinkMeasure {
         static double rLastNonBlinkT;
         static unsigned int rFirstBlinkF;
         static unsigned int rLastNonBlinkF;
+        static unsigned int lLastAddedFN;
+        static unsigned int rLastAddedFN;
         static double maxNonBlinkT;
 
+        BlinkMeasure();
         BlinkMeasure(unsigned int frameNum, double timestamp, double lcor, double rcor);
         static void measureBlinks();
         static void measureBlinksAVG(int shortBmSize, double *lavg, double *ravg);

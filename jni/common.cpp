@@ -42,6 +42,9 @@ cv::CascadeClassifier face_cascade;
 
 int PHONE = 1;
 int maxFramesShortList = 0;
+std::map<unsigned int, double> toChunksLeft;
+std::map<unsigned int, double> toChunksRight;
+
 std::chrono::high_resolution_clock::time_point startx = std::chrono::high_resolution_clock::now();
 
 std::mutex logMutex;
