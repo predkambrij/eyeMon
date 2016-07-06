@@ -47,7 +47,7 @@ void BlinkMeasureF::measureBlinksAVG(double *lavg, double *ravg) {
 };
 
 void BlinkMeasureF::measureBlinksSD(double *lSD, double *rSD, double *plsd1, double *prsd1, double *plsd2, double *prsd2, double *plsdt, double *prsdt, double *mlsd1, double *mrsd1, double *mlsd2, double *mrsd2, double *mlsdt, double *mrsdt) {
-    int lSize = 0, rSize = 0;
+    int lSize, rSize;
     double lavg, ravg;
     std::list<BlinkMeasureF>::iterator iter;
 
@@ -79,6 +79,7 @@ void BlinkMeasureF::measureBlinksSD(double *lSD, double *rSD, double *plsd1, dou
     }
 
     // measure SD for defining the second one
+    lSize = 0; rSize = 0;
     iter = blinkMeasureShortf.begin();
     while(iter != blinkMeasureShortf.end()) {
         BlinkMeasureF& bm = *iter;
@@ -147,9 +148,8 @@ void BlinkMeasureF::measureBlinksSD(double *lSD, double *rSD, double *plsd1, dou
         }
 
         // second
-        *lSD = 0;
-        *rSD = 0;
-        lSize = 0, rSize = 0;
+        *lSD = 0; *rSD = 0;
+        lSize = 0; rSize = 0;
         iter = blinkMeasureShortf.begin();
         while(iter != blinkMeasureShortf.end()) {
             BlinkMeasureF& bm = *iter;
