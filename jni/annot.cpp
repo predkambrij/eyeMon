@@ -16,7 +16,8 @@ bool debug_t2_show_img_main = true;
 //char fileName[100] = "/home/developer/other/posnetki/o4_87.mp4"; // na zacetku gledal na sredi ekrana, pol premikal glavo
 //char fileName[100] = "/home/developer/other/posnetki/o4_89.mp4"; // knjiznica
 //char fileName[100] = "/home/developer/other/posnetki/o4_90.mp4"; // knjiznica (na zac. gledal na sredo, pol premikal glavo,...)
-char fileName[100] = "/home/developer/other/posnetki/talking.avi";
+char fileName[100] = "/home/developer/other/posnetki/o4_101.mp4"; // iso noise
+//char fileName[100] = "/home/developer/other/posnetki/talking.avi";
 
 class FrameCarrier {
     public: cv::Mat frame;
