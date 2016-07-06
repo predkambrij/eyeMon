@@ -67,8 +67,10 @@ void Farneback::eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rig
             int lx, ly, rx, ry;
             lx = (annot.l1x+annot.l2x)/2;
             ly = (annot.l1y+annot.l2y)/2;
+            ly -= 5;
             rx = (annot.r1x+annot.r2x)/2;
             ry = (annot.r1y+annot.r2y)/2;
+            ry -= 5;
             lx -= this->leftRg.x;
             ly -= this->leftRg.y;
             rx -= this->rightRg.x;
@@ -286,7 +288,11 @@ std::array<bool, 4> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
         t1 = std::chrono::steady_clock::now();
         this->preprocess(leftRg, rightRg, timestamp, frameNum);
         difftime("debug_fb_perf2: rePupil:preprocess", t1, debug_fb_perf2);
-        this->pleft = leftRg; this->pright = rightRg;
+        if (this->useDoubleLengthDiff == true) {
+            this->ppleft = leftRg; this->ppright = rightRg;
+        } else {
+            this->pleft = leftRg; this->pright = rightRg;
+        }
         //pause = 1;
     }
 
@@ -386,7 +392,11 @@ void Farneback::method(cv::Mat gray, bool canProceedL, bool canProceedR, bool ca
 
     if (canProceedL == true) {
         t1 = std::chrono::steady_clock::now();
-        cv::calcOpticalFlowFarneback(this->pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
+        if (this->useDoubleLengthDiff == true) {
+            cv::calcOpticalFlowFarneback(this->ppleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
+        } else {
+            cv::calcOpticalFlowFarneback(this->pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
+        }
         difftime("debug_fb_perf2: method:calcOpticalFlowFarnebackL", t1, debug_fb_perf2);
         t1 = std::chrono::steady_clock::now();
         int leftBw = this->leftRg.width*0.75, leftBh = this->leftRg.height*0.4;
@@ -399,7 +409,11 @@ void Farneback::method(cv::Mat gray, bool canProceedL, bool canProceedR, bool ca
     }
     if (canProceedR == true) {
         t1 = std::chrono::steady_clock::now();
-        cv::calcOpticalFlowFarneback(this->pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
+        if (this->useDoubleLengthDiff == true) {
+            cv::calcOpticalFlowFarneback(this->ppright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
+        } else {
+            cv::calcOpticalFlowFarneback(this->pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
+        }
         difftime("debug_fb_perf2: method:calcOpticalFlowFarnebackR", t1, debug_fb_perf2);
         t1 = std::chrono::steady_clock::now();
         int rightBw = this->rightRg.width*0.75, rightBh = this->rightRg.height*0.4;
@@ -423,12 +437,14 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
     std::chrono::time_point<std::chrono::steady_clock> t1;
     cv::Mat left, right, flowLeft, flowRight;
     cv::Rect leftB, rightB;
+    bool wasReinit = false;
 
     if (flagReinit == true) {
         if (this->reinit(gray, left, right, timestamp, frameNum) != true) {
             doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf reinit failed\n", frameNum, timestamp);
             return;
         } else {
+            wasReinit = true;
             this->flagReinit = false;
             doLog(debug_fb_log_tracking, "debug_fb_log_tracking: F %u T %.3lf status start\n", frameNum, timestamp);
         }
@@ -487,8 +503,13 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
         t1 = std::chrono::steady_clock::now();
 
         if (this->hasPLeftRight == true) {
-            imshowWrapper("leftR", this->pleft, debug_show_img_farne_eyes);
-            imshowWrapper("rightR", this->pright, debug_show_img_farne_eyes);
+            if (this->useDoubleLengthDiff == true) {
+                imshowWrapper("leftR", this->ppleft, debug_show_img_farne_eyes);
+                imshowWrapper("rightR", this->ppright, debug_show_img_farne_eyes);
+            } else {
+                imshowWrapper("leftR", this->pleft, debug_show_img_farne_eyes);
+                imshowWrapper("rightR", this->pright, debug_show_img_farne_eyes);
+            }
         }
 
         imshowWrapper("left", left, debug_show_img_farne_eyes);
@@ -497,9 +518,28 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
         imshowWrapper("gray", mainZoomedMat, debug_show_img_gray);
         difftime("debug_fb_perf2: process:showimgs", t1, debug_fb_perf2);
     }
+    if (this->hasPLeftRight == false || wasReinit == true) {
+        if (this->useDoubleLengthDiff == true) {
+            this->ppleft = left;
+            this->ppright = right;
+            this->pleft = left;
+            this->pright = right;
+        } else {
+            this->pleft = left;
+            this->pright = right;
+        }
+    } else {
+        if (this->useDoubleLengthDiff == true) {
+            this->ppleft = this->pleft;
+            this->ppright = this->pright;
+            this->pleft = left;
+            this->pright = right;
+        } else {
+            this->pleft = left;
+            this->pright = right;
+        }
+    }
     this->hasPLeftRight = true;
-    this->pleft = left;
-    this->pright = right;
     return;
 }
 

@@ -14,6 +14,7 @@
 
 class Farneback {
     public:
+        bool useDoubleLengthDiff = false;
         bool hasPLeftRight = false;
         bool canCallMeasureBlinks = true;
         bool onlyLower = false;
@@ -22,7 +23,7 @@ class Farneback {
         double lastRepupilTime = 0;
         cv::Point2d lastRepupilDiffLeft, lastRepupilDiffRight;
         unsigned int initEyesDistance;
-        cv::Mat pleft, pright;
+        cv::Mat pleft, pright, ppleft, ppright;
         cv::Rect leftRg, rightRg;
         
         //cv::Rect face, leftEyeRegion, rightEyeRegion;
