@@ -304,7 +304,7 @@ bool getTagName(std::string& str) {
 int main() { // int argc, char * argv[]
     //processOptions(argc, argv);
     //return 0;
-
+#ifdef IS_TEST
     if (shouldUseAnnotEyePosition == true) {
         std::string tagNameS(fileName);
         bool res = getTagName(tagNameS);
@@ -349,7 +349,7 @@ int main() { // int argc, char * argv[]
         //printf("seems we did it %lu\n", annotEyePositionMap.size());
         //printf("%d %d (%d %d)\n", annotEyePositionMap[1].lx1, annotEyePositionMap[1].ly1, , annotEyePositionMap.find(1)!=annotEyePositionMap.end());
     }
-
+#endif
     PHONE = 0;
 
     char faceDetector[200] = "/home/developer/other/android_deps/OpenCV-2.4.10-android-sdk/samples/optical-flow/res/raw/lbpcascade_frontalface.xml";
