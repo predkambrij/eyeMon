@@ -222,8 +222,8 @@ void BlinkMeasure::measureBlinksSD(double *lSD, double *rSD, double *lsdt, doubl
             *rSD = 0;
         }
     }
-    *lsdt = (*lSD)*8;
-    *rsdt = (*rSD)*8;
+    *lsdt = (*lSD)*5;
+    *rsdt = (*rSD)*5;
 };
 
 void BlinkMeasure::measureBlinks() {
@@ -295,7 +295,7 @@ void BlinkMeasure::measureBlinks() {
     BlinkMeasure spikeEndBm = blinkMeasureShort.back();
     BlinkMeasure spikeStartBm;
     //double maxTimediffBetweenFrames = 150;
-    int skipElements = shortBmSize-(maxFramesShortList/timeWindow);
+    int skipElements = shortBmSize-(maxFramesShortList/(timeWindow*2));
     if (skipElements < 0) {
         skipElements = 0;
     }
