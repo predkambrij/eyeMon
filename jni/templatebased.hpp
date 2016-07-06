@@ -16,6 +16,7 @@ class TemplateBased {
         cv::Mat leftTemplate, rightTemplate;
         bool hasTemplate;
         double prevTimestamp;
+        double initialEyesDistance;
         cv::Point lEye, rEye;
         double lLastTime, rLastTime;
 
@@ -31,7 +32,7 @@ class TemplateBased {
         //void frameTimeProcessing(double timestamp);
         int faceDetect(cv::Mat gray, cv::Rect *face);
         void updateSearchRegion(cv::Point matchLocL, cv::Point matchLocR, double timestamp);
-        void checkTracking(double timestamp);
+        void checkTracking(double timestamp, unsigned int frameNum);
         void run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum);
 
 #ifdef IS_PHONE

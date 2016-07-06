@@ -73,6 +73,7 @@ bool TemplateBased::eyesInit(cv::Mat& gray, double timestamp) {
     // region size is double size of leftTemplate and leftTemplate size
     this->lEye = cv::Point(face.x+leftE.x, face.y+leftE.y);
     this->rEye = cv::Point(face.x+rightE.x, face.y+rightE.y);
+    this->initialEyesDistance = this->rEye.x-this->lEye.x;
     this->lLastTime = timestamp;
     this->rLastTime = timestamp;
     doLog(debug_tmpl_log, "debug_tmpl_log: lEye %d %d rEye %d %d\n", lEye.x, lEye.y, rEye.x, rEye.y);
@@ -132,12 +133,21 @@ bool TemplateBased::updateTemplSearch(cv::Mat gray, cv::Rect& lTemplSearchR, cv:
     //GaussianBlur(lTemplSearch, lTemplSearch, cv::Size(3,3), 0);
     //GaussianBlur(rTemplSearch, rTemplSearch, cv::Size(3,3), 0);
 };
-void TemplateBased::checkTracking(double timestamp) {
+void TemplateBased::checkTracking(double timestamp, unsigned int frameNum) {
     if ((this->lLastTime+500) < timestamp || (this->rLastTime+500) < timestamp) {
         // we lost eyes, request reinit
         this->hasTemplate = false;
         doLog(debug_tmpl_log, "debug_tmpl_log: reinit: eyes were displaced timestamp %lf lLastTime %lf rLastTime %lf\n",
             timestamp, this->lLastTime, this->rLastTime);
+    }
+    int curXEyesDistance = this->rEye.x-this->lEye.x;
+    int curYEyesDistance = abs(this->rEye.y-this->lEye.y);
+    if (curXEyesDistance < (this->initialEyesDistance*0.75)
+        || curXEyesDistance > (this->initialEyesDistance*1.30)
+        || curYEyesDistance > this->initialEyesDistance*0.30) {
+        doLog(debug_fb_log1, "debug_tmpl_log: F %u T %lf initEyesDistance %u curXEyesDistance %u curYEyesDistance %u\n",
+            frameNum, timestamp, this->initialEyesDistance, curXEyesDistance, curYEyesDistance);
+        this->hasTemplate = false;
     }
 };
 void TemplateBased::updateSearchRegion(cv::Point matchLocL, cv::Point matchLocR, double timestamp) {
@@ -200,7 +210,7 @@ void TemplateBased::method(cv::Mat& gray, cv::Mat& out, double timestamp, unsign
     this->updateSearchRegion(matchLocL, matchLocR, timestamp);
 
     // re-init the tracking if we think that we lost eyes
-    this->checkTracking(timestamp);
+    this->checkTracking(timestamp, frameNum);
 
     if (debug_show_img_main == true) {
         circle(out, cv::Point2f((float)matchLocL.x, (float)matchLocL.y), 10, cv::Scalar(0,255,0), -1, 8);
@@ -236,9 +246,8 @@ void TemplateBased::process(cv::Mat gray, cv::Mat out, double timestamp, unsigne
         //                                                                      we reinitialize (set hasTemplate to false)
         this->method(gray, out, timestamp, frameNum);
     }
-    if (timestamp-this->prevTimestamp > 20000) {
+    if (timestamp-this->prevTimestamp > 5000) {
         // reinitialize on regular intervals
-        printf("T %.2lf\n", timestamp);
         this->hasTemplate = false;
     }
 };
@@ -314,6 +323,7 @@ void TemplateBased::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
     t1 = std::chrono::steady_clock::now();
     this->measureBlinks();
     difftime("-- measureBlinks", t1, debug_tmpl_perf2);
-
-    imshowWrapper("main", out, debug_show_img_main);
+    if (frameNum % 2 == 0) {
+        imshowWrapper("main", out, debug_show_img_main);
+    }
 };
