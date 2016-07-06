@@ -9,8 +9,12 @@ class BlinkMeasure {
         double timestamp;
         double lcor;
         double rcor;
+        bool canProceedL, canProceedR, canUpdateL, canUpdateR;
         // converting to chuncks
         static bool lAdding;
+        static bool isFirst;
+        static double prevLcor;
+        static double prevRcor;
         static double lFirstBlinkT;
         static double lLastNonBlinkT;
         static unsigned int lFirstBlinkF;
@@ -28,7 +32,7 @@ class BlinkMeasure {
         BlinkMeasure(unsigned int frameNum, double timestamp, double lcor, double rcor);
         static void measureBlinks();
         static void measureBlinksAVG(int shortBmSize, double *lavg, double *ravg);
-        static void measureBlinksSD(int shortBmSize, double lavg, double ravg, double *lSD, double *rSD, double *lsd1, double *rsd1, double *lsd2, double *rsd2);
+        static void measureBlinksSD(double *lSD, double *rSD, double *lsdt, double *rsdt, double *plsdf, double *prsdf, double *mlsdf, double *mrsdf);
         static void makeChunk(bool isLeft, double timestamp, bool isBlink, unsigned int frameNum);
         static void makeNotification(bool isLeft);
 };

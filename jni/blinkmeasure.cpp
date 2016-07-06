@@ -12,6 +12,10 @@ BlinkMeasure::BlinkMeasure(unsigned int frameNum, double timestamp, double lcor,
     this->timestamp = timestamp;
     this->lcor      = lcor;
     this->rcor      = rcor;
+    this->canProceedL = true;
+    this->canProceedR = true;
+    this->canUpdateL = true;
+    this->canUpdateR = true;
 };
 
 void BlinkMeasure::measureBlinksAVG(int shortBmSize, double *lavg, double *ravg) {
@@ -26,20 +30,200 @@ void BlinkMeasure::measureBlinksAVG(int shortBmSize, double *lavg, double *ravg)
     *ravg = *ravg/shortBmSize;
 };
 
-void BlinkMeasure::measureBlinksSD(int shortBmSize, double lavg, double ravg, double *lSD, double *rSD, double *lsd1, double *rsd1, double *lsd2, double *rsd2) {
-    std::list<BlinkMeasure>::iterator iter = blinkMeasureShort.begin();
+void BlinkMeasure::measureBlinksSD(double *lSD, double *rSD, double *lsdt, double *rsdt, double *plsdf, double *prsdf, double *mlsdf, double *mrsdf) {
+    int lSize, rSize;
+    double lavg, ravg;
+    double prevValL, prevValR;
+    int i;
+    std::list<BlinkMeasure>::iterator iter;
+
+    // mean for first SD
+    lavg = 0; ravg = 0;
+    lSize = 0; rSize = 0;
+    iter = blinkMeasureShort.begin();
+    i = 0;
     while(iter != blinkMeasureShort.end()) {
         BlinkMeasure& bm = *iter;
-        *lSD = *lSD+pow(lavg-bm.lcor, 2);
-        *rSD = *rSD+pow(ravg-bm.rcor, 2);
+        if (bm.canProceedL == true) {
+            if (i == 0) {
+                prevValL = bm.lcor;
+            } else {
+                lavg += (bm.lcor-prevValL);
+                prevValL = bm.lcor;
+                lSize++;
+            }
+        }
+        if (bm.canProceedR == true) {
+            if (i == 0) {
+                prevValR = bm.rcor;
+            } else {
+                ravg += (bm.rcor-prevValR);
+                prevValR = bm.rcor;
+                rSize++;
+            }
+        }
         iter++;
+        i++;
     }
-    *lSD = pow(*lSD/shortBmSize, 0.5);
-    *rSD = pow(*rSD/shortBmSize, 0.5);
-    *lsd1 = lavg-(1*(*lSD));
-    *rsd1 = ravg-(1*(*rSD));
-    *lsd2 = lavg-(2*(*lSD));
-    *rsd2 = ravg-(2*(*rSD));
+    if (lSize > 0) {
+        lavg = lavg/lSize;
+    } else {
+        lavg = 0;
+    }
+    if (rSize > 0) {
+        ravg = ravg/rSize;
+    } else {
+        ravg = 0;
+    }
+
+    // measure SD for defining the second one
+    lSize = 0; rSize = 0;
+    iter = blinkMeasureShort.begin();
+    i = 0;
+    while(iter != blinkMeasureShort.end()) {
+        BlinkMeasure& bm = *iter;
+        if (bm.canProceedL == true) {
+            if (i == 0) {
+                prevValL = bm.lcor;
+            } else {
+                *lSD = *lSD+pow(lavg-(bm.lcor-prevValL), 2);
+                prevValL = bm.lcor;
+                lSize++;
+            }
+        }
+        if (bm.canProceedR == true) {
+            if (i == 0) {
+                prevValR = bm.rcor;
+            } else {
+                *rSD = *rSD+pow(ravg-(bm.rcor-prevValR), 2);
+                prevValR = bm.rcor;
+                rSize++;
+            }
+        }
+        iter++;
+        i++;
+    }
+    if (lSize > 0) {
+        *lSD = pow(*lSD/lSize, 0.5);
+    } else {
+        *lSD = 0;
+    }
+    if (rSize > 0) {
+        *rSD = pow(*rSD/rSize, 0.5);
+    } else {
+        *rSD = 0;
+    }
+    double fSDMag = 4;
+    *plsdf = lavg+(fSDMag*(*lSD));
+    *prsdf = ravg+(fSDMag*(*rSD));
+    *mlsdf = lavg-(fSDMag*(*lSD));
+    *mrsdf = ravg-(fSDMag*(*rSD));
+
+    double doubleSD = true;
+    if (doubleSD == true) {
+        // second SD
+        double plTmpSDf = lavg+(fSDMag*(*lSD));
+        double prTmpSDf = ravg+(fSDMag*(*rSD));
+        double mlTmpSDf = lavg-(fSDMag*(*lSD));
+        double mrTmpSDf = ravg-(fSDMag*(*rSD));
+
+        // mean for second SD
+        lavg = 0; ravg = 0;
+        lSize = 0; rSize = 0;
+        iter = blinkMeasureShort.begin();
+        i=0;
+        while(iter != blinkMeasureShort.end()) {
+            BlinkMeasure& bm = *iter;
+            if (bm.canProceedL == true) {
+                if (i == 0) {
+                    prevValL = bm.lcor;
+                } else {
+                    if (mlTmpSDf < (bm.lcor-prevValL) && (bm.lcor-prevValL) < plTmpSDf) {
+                        lavg += (bm.lcor-prevValL);
+                        prevValL = bm.lcor;
+                        lSize++;
+                    } else {
+                        prevValL = bm.lcor;
+                    }
+                }
+            }
+            if (bm.canProceedR == true) {
+                if (i == 0) {
+                    prevValR = bm.rcor;
+                } else {
+                    if (mrTmpSDf < (bm.rcor-prevValR) && (bm.rcor-prevValR) < prTmpSDf) {
+                        ravg += (bm.rcor-prevValR);
+                        prevValR = bm.rcor;
+                        rSize++;
+                    } else {
+                        prevValR = bm.rcor;
+                    }
+                }
+            }
+            iter++;
+            i++;
+        }
+        if (lSize > 0) {
+            lavg = lavg/lSize;
+        } else {
+            lavg = 0;
+        }
+        if (rSize > 0) {
+            ravg = ravg/rSize;
+        } else {
+            ravg = 0;
+        }
+
+        // second
+        *lSD = 0;
+        *rSD = 0;
+        lSize = 0, rSize = 0;
+        iter = blinkMeasureShort.begin();
+        i=0;
+        while(iter != blinkMeasureShort.end()) {
+            BlinkMeasure& bm = *iter;
+            if (bm.canProceedL == true) {
+                if (i == 0) {
+                    prevValL = bm.lcor;
+                } else {
+                    if (mlTmpSDf < (bm.lcor-prevValL) && (bm.lcor-prevValL) < plTmpSDf) {
+                        *lSD = *lSD+pow(lavg-(bm.lcor-prevValL), 2);
+                        prevValL = bm.lcor;
+                        lSize++;
+                    } else {
+                        prevValL = bm.lcor;
+                    }
+                }
+            }
+            if (bm.canProceedR == true) {
+                if (i == 0) {
+                    prevValR = bm.rcor;
+                } else {
+                    if (mrTmpSDf < (bm.rcor-prevValR) && (bm.rcor-prevValR) < prTmpSDf) {
+                        *rSD = *rSD+pow(ravg-(bm.rcor-prevValR), 2);
+                        prevValR = bm.rcor;
+                        rSize++;
+                    } else {
+                        prevValR = bm.rcor;
+                    }
+                }
+            }
+            iter++;
+            i++;
+        }
+        if (lSize > 0) {
+            *lSD = pow(*lSD/lSize, 0.5);
+        } else {
+            *lSD = 0;
+        }
+        if (rSize > 0) {
+            *rSD = pow(*rSD/rSize, 0.5);
+        } else {
+            *rSD = 0;
+        }
+    }
+    *lsdt = (*lSD)*8;
+    *rsdt = (*rSD)*8;
 };
 
 void BlinkMeasure::measureBlinks() {
@@ -52,7 +236,7 @@ void BlinkMeasure::measureBlinks() {
     blinkMeasure.pop_front();
 
     blinkMeasureShort.push_back(bm);
-    int timeWindow = 10;
+    int timeWindow = 5;
     while (true) {
         BlinkMeasure oldestBm = blinkMeasureShort.front();
         if (oldestBm.timestamp > (bm.timestamp - (timeWindow*1000))) {
@@ -88,18 +272,24 @@ void BlinkMeasure::measureBlinks() {
         doLog(debug_blinks_d1, "debug_blinks_d1: F %d shortBmSize is big enough %d\n", bm.frameNum, shortBmSize);
     }
 
-    double lavg = 0;
-    double ravg = 0;
+    double lavg = 0, ravg = 0;
     BlinkMeasure::measureBlinksAVG(shortBmSize, &lavg, &ravg);
-    double lSD = 0;
-    double rSD = 0;
-    double lsd1 = 0;
-    double rsd1 = 0;
-    double lsd2 = 0;
-    double rsd2 = 0;
-    BlinkMeasure::measureBlinksSD(shortBmSize, lavg, ravg, &lSD, &rSD, &lsd1, &rsd1, &lsd2, &rsd2);
-    doLog(debug_blinks_d1, "debug_blinks_d1: lastF %d T %.2lf La %lf %.8lf Ra %lf %.8lf lSD12 %lf %lf %lf rSD12 %lf %lf %lf\n",
-        bm.frameNum, bm.timestamp, bm.lcor, lavg, bm.rcor, ravg, lSD, lsd1, lsd2, rSD, rsd1, rsd2);
+    double lSD = 0, rSD = 0;
+    double lsdt = 0, rsdt = 0;
+    double plsdf = 0, prsdf = 0, mlsdf = 0, mrsdf = 0;
+    BlinkMeasure::measureBlinksSD(&lSD, &rSD, &lsdt, &rsdt, &plsdf, &prsdf, &mlsdf, &mrsdf);
+    if (BlinkMeasure::isFirst == false) {
+        BlinkMeasure::isFirst = true;
+        BlinkMeasure::prevLcor = bm.lcor;
+        BlinkMeasure::prevRcor = bm.rcor;
+    } else {
+        doLog(debug_blinks_d1, "debug_blinks_d1: lastF %d T %.2lf La %lf %lf %.8lf Ra %lf %lf %.8lf lSDft %lf %lf %lf %lf rSDft %lf %lf %lf %lf\n",
+            bm.frameNum, bm.timestamp,
+            bm.lcor, lavg, (bm.lcor-BlinkMeasure::prevLcor), bm.rcor, ravg, (bm.rcor-BlinkMeasure::prevRcor),
+            lSD, plsdf, mlsdf, lsdt, rSD, prsdf, mrsdf, rsdt);
+            BlinkMeasure::prevLcor = bm.lcor;
+            BlinkMeasure::prevRcor = bm.rcor;
+    }
 
     // spike detection
     BlinkMeasure spikeEndBm = blinkMeasureShort.back();
@@ -138,12 +328,11 @@ void BlinkMeasure::measureBlinks() {
             }
             spikeStartBm = bm;
         }
-        double sdMultip = 2;
         if (i > skipElements) {
-            if (bm.lcor < (spikeStartBm.lcor-(lSD*sdMultip)) && bm.lcor < (spikeEndBm.lcor-(lSD*sdMultip))) {
+            if (bm.lcor < (spikeStartBm.lcor-lsdt) && bm.lcor < (spikeEndBm.lcor-lsdt)) {
                 toChunksLeft[bm.frameNum] = bm.timestamp;
             }
-            if (bm.rcor < (spikeStartBm.rcor-(rSD*sdMultip)) && bm.rcor < (spikeEndBm.rcor-(lSD*sdMultip))) {
+            if (bm.rcor < (spikeStartBm.rcor-rsdt) && bm.rcor < (spikeEndBm.rcor-rsdt)) {
                 toChunksRight[bm.frameNum] = bm.timestamp;
             }
         }
@@ -172,6 +361,9 @@ void BlinkMeasure::measureBlinks() {
 double BlinkMeasure::maxNonBlinkT = 0.03;
 bool BlinkMeasure::lAdding = false;
 bool BlinkMeasure::rAdding = false;
+bool BlinkMeasure::isFirst = false;
+double BlinkMeasure::prevLcor = 0;
+double BlinkMeasure::prevRcor = 0;
 double BlinkMeasure::lLastNonBlinkT = -1;
 double BlinkMeasure::rLastNonBlinkT = -1;
 unsigned int BlinkMeasure::lLastNonBlinkF = 0;
