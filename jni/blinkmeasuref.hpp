@@ -38,7 +38,7 @@ class BlinkMeasureF {
         static void measureBlinks(BlinkMeasureF bm);
         static void stateMachine(unsigned int frameNum, double timestamp, double leftY, double leftLowSD, double leftHighSD, double rightY, double rightLowSD, double rightHighSD);
         static void measureBlinksAVG(double *lavg, double *ravg);
-        static void measureBlinksSD(double lavg, double ravg, double *lSD, double *rSD, double *plsd1, double *prsd1, double *plsd2, double *prsd2, double *plsdt, double *prsdt, double *mlsd1, double *mrsd1, double *mlsd2, double *mrsd2, double *mlsdt, double *mrsdt);
+        static void measureBlinksSD(double *lSD, double *rSD, double *plsd1, double *prsd1, double *plsd2, double *prsd2, double *plsdt, double *prsdt, double *mlsd1, double *mrsd1, double *mlsd2, double *mrsd2, double *mlsdt, double *mrsdt);
         static void makeChunk(bool isLeft, double timestamp, bool isBlink, unsigned int frameNum);
         static void makeNotification(bool isLeft);
 };
