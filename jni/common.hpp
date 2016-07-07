@@ -71,6 +71,7 @@ extern bool debug_blinks_d2; // shortBmSize
 extern bool debug_blinks_d3; // progress of blink detection state machine
 extern bool debug_blinks_d4; // adding chuncks
 extern bool debug_blinks_d5; // joined chuncks
+extern bool debug_blink_beeps;
 // optical flow
 extern int flg;
 

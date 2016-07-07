@@ -253,7 +253,12 @@ void TemplateBased::process(cv::Mat gray, cv::Mat out, double timestamp, unsigne
 };
 void TemplateBased::measureBlinks() {
     BlinkMeasure::measureBlinks();
-    BlinkMeasure::joinBlinks();
+    bool ret = BlinkMeasure::joinBlinks();
+    if (ret == true) {
+        if (debug_blink_beeps == true) {
+            system("/usr/bin/beep -l 200 &");
+        }
+    }
 };
 /*
 void TemplateBased::checkNotificationStatus(double timestamp) {

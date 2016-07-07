@@ -491,7 +491,7 @@ void Farneback::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
         cv::rectangle(out, cv::Rect(this->rightRg.x+rightB.x, this->rightRg.y+rightB.y, rightB.width, rightB.height), coolor, 1, 8, 0);
         difftime("debug_fb_perf2: process:drawing_out", t1, debug_fb_perf2);
     }
-    if ((frameNum % 2) == 0 || true) {
+    if ((frameNum % 2) == 0) {
 
         int rowsO = out.rows/4;
         int colsO = out.cols/4;
@@ -569,7 +569,12 @@ void Farneback::measureBlinks() {
         while (blinkMeasuref.size() > 0) {
             BlinkMeasureF::measureBlinks(blinkMeasuref.front());
             blinkMeasuref.pop_front();
-            BlinkMeasureF::joinBlinks();
+            bool ret = BlinkMeasureF::joinBlinks();
+            if (ret == true) {
+                if (debug_blink_beeps == true) {
+                    system("/usr/bin/beep -l 200 &");
+                }
+            }
         }
     }
 };
