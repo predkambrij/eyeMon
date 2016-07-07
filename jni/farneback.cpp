@@ -123,7 +123,8 @@ bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double times
     if (this->onlyLower == true) {
         rows2 = face.height/4.0;
     } else {
-        rows2 = face.height/4.3;
+        //rows2 = face.height/4.3;
+        rows2 = face.height/4.0;
     }
     int cols2 = face.width/3.7;
 
@@ -399,7 +400,7 @@ void Farneback::method(cv::Mat gray, bool canProceedL, bool canProceedR, bool ca
         }
         difftime("debug_fb_perf2: method:calcOpticalFlowFarnebackL", t1, debug_fb_perf2);
         t1 = std::chrono::steady_clock::now();
-        int leftBw = this->leftRg.width*0.75, leftBh = this->leftRg.height*0.4;
+        int leftBw = this->leftRg.width*0.75, leftBh = this->leftRg.height*0.5;
         leftB = cv::Rect(this->lEye.x-(leftBw/2), this->lEye.y-(leftBh/2), leftBw, leftBh);
         this->dominantDirection(flowLeft, leftB, lTotalP, lBoundingP, lDiffP);
         difftime("debug_fb_perf2: method:leftDominant", t1, debug_fb_perf2);
@@ -416,7 +417,7 @@ void Farneback::method(cv::Mat gray, bool canProceedL, bool canProceedR, bool ca
         }
         difftime("debug_fb_perf2: method:calcOpticalFlowFarnebackR", t1, debug_fb_perf2);
         t1 = std::chrono::steady_clock::now();
-        int rightBw = this->rightRg.width*0.75, rightBh = this->rightRg.height*0.4;
+        int rightBw = this->rightRg.width*0.75, rightBh = this->rightRg.height*0.5;
         rightB = cv::Rect(this->rEye.x-(rightBw/2), this->rEye.y-(rightBh/2), rightBw, rightBh);
         this->dominantDirection(flowRight, rightB, rTotalP, rBoundingP, rDiffP);
         difftime("debug_fb_perf2: method:rightDominant", t1, debug_fb_perf2);
