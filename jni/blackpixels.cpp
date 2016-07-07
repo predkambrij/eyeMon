@@ -277,8 +277,8 @@ void Blackpixels::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& t
     //cv::calcOpticalFlowFarneback(this->pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
 
     // bounding boxes
-    int leftBw = this->leftRg.width*0.75, leftBh = this->leftRg.height*0.4;
-    int rightBw = this->rightRg.width*0.75, rightBh = this->rightRg.height*0.4;
+    int leftBw = this->leftRg.width*0.55, leftBh = this->leftRg.height*0.4;
+    int rightBw = this->rightRg.width*0.55, rightBh = this->rightRg.height*0.4;
     leftB = cv::Rect(this->lEye.x-(leftBw/2), this->lEye.y-(leftBh/2), leftBw, leftBh);
     rightB = cv::Rect(this->rEye.x-(rightBw/2), this->rEye.y-(rightBh/2), rightBw, rightBh);
     double lNum = this->countPixels(tLeft, leftB);
