@@ -483,7 +483,8 @@ bool BlinkMeasureF::joinBlinks() {
                 joinedBlinkChunksf.push_back(joinedBlink);
                 anyAdded = true;
                 takenRBlinks.insert(rb.frameStart);
-                doLog(debug_blinks_d5, "debug_blinks_d5: added %u-%u (%.3lf)\n", frameStart, frameEnd, timestampEnd-timestampStart);
+                doLog(debug_blinks_d5, "debug_blinks_d5: adding  fs %d fe %d start %.2lf end %lf duration %lf\n",
+                    frameStart, frameEnd, timestampStart, timestampEnd, timestampEnd-timestampStart);
                 break;
             }
             rIter++;
