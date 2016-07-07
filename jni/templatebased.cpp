@@ -253,6 +253,7 @@ void TemplateBased::process(cv::Mat gray, cv::Mat out, double timestamp, unsigne
 };
 void TemplateBased::measureBlinks() {
     BlinkMeasure::measureBlinks();
+    BlinkMeasure::joinBlinks();
 };
 /*
 void TemplateBased::checkNotificationStatus(double timestamp) {

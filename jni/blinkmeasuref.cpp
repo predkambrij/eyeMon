@@ -4,6 +4,7 @@
 #include <opencv2/core/core.hpp>
 
 #include <math.h>
+#include <set>
 #include <common.hpp>
 #include <blinkmeasuref.hpp>
 
@@ -278,16 +279,18 @@ void BlinkMeasureF::stateMachine(unsigned int frameNum, double timestamp, double
     if (BlinkMeasureF::lCurState == 0) {
         if (BlinkMeasureF::lLastVal == 0) {
             if (leftY == 0) {
-                return;
+                // do nothing
+            } else {
+                // first loop only
+                BlinkMeasureF::lLastVal = leftY;
             }
-            // first loop only
-            BlinkMeasureF::lLastVal = leftY;
         }
         if (BlinkMeasureF::lLastVal > 0 && leftY < 0) {
             BlinkMeasureF::lZeroCrossPosToNegF = frameNum;
             BlinkMeasureF::lZeroCrossPosToNegT = timestamp;
         }
         if (leftY < leftLowSD) {
+            BlinkMeasureF::lAdding = true;
             BlinkMeasureF::lCurState = 1;
         }
     } else if (BlinkMeasureF::lCurState == 1) {
@@ -310,6 +313,7 @@ void BlinkMeasureF::stateMachine(unsigned int frameNum, double timestamp, double
 
                 BlinkMeasureF::lZeroCrossPosToNegF = frameNum;
                 BlinkMeasureF::lZeroCrossPosToNegT = timestamp;
+                BlinkMeasureF::lAdding = false;
                 BlinkMeasureF::lCurState = 0;
             }
         }
@@ -322,16 +326,18 @@ void BlinkMeasureF::stateMachine(unsigned int frameNum, double timestamp, double
     if (BlinkMeasureF::rCurState == 0) {
         if (BlinkMeasureF::rLastVal == 0) {
             if (rightY == 0) {
-                return;
+                // do nothing
+            } else {
+                // first loop only
+                BlinkMeasureF::rLastVal = rightY;
             }
-            // first loop only
-            BlinkMeasureF::rLastVal = rightY;
         }
         if (BlinkMeasureF::rLastVal > 0 && rightY < 0) {
             BlinkMeasureF::rZeroCrossPosToNegF = frameNum;
             BlinkMeasureF::rZeroCrossPosToNegT = timestamp;
         }
         if (rightY < rightLowSD) {
+            BlinkMeasureF::rAdding = true;
             BlinkMeasureF::rCurState = 1;
         }
     } else if (BlinkMeasureF::rCurState == 1) {
@@ -354,6 +360,7 @@ void BlinkMeasureF::stateMachine(unsigned int frameNum, double timestamp, double
 
                 BlinkMeasureF::rZeroCrossPosToNegF = frameNum;
                 BlinkMeasureF::rZeroCrossPosToNegT = timestamp;
+                BlinkMeasureF::rAdding = false;
                 BlinkMeasureF::rCurState = 0;
             }
         }
@@ -443,6 +450,51 @@ BlinkF::BlinkF(unsigned int frameStart, unsigned int frameEnd, double timestampS
     this->timestampEnd   = timestampEnd;
     this->eventType      = eventType;
 };
+
+bool BlinkMeasureF::joinBlinks() {
+    bool anyAdded = false;
+    if (BlinkMeasureF::lAdding == true || BlinkMeasureF::rAdding == true) {
+        // waiting that blinks from both eyes are finished
+        return false;
+    }
+    std::set<unsigned int> takenRBlinks;
+
+    std::list<BlinkF>::iterator lIter = lBlinkChunksf.begin();
+    while(lIter != lBlinkChunksf.end()) {
+        BlinkF& lb = *lIter;
+
+        std::list<BlinkF>::iterator rIter = rBlinkChunksf.begin();
+        while(rIter != rBlinkChunksf.end()) {
+            BlinkF& rb = *rIter;
+            if (takenRBlinks.find(rb.frameStart) != takenRBlinks.end()) {
+                rIter++;
+                continue;
+            }
+            if ((lb.frameStart <= rb.frameStart && rb.frameStart <= lb.frameEnd)
+                    || (lb.frameStart <= rb.frameEnd && rb.frameEnd <= lb.frameEnd)
+                    || (rb.frameStart <= lb.frameStart && lb.frameStart <= rb.frameEnd)
+                    || (rb.frameStart <= lb.frameEnd && lb.frameEnd <= rb.frameEnd)) {
+                // use extended length as a result (joined) blink
+                unsigned int frameStart = (lb.frameStart < rb.frameStart)?lb.frameStart:rb.frameStart;
+                unsigned int frameEnd = (lb.frameEnd > rb.frameEnd)?lb.frameEnd:rb.frameEnd;
+                double timestampStart = (lb.timestampStart < rb.timestampStart)?lb.timestampStart:rb.timestampStart;
+                double timestampEnd = (lb.timestampEnd > rb.timestampEnd)?lb.timestampEnd:rb.timestampEnd;
+                BlinkF joinedBlink(frameStart, frameEnd, timestampStart, timestampEnd, 0);
+                joinedBlinkChunksf.push_back(joinedBlink);
+                anyAdded = true;
+                takenRBlinks.insert(rb.frameStart);
+                doLog(debug_blinks_d5, "debug_blinks_d5: added %u-%u (%.3lf)\n", frameStart, frameEnd, timestampEnd-timestampStart);
+                break;
+            }
+            rIter++;
+        }
+        lIter++;
+    }
+
+    lBlinkChunksf.clear();
+    rBlinkChunksf.clear();
+    return anyAdded;
+}
 
 void BlinkMeasureF::makeNotification(bool isLeft) {
     if (isLeft == true) {

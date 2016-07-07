@@ -25,6 +25,8 @@ std::list<BlinkMeasureF> blinkMeasuref;
 std::list<BlinkMeasureF> blinkMeasureShortf;
 std::list<BlinkF> lBlinkChunksf;
 std::list<BlinkF> rBlinkChunksf;
+std::list<BlinkF> joinedBlinkChunksf;
+
 std::list<BlinkF> lBlinkTimeframeChunksf;
 std::list<BlinkF> rBlinkTimeframeChunksf;
 ///
@@ -33,9 +35,11 @@ std::list<BlinkMeasure> blinkMeasure;
 std::list<BlinkMeasure> blinkMeasureShort;
 std::list<Blink> lBlinkChunks;
 std::list<Blink> rBlinkChunks;
+std::list<Blink> joinedBlinkChunks;
+
 std::list<Blink> lBlinkTimeframeChunks;
 std::list<Blink> rBlinkTimeframeChunks;
-int pause = 0;
+int pauseFrames = 0;
 cv::Mat toSave;
 
 cv::CascadeClassifier face_cascade;

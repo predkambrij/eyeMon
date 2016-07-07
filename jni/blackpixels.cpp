@@ -210,7 +210,7 @@ std::array<bool, 4> Blackpixels::rePupil(cv::Mat gray, double timestamp, unsigne
         this->preprocess(leftRg, rightRg, timestamp, frameNum);
         difftime("debug_fb_perf2: rePupil:preprocess", t1, debug_fb_perf2);
         this->pleft = leftRg; this->pright = rightRg;
-        //pause = 1;
+        //pauseFrames = 1;
     }
 
     if (canUpdateL == true) {

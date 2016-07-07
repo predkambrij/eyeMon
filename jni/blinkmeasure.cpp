@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include <math.h>
+#include <set>
 #include <common.hpp>
 #include <blinkmeasure.hpp>
 
@@ -441,6 +442,52 @@ Blink::Blink(unsigned int frameStart, unsigned int frameEnd, double timestampSta
     this->timestampEnd   = timestampEnd;
     this->eventType      = eventType;
 };
+
+
+bool BlinkMeasure::joinBlinks() {
+    bool anyAdded = false;
+    if (BlinkMeasure::lAdding == true || BlinkMeasure::rAdding == true) {
+        // waiting that blinks from both eyes are finished
+        return false;
+    }
+    std::set<unsigned int> takenRBlinks;
+
+    std::list<Blink>::iterator lIter = lBlinkChunks.begin();
+    while(lIter != lBlinkChunks.end()) {
+        Blink& lb = *lIter;
+
+        std::list<Blink>::iterator rIter = rBlinkChunks.begin();
+        while(rIter != rBlinkChunks.end()) {
+            Blink& rb = *rIter;
+            if (takenRBlinks.find(rb.frameStart) != takenRBlinks.end()) {
+                rIter++;
+                continue;
+            }
+            if ((lb.frameStart <= rb.frameStart && rb.frameStart <= lb.frameEnd)
+                    || (lb.frameStart <= rb.frameEnd && rb.frameEnd <= lb.frameEnd)
+                    || (rb.frameStart <= lb.frameStart && lb.frameStart <= rb.frameEnd)
+                    || (rb.frameStart <= lb.frameEnd && lb.frameEnd <= rb.frameEnd)) {
+                // use extended length as a result (joined) blink
+                unsigned int frameStart = (lb.frameStart < rb.frameStart)?lb.frameStart:rb.frameStart;
+                unsigned int frameEnd = (lb.frameEnd > rb.frameEnd)?lb.frameEnd:rb.frameEnd;
+                double timestampStart = (lb.timestampStart < rb.timestampStart)?lb.timestampStart:rb.timestampStart;
+                double timestampEnd = (lb.timestampEnd > rb.timestampEnd)?lb.timestampEnd:rb.timestampEnd;
+                Blink joinedBlink(frameStart, frameEnd, timestampStart, timestampEnd, 0);
+                joinedBlinkChunks.push_back(joinedBlink);
+                anyAdded = true;
+                takenRBlinks.insert(rb.frameStart);
+                doLog(debug_blinks_d5, "debug_blinks_d5: added %u-%u (%.3lf)\n", frameStart, frameEnd, timestampEnd-timestampStart);
+                break;
+            }
+            rIter++;
+        }
+        lIter++;
+    }
+
+    lBlinkChunks.clear();
+    rBlinkChunks.clear();
+    return anyAdded;
+}
 
 void BlinkMeasure::makeNotification(bool isLeft) {
     if (isLeft == true) {

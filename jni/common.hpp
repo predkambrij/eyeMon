@@ -30,7 +30,7 @@ void printStatus();
 extern int PHONE;
 extern std::chrono::high_resolution_clock::time_point startx;
 extern int method;
-extern int pause;
+extern int pauseFrames;
 extern double previousFrameTime;
 
 struct annotEyePosition {
@@ -70,6 +70,7 @@ extern bool debug_blinks_d1; // log last, avg, SD
 extern bool debug_blinks_d2; // shortBmSize
 extern bool debug_blinks_d3; // progress of blink detection state machine
 extern bool debug_blinks_d4; // adding chuncks
+extern bool debug_blinks_d5; // joined chuncks
 // optical flow
 extern int flg;
 
@@ -103,6 +104,8 @@ extern std::list<BlinkMeasure> blinkMeasure;
 extern std::list<BlinkMeasure> blinkMeasureShort;
 extern std::list<Blink> lBlinkChunks;
 extern std::list<Blink> rBlinkChunks;
+extern std::list<Blink> joinedBlinkChunks;
+
 extern std::list<Blink> lBlinkTimeframeChunks;
 extern std::list<Blink> rBlinkTimeframeChunks;
 
@@ -112,6 +115,8 @@ extern std::list<BlinkMeasureF> blinkMeasuref;
 extern std::list<BlinkMeasureF> blinkMeasureShortf;
 extern std::list<BlinkF> lBlinkChunksf;
 extern std::list<BlinkF> rBlinkChunksf;
+extern std::list<BlinkF> joinedBlinkChunksf;
+
 extern std::list<BlinkF> lBlinkTimeframeChunksf;
 extern std::list<BlinkF> rBlinkTimeframeChunksf;
 

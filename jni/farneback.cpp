@@ -294,7 +294,7 @@ std::array<bool, 4> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
         } else {
             this->pleft = leftRg; this->pright = rightRg;
         }
-        //pause = 1;
+        //pauseFrames = 1;
     }
 
     if (canUpdateL == true) {
@@ -569,6 +569,7 @@ void Farneback::measureBlinks() {
         while (blinkMeasuref.size() > 0) {
             BlinkMeasureF::measureBlinks(blinkMeasuref.front());
             blinkMeasuref.pop_front();
+            BlinkMeasureF::joinBlinks();
         }
     }
 };

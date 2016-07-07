@@ -226,14 +226,14 @@ void doProcessing() {
                 grabbing = false;
                 break;
             } else if((char)c == 'p') {
-                pause = 1;
+                pauseFrames = 1;
             } else if((char)c == 'f') {
                 flg = 1;
-            } else if (pause == 1) {
+            } else if (pauseFrames == 1) {
                 while (true) {
                     int c = cv::waitKey(10);
                     if((char)c == 'p') {
-                        pause = 0;
+                        pauseFrames = 0;
                         break;
                     } else if((char)c == 'i') {
                         imwrite("/tmp/frame.png", toSave);

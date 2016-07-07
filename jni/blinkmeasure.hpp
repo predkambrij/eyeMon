@@ -31,6 +31,7 @@ class BlinkMeasure {
         BlinkMeasure();
         BlinkMeasure(unsigned int frameNum, double timestamp, double lcor, double rcor);
         static void measureBlinks();
+        static bool joinBlinks();
         static void measureBlinksAVG(int shortBmSize, double *lavg, double *ravg);
         static void measureBlinksSD(double *lSD, double *rSD, double *lsdt, double *rsdt, double *plsdf, double *prsdf, double *mlsdf, double *mrsdf);
         static void makeChunk(bool isLeft, double timestamp, bool isBlink, unsigned int frameNum);

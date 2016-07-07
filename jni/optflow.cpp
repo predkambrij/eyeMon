@@ -166,7 +166,7 @@ void OptFlow::process(cv::Mat gray, cv::Mat out, __attribute__((unused)) double 
         flg1=1;
         resetDelay=0;
         firstLoopProcs = 1;
-//        pause=1;
+//        pauseFrames=1;
     } else {
         resetDelay++;
     }
