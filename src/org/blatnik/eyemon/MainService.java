@@ -165,7 +165,8 @@ public class MainService extends Service {
         static final int METHOD_TEMPLATE     = 1;
         static final int METHOD_TEMPLATE_JNI = 2;
         static final int METHOD_FARNEBACK = 3;
-        int method = METHOD_FARNEBACK;
+        int method = METHOD_TEMPLATE_JNI; // c++ code
+        //int method = METHOD_FARNEBACK;
 
         long frameCount      = 0;
         long timeStart       = 0;
