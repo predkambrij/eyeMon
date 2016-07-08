@@ -174,6 +174,7 @@ public class MainService extends Service {
         long timeStart       = 0;
         long frameCountMax   = 30*5;
         long totalTime       = 0;
+        long lastUpdatedTime = 0;
         long grayConvertTime = 0;
         long rgbConvertTime  = 0;
         long releaseTime     = 0;
@@ -206,6 +207,7 @@ public class MainService extends Service {
             long start = System.nanoTime();
 
             long methodCall = System.nanoTime();
+
             switch (this.method) {
             // rgb gray
             case METHOD_OPTFLOW:
@@ -223,7 +225,8 @@ public class MainService extends Service {
             }
             this.methodCallTime += (System.nanoTime()-methodCall);
 
-            if (debugActivityUpdates == true) {
+            if (debugActivityUpdates == true && (this.lastUpdatedTime+(300*1000000)) < frameTime) {
+                this.lastUpdatedTime = frameTime;
                 sendBr(this.lastFrameRate, this.avgMethodCallTime, this.avgOtherTime, gray, rgb, debugInRGB);
             }
 
