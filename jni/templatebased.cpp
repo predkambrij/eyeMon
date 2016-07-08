@@ -251,14 +251,30 @@ void TemplateBased::process(cv::Mat gray, cv::Mat out, double timestamp, unsigne
         this->hasTemplate = false;
     }
 };
-void TemplateBased::measureBlinks() {
+int TemplateBased::measureBlinks() {
+    int ret = 0;
     BlinkMeasure::measureBlinks();
-    bool ret = BlinkMeasure::joinBlinks();
-    if (ret == true) {
+    bool wasBlink = BlinkMeasure::joinBlinks();
+    if (wasBlink == true) {
         if (debug_blink_beeps == true) {
             system("/usr/bin/beep -l 200 &");
         }
     }
+    bool n1UnderThreshold = false; // test (5 seconds)
+    bool n2UnderThreshold = false; // 5 minutes
+    bool n3UnderThreshold = false; // 20 minutes
+
+    // result bits q w e r
+    // r - was blink
+    ret += wasBlink?1:0;
+    // e - n1 notif
+    ret += n1UnderThreshold?2:0;
+    // w - n1 notif
+    ret += n2UnderThreshold?4:0;
+    // q - n1 notif
+    ret += n3UnderThreshold?8:0;
+
+    return ret;
 };
 /*
 void TemplateBased::checkNotificationStatus(double timestamp) {
@@ -315,7 +331,7 @@ int TemplateBased::faceDetect(cv::Mat gray, cv::Rect *face) {
     *face = faces[0];
     return 0;
 };
-void TemplateBased::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
+int TemplateBased::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
     std::chrono::time_point<std::chrono::steady_clock> t1;
     t1 = std::chrono::steady_clock::now();
     //this->frameTimeProcessing(timestamp);
@@ -327,9 +343,10 @@ void TemplateBased::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned in
     difftime("-- process", t1, debug_tmpl_perf2);
 
     t1 = std::chrono::steady_clock::now();
-    this->measureBlinks();
+    int result = this->measureBlinks();
     difftime("-- measureBlinks", t1, debug_tmpl_perf2);
     if (frameNum % 2 == 0) {
         imshowWrapper("main", out, debug_show_img_main);
     }
+    return result;
 };

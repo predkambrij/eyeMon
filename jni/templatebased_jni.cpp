@@ -25,13 +25,15 @@ JNIEXPORT jlong JNICALL Java_org_blatnik_eyemon_TemplateBasedJNI_templateBasedCr
 JNIEXPORT void JNICALL Java_org_blatnik_eyemon_TemplateBasedJNI_templateBasedDestroyObject(JNIEnv * jenv, jclass, jlong thiz) {
 }
 
-JNIEXPORT void JNICALL Java_org_blatnik_eyemon_TemplateBasedJNI_templateBasedDetect
+JNIEXPORT jint JNICALL Java_org_blatnik_eyemon_TemplateBasedJNI_templateBasedDetect
                                                                 (JNIEnv * jenv, jclass, jlong imageRGB, jlong imageGray) {
     cv::Mat rgb = *((cv::Mat*)imageRGB);
     cv::Mat gray = *((cv::Mat*)imageGray);
     long int tstp = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
-    templBased.run(gray, rgb, tstp, grabberFrameNum);
+    int methodRes = templBased.run(gray, rgb, tstp, grabberFrameNum);
     grabberFrameNum++;
+    jint res = methodRes;
+    return res;
 }
 
 

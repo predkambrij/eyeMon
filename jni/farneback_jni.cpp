@@ -35,14 +35,16 @@ JNIEXPORT void JNICALL Java_org_blatnik_eyemon_Farneback_farnebackDestroyObject(
 }
 
 
-JNIEXPORT void JNICALL Java_org_blatnik_eyemon_Farneback_farnebackDetect
+JNIEXPORT jint JNICALL Java_org_blatnik_eyemon_Farneback_farnebackDetect
                                                                 (JNIEnv * jenv, jclass, jlong imageRGB, jlong imageGray) {
     cv::Mat rgb = *((cv::Mat*)imageRGB);
     cv::Mat gray = *((cv::Mat*)imageGray);
 
     long int tstp = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
-    farneb.run(gray, rgb, tstp, grabberFrameNumF);
+    int methodResult = farneb.run(gray, rgb, tstp, grabberFrameNumF);
     grabberFrameNumF++;
+    jint res = methodResult;
+    return res;
 }
 
 
