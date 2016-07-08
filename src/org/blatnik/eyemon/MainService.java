@@ -143,7 +143,7 @@ public class MainService extends Service {
         return null;
     }
     
-    private void sendBr(double lastFrameRate, Mat gray, Mat rgb, boolean debugInRGB) {
+    private void sendBr(double lastFrameRate, double avgMethodCallTime, double avgOtherTime, Mat gray, Mat rgb, boolean debugInRGB) {
         Bitmap bmp = null;
         if (debugInRGB == true) {
             bmp = Bitmap.createBitmap(rgb.cols(), rgb.rows(), Bitmap.Config.ARGB_8888);
@@ -157,6 +157,8 @@ public class MainService extends Service {
         Intent intent = new Intent();
         intent.setAction(MainService.IMAGE_UPDATE_RESULT);
         intent.putExtra("lastFrameRate", lastFrameRate+"");
+        intent.putExtra("avgMethodCallTime", avgMethodCallTime+"");
+        intent.putExtra("avgOtherTime", avgOtherTime+"");
         this.sendBroadcast(intent);
     }
 
@@ -165,12 +167,12 @@ public class MainService extends Service {
         static final int METHOD_TEMPLATE     = 1;
         static final int METHOD_TEMPLATE_JNI = 2;
         static final int METHOD_FARNEBACK = 3;
-        //int method = METHOD_TEMPLATE_JNI; // c++ code
-        int method = METHOD_FARNEBACK;
+        int method = METHOD_TEMPLATE_JNI; // c++ code
+        //int method = METHOD_FARNEBACK;
 
         long frameCount      = 0;
         long timeStart       = 0;
-        long frameCountMax   = 100;
+        long frameCountMax   = 30*5;
         long totalTime       = 0;
         long grayConvertTime = 0;
         long rgbConvertTime  = 0;
@@ -178,6 +180,8 @@ public class MainService extends Service {
         long methodCallTime  = 0;
         long garbageCollect  = 0;
         double lastFrameRate = 0;
+        double avgMethodCallTime = 0;
+        double avgOtherTime      = 0;
 
         int flSize = 0;
 
@@ -197,29 +201,9 @@ public class MainService extends Service {
 //        private void processFrame(byte[] frame, long frameTime) {
         private void processFrame(Mat gray, long frameTime) {
             boolean debugInRGB = false;
-            boolean debugWriteImages = false;
             boolean debugActivityUpdates = true;
-//            Mat gray = null;
             Mat rgb = null;
-            Mat tmp = null;
             long start = System.nanoTime();
-
-//            gray = new Mat(widthHeight[1], widthHeight[0], CvType.CV_8UC1);
-//            gray.put(0, 0, frame);
-//            this.grayConvertTime += (System.nanoTime()-start);
-
-            if (debugInRGB == true) {
-//                long rgbStart = System.nanoTime();
-//                tmp = new Mat(widthHeight[1] + (widthHeight[1]/2), widthHeight[0], CvType.CV_8UC1);
-//                tmp.put(0, 0, frame);
-//                rgb = new Mat();
-//                Imgproc.cvtColor(tmp, rgb, Imgproc.COLOR_YUV2BGR_NV12, 4);
-//                this.rgbConvertTime += System.nanoTime()-rgbStart;
-            }
-
-            if (debugWriteImages == true) {
-                Highgui.imwrite("/sdcard/fd/gray_pre.jpg", gray);
-            }
 
             long methodCall = System.nanoTime();
             switch (this.method) {
@@ -231,25 +215,16 @@ public class MainService extends Service {
                 templateBased.onCameraFrame(gray, gray);
                 break;
             case METHOD_TEMPLATE_JNI:
-                templateBasedJni.detect(gray, gray);
+                templateBasedJni.detect(gray, gray, frameTime);
                 break;
             case METHOD_FARNEBACK:
-                farneback.detect(gray, gray);
+                farneback.detect(gray, gray, frameTime);
                 break;
             }
             this.methodCallTime += (System.nanoTime()-methodCall);
 
-            if (debugWriteImages == true) {
-                Highgui.imwrite("/sdcard/fd/gray_post.jpg", gray);
-            }
-
             if (debugActivityUpdates == true) {
-                sendBr(this.lastFrameRate, gray, rgb, debugInRGB);
-            }
-
-            if (debugInRGB == true) {
-                tmp.release();
-                rgb.release();
+                sendBr(this.lastFrameRate, this.avgMethodCallTime, this.avgOtherTime, gray, rgb, debugInRGB);
             }
 
             long startRel = System.nanoTime();
@@ -259,21 +234,22 @@ public class MainService extends Service {
             this.totalTime += (System.nanoTime()-start);
             this.frameCount++;
 
-//            long startGC = System.nanoTime();
-//            System.gc();
-//            this.garbageCollect += (System.nanoTime()-startGC);
-
             if (this.frameCount == this.frameCountMax) {
                 double avgFrameTime = (((frameTime-this.timeStart)/(double)this.frameCountMax)/(double)1000000000);
                 this.lastFrameRate = 1/avgFrameTime;
+                this.avgMethodCallTime = this.methodCallTime/1000000/this.frameCountMax;
+
+                double releaseTime = this.releaseTime/1000000/this.frameCountMax;
+                double gcTime = this.garbageCollect/1000000/this.frameCountMax;
+                double totalTime = this.totalTime/1000000/this.frameCountMax;
+                this.avgOtherTime = totalTime-avgMethodCallTime;
+
                 Log.i(TAG, "FL size: "+this.flSize);
                 Log.i(TAG, String.format("avg frame capture rate %.2f", this.lastFrameRate));
-//                Log.i(TAG, String.format("processFrame gray time: %d bytes %d", this.grayConvertTime/1000000/this.frameCountMax, frame.length));
-//                Log.i(TAG, String.format("processFrame rgb time: %d", this.rgbConvertTime/1000000/this.frameCountMax));
-                Log.i(TAG, String.format("processFrame methodCall time: %d", this.methodCallTime/1000000/this.frameCountMax));
-                Log.i(TAG, String.format("processFrame release time: %d", this.releaseTime/1000000/this.frameCountMax));
-                Log.i(TAG, String.format("processFrame gc time: %d", this.garbageCollect/1000000/this.frameCountMax));
-                Log.i(TAG, String.format("processFrame time: %d", this.totalTime/1000000/this.frameCountMax));
+                Log.i(TAG, String.format("processFrame methodCall time: %.2f", this.avgMethodCallTime));
+                Log.i(TAG, String.format("processFrame release time: %.2f", releaseTime));
+                Log.i(TAG, String.format("processFrame gc time: %.2f", gcTime));
+                Log.i(TAG, String.format("processFrame time: %.2f", totalTime));
                 this.timeStart = frameTime;
                 this.frameCount = this.grayConvertTime = this.methodCallTime = this.releaseTime = this.totalTime = this.garbageCollect = 0;
             }
@@ -308,9 +284,6 @@ public class MainService extends Service {
                     } catch (InterruptedException e) {
                     }
                 } else {
-//                    byte[] frame = MainService.frameList.remove(0);
-//                    Mat frame = MainService.frameList.remove(0);
-//                    long frameTime = MainService.frameTime.remove(0);
                     ObjCarrier frame = MainService.frameList.remove(0);
                     this.processFrame(frame.gray, frame.time);
                 }

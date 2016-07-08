@@ -81,10 +81,16 @@ public class FdActivity extends Activity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 double frameRate = Double.parseDouble(intent.getStringExtra("lastFrameRate"));
+                double avgMethodCallTime = Double.parseDouble(intent.getStringExtra("avgMethodCallTime"));
+                double avgOtherTime = Double.parseDouble(intent.getStringExtra("avgOtherTime"));
                 ImageView image = (ImageView) findViewById(R.id.imageView1);
                 image.setImageBitmap(MainService.bitmapImage);
-                TextView tv = (TextView) findViewById(R.id.textView1);
-                tv.setText(String.format("Frame rate: %.2f", frameRate));
+                TextView tv1 = (TextView) findViewById(R.id.textView1);
+                tv1.setText(String.format("Frame rate: %.2f", frameRate));
+                TextView tv2 = (TextView) findViewById(R.id.textView2);
+                tv2.setText(String.format("Method: %.2f", avgMethodCallTime));
+                TextView tv3 = (TextView) findViewById(R.id.textView3);
+                tv3.setText(String.format("Other: %.2f", avgOtherTime));
             }
         };
         IntentFilter filter = new IntentFilter();

@@ -177,6 +177,8 @@ void TemplateBased::method(cv::Mat& gray, cv::Mat& out, double timestamp, unsign
     if (res == false) {
         return;
     }
+    GaussianBlur(lTemplSearch, lTemplSearch, cv::Size(5,5), 0);
+    GaussianBlur(rTemplSearch, rTemplSearch, cv::Size(5,5), 0);
     imshowWrapper("leftSR", lTemplSearch, debug_show_img_templ_eyes_cor);
     imshowWrapper("rightSR", rTemplSearch, debug_show_img_templ_eyes_cor);
 
@@ -224,14 +226,13 @@ void TemplateBased::method(cv::Mat& gray, cv::Mat& out, double timestamp, unsign
 };
 
 void TemplateBased::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
-    if (!this->preprocessing(gray)) {
-        // it will wait first 20 frames so that light flash ends
-        // it blurs the grayscale image
-        return;
-    }
-
     // we have template if we have template of open eyes
     if (this->hasTemplate == false) {
+        if (!this->preprocessing(gray)) {
+            // it will wait first 20 frames so that light flash ends
+            // it blurs the grayscale image
+            return;
+        }
         this->prevTimestamp = timestamp;
         if (!this->eyesInit(gray, timestamp)) {
             // it finds eye region based on face detection and (TODO after first blink)
@@ -333,7 +334,9 @@ int TemplateBased::faceDetect(cv::Mat gray, cv::Rect *face) {
 };
 int TemplateBased::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
     std::chrono::time_point<std::chrono::steady_clock> t1;
+    std::chrono::time_point<std::chrono::steady_clock> ta;
     t1 = std::chrono::steady_clock::now();
+    ta = std::chrono::steady_clock::now();
     //this->frameTimeProcessing(timestamp);
     //this->checkNotificationStatus(timestamp);
     difftime("-- frameTimeProcessing and checkNotificationStatus", t1, debug_tmpl_perf1);
@@ -348,5 +351,6 @@ int TemplateBased::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int
     if (frameNum % 2 == 0) {
         imshowWrapper("main", out, debug_show_img_main);
     }
+    difftime("debug_tmpl_perfa:", ta, debug_tmpl_perfa);
     return result;
 };

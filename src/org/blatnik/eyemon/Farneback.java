@@ -21,8 +21,8 @@ public class Farneback {
         mNativeObj = farnebackCreateObject(cascadeName);
     }
 
-    public void detect(Mat imageRGB, Mat imageGray) {
-        int res = farnebackDetect(imageRGB.getNativeObjAddr(), imageGray.getNativeObjAddr());
+    public void detect(Mat imageRGB, Mat imageGray, long frameTime) {
+        int res = farnebackDetect(imageRGB.getNativeObjAddr(), imageGray.getNativeObjAddr(), frameTime);
         boolean wasBlink = false;
         boolean activatedN1 = false;
         boolean activatedN2 = false;
@@ -82,6 +82,6 @@ public class Farneback {
     }
 
     private static native long farnebackCreateObject(String cascadeName);
-    private static native int farnebackDetect(long inputImageRGB, long inputImageGray);
+    private static native int farnebackDetect(long inputImageRGB, long inputImageGray, long frameTime);
     private static native void farnebackDestroyObject(long thiz);
 }

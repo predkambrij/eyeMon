@@ -56,6 +56,7 @@ extern bool debug_t2_perf;
 extern bool debug_tmpl_log;
 extern bool debug_tmpl_perf1;
 extern bool debug_tmpl_perf2;
+extern bool debug_tmpl_perfa;
 extern bool debug_fb_log1;
 extern bool debug_fb_log_flow;
 extern bool debug_fb_log_tracking;
@@ -64,6 +65,7 @@ extern bool debug_fb_log_repupil;
 extern bool debug_fb_log_repupil1;
 extern bool debug_fb_perf1;
 extern bool debug_fb_perf2;
+extern bool debug_fb_perfa;
 extern bool debug_bp_log_pix;
 extern bool debug_notifications_log1;
 extern bool debug_blinks_d1; // log last, avg, SD

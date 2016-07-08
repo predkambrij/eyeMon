@@ -21,8 +21,8 @@ public class TemplateBasedJNI {
         mNativeObj = templateBasedCreateObject(cascadeName);
     }
 
-    public void detect(Mat imageRGB, Mat imageGray) {
-        int res = templateBasedDetect(imageRGB.getNativeObjAddr(), imageGray.getNativeObjAddr());
+    public void detect(Mat imageRGB, Mat imageGray, long frameTime) {
+        int res = templateBasedDetect(imageRGB.getNativeObjAddr(), imageGray.getNativeObjAddr(), frameTime);
         boolean wasBlink = false;
         boolean activatedN1 = false;
         boolean activatedN2 = false;
@@ -82,7 +82,7 @@ public class TemplateBasedJNI {
     }
 
     private static native long templateBasedCreateObject(String cascadeName);
-    private static native int templateBasedDetect(long inputImageRGB, long inputImageGray);
+    private static native int templateBasedDetect(long inputImageRGB, long inputImageGray, long frameTime);
     private static native void templateBasedDestroyObject(long thiz);
 
 }

@@ -174,11 +174,11 @@ std::array<bool, 4> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
     const int maxDiff = 24;
     int proceedDelay = 250;
     bool canProceedL = true, canProceedR = true;
-    if (shouldUseAnnotEyePosition == false &&(this->lLastTime+proceedDelay) > timestamp && (this->rLastTime+proceedDelay) > timestamp && (this->lastRepupilTime+proceedDelay) > timestamp
+    if (shouldUseAnnotEyePosition == false &&
+        (this->lLastTime+proceedDelay) > timestamp && (this->rLastTime+proceedDelay) > timestamp && (this->lastRepupilTime+proceedDelay) > timestamp
         && abs(this->lastRepupilDiffLeft.x) < 2 && abs(this->lastRepupilDiffLeft.y) < 2
         && abs(this->lastRepupilDiffRight.x) < 2 && abs(this->lastRepupilDiffRight.y) < 2
         ) {
-        //printf("%5.2lf\t%5.2lf\t%5.2lf\t%5.2lf\n", this->lastRepupilDiffLeft.x, this->lastRepupilDiffLeft.y, this->lastRepupilDiffRight.x, this->lastRepupilDiffRight.y);
         std::array<bool, 4> ret;
         ret[0] = true;
         ret[1] = true;
@@ -186,6 +186,9 @@ std::array<bool, 4> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
         ret[3] = true;
         return ret;
     }
+
+    //doLog(true, "repupilTimeDiff: %5.2lf\t%5.2lf\t%5.2lf\n", timestamp-this->lastRepupilTime, timestamp-this->lLastTime, timestamp-this->rLastTime);
+    //doLog(true, "repupilDiff: %5.2lf\t%5.2lf\t%5.2lf\t%5.2lf\n", this->lastRepupilDiffLeft.x, this->lastRepupilDiffLeft.y, this->lastRepupilDiffRight.x, this->lastRepupilDiffRight.y);
     //printf("time since last repupil %.2lf\n", timestamp-this->lastRepupilTime);
     this->lastRepupilTime = timestamp;
     t1 = std::chrono::steady_clock::now();
@@ -598,13 +601,16 @@ int Farneback::measureBlinks() {
 
 int Farneback::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum) {
     std::chrono::time_point<std::chrono::steady_clock> t1;
+    std::chrono::time_point<std::chrono::steady_clock> ta;
     t1 = std::chrono::steady_clock::now();
+    ta = std::chrono::steady_clock::now();
     this->process(gray, out, timestamp, frameNum);
     difftime("debug_fb_perf1: process", t1, debug_fb_perf1);
 
     t1 = std::chrono::steady_clock::now();
     int ret = this->measureBlinks();
     difftime("debug_fb_perf1: measureBlinks", t1, debug_fb_perf1);
+    difftime("debug_fb_perfa:", ta, debug_fb_perfa);
 
     //cv::swap(prevLeft, left);
     //cv::swap(prevRight, right);
