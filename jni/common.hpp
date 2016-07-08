@@ -111,7 +111,7 @@ extern std::list<BlinkMeasure> blinkMeasure;
 extern std::list<BlinkMeasure> blinkMeasureShort;
 extern std::list<Blink> lBlinkChunks;
 extern std::list<Blink> rBlinkChunks;
-extern std::list<Blink> joinedBlinkChunks;
+extern std::list<Blink> joinedBlinkChunksN1;
 
 extern std::list<Blink> lBlinkTimeframeChunks;
 extern std::list<Blink> rBlinkTimeframeChunks;

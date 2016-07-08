@@ -35,7 +35,7 @@ std::list<BlinkMeasure> blinkMeasure;
 std::list<BlinkMeasure> blinkMeasureShort;
 std::list<Blink> lBlinkChunks;
 std::list<Blink> rBlinkChunks;
-std::list<Blink> joinedBlinkChunks;
+std::list<Blink> joinedBlinkChunksN1;
 
 std::list<Blink> lBlinkTimeframeChunks;
 std::list<Blink> rBlinkTimeframeChunks;

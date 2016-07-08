@@ -11,6 +11,9 @@ class BlinkMeasure {
         double rcor;
         bool canProceedL, canProceedR, canUpdateL, canUpdateR;
         // converting to chuncks
+        static bool n1UnderThreshold;
+        static double startTS;
+        static double prevTS;
         static bool lAdding;
         static bool isFirst;
         static double prevLcor;
@@ -30,7 +33,8 @@ class BlinkMeasure {
 
         BlinkMeasure();
         BlinkMeasure(unsigned int frameNum, double timestamp, double lcor, double rcor);
-        static void measureBlinks();
+        static bool measureBlinks();
+        static bool checkN1Notifs(double curTimestamp);
         static bool joinBlinks();
         static void measureBlinksAVG(int shortBmSize, double *lavg, double *ravg);
         static void measureBlinksSD(double *lSD, double *rSD, double *lsdt, double *rsdt, double *plsdf, double *prsdf, double *mlsdf, double *mrsdf);
