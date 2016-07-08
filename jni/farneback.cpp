@@ -574,6 +574,8 @@ int Farneback::measureBlinks(double curTimestamp) {
     if (this->canCallMeasureBlinks || true) {
         while (blinkMeasuref.size() > 0) {
             notifsCanProceed = BlinkMeasureF::measureBlinks(blinkMeasuref.front());
+            BlinkMeasureF::processStateMachineQueue();
+
             blinkMeasuref.pop_front();
             wasBlink = BlinkMeasureF::joinBlinks();
             if (wasBlink == true) {
@@ -586,6 +588,7 @@ int Farneback::measureBlinks(double curTimestamp) {
     bool n1UnderThreshold = false; // test (5 seconds)
     bool n2UnderThreshold = false; // 5 minutes
     bool n3UnderThreshold = false; // 20 minutes
+
     if (notifsCanProceed == true) {
         n1UnderThreshold = BlinkMeasureF::checkN1Notifs(curTimestamp);
         if (n1UnderThreshold == true) {

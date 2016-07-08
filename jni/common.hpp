@@ -40,6 +40,16 @@ struct annotEyePosition {
 struct activeSlice {
     double start, end;
 };
+
+struct stateMachineElement {
+    BlinkMeasureF bm;
+    double mlsdt, plsdt, mrsdt, prsdt;
+};
+
+
+
+
+
 extern std::map<int, annotEyePosition> annotEyePositionMap;
 extern bool shouldUseAnnotEyePosition;
 
@@ -114,6 +124,8 @@ extern std::list<BlinkMeasure> blinkMeasureShort;
 extern std::list<Blink> lBlinkChunks;
 extern std::list<Blink> rBlinkChunks;
 extern std::list<Blink> joinedBlinkChunksN1;
+
+extern std::list<struct stateMachineElement> stateMachineQueue;
 
 extern std::list<Blink> lBlinkTimeframeChunks;
 extern std::list<Blink> rBlinkTimeframeChunks;
