@@ -567,17 +567,18 @@ int Farneback::setJni(JNIEnv* jenv) {
 };
 #endif
 
-int Farneback::measureBlinks() {
+int Farneback::measureBlinks(double curTimestamp) {
     int ret = 0;
+    bool notifsCanProceed = false;
     bool wasBlink = false;
     if (this->canCallMeasureBlinks || true) {
         while (blinkMeasuref.size() > 0) {
-            BlinkMeasureF::measureBlinks(blinkMeasuref.front());
+            notifsCanProceed = BlinkMeasureF::measureBlinks(blinkMeasuref.front());
             blinkMeasuref.pop_front();
             wasBlink = BlinkMeasureF::joinBlinks();
             if (wasBlink == true) {
                 if (debug_blink_beeps == true) {
-                    system("/usr/bin/beep -l 200 &");
+                    system("/usr/bin/beep -l 200 -f 450 &");
                 }
             }
         }
@@ -585,6 +586,17 @@ int Farneback::measureBlinks() {
     bool n1UnderThreshold = false; // test (5 seconds)
     bool n2UnderThreshold = false; // 5 minutes
     bool n3UnderThreshold = false; // 20 minutes
+    if (notifsCanProceed == true) {
+        n1UnderThreshold = BlinkMeasureF::checkN1Notifs(curTimestamp);
+        if (n1UnderThreshold == true) {
+            if (BlinkMeasureF::n1UnderThreshold == false) {
+                BlinkMeasureF::n1UnderThreshold = true;
+                system("/usr/bin/beep -r 10 -l 100 -f 800 &");
+            }
+        } else {
+            BlinkMeasureF::n1UnderThreshold = false;
+        }
+    }
 
     // result bits q w e r
     // r - was blink
@@ -608,7 +620,7 @@ int Farneback::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int fra
     difftime("debug_fb_perf1: process", t1, debug_fb_perf1);
 
     t1 = std::chrono::steady_clock::now();
-    int ret = this->measureBlinks();
+    int ret = this->measureBlinks(timestamp);
     difftime("debug_fb_perf1: measureBlinks", t1, debug_fb_perf1);
     difftime("debug_fb_perfa:", ta, debug_fb_perfa);
 

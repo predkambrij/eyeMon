@@ -188,6 +188,9 @@ void BlinkMeasureF::measureBlinksSD(double *lSD, double *rSD, double *plsd1, dou
     *mlsdt = lavg-(4*(*lSD));
     *mrsdt = ravg-(4*(*rSD));
 };
+bool BlinkMeasureF::n1UnderThreshold = false;
+double BlinkMeasureF::startTS = -1;
+double BlinkMeasureF::prevTS = -1;
 int    BlinkMeasureF::lCurState = 0;
 double BlinkMeasureF::lLastVal = 0;
 int    BlinkMeasureF::lZeroCrossPosToNegF = 0;
@@ -197,7 +200,7 @@ double BlinkMeasureF::rLastVal = 0;
 int    BlinkMeasureF::rZeroCrossPosToNegF = 0;
 double BlinkMeasureF::rZeroCrossPosToNegT = 0;
 
-void BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
+bool BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
     blinkMeasureShortf.push_back(bm);
     int timeWindow = 15;
     while (true) {
@@ -213,7 +216,7 @@ void BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
     int shortBmSize = blinkMeasureShortf.size();
     if (maxFramesShortList == 0) {
         if (shortBmSize < firstMeasureQueueSize) {
-            return;
+            return false;
         }
         BlinkMeasureF first = blinkMeasureShortf.front();
         BlinkMeasureF last = blinkMeasureShortf.back();
@@ -230,7 +233,7 @@ void BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
     }
     if (shortBmSize < (maxFramesShortList/2)) {
         doLog(debug_blinks_d2, "debug_blinks_d2: F %d shortBmSize is less than max/2 %d T %lf\n", bm.frameNum, shortBmSize, bm.timestamp);
-        return;
+        return false;
     } else {
         doLog(debug_blinks_d2, "debug_blinks_d2: F %d shortBmSize is big enough %d\n", bm.frameNum, shortBmSize);
     }
@@ -259,6 +262,21 @@ void BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
     //BlinkMeasureF::stateMachine(bm.frameNum, bm.timestamp, bm.lDiffP.y, mlsd2, plsd2, bm.rDiffP.y, mrsd2, prsd2);
     BlinkMeasureF::stateMachine(bm.frameNum, bm.timestamp, bm.lDiffP.y, mlsdt, plsdt, bm.rDiffP.y, mrsdt, prsdt);
 
+    // track watching time for notifications
+    if (BlinkMeasureF::prevTS == -1) {
+        BlinkMeasureF::prevTS = bm.timestamp;
+        BlinkMeasureF::startTS = bm.timestamp;
+    } else {
+        if ((bm.timestamp - BlinkMeasureF::prevTS) > 200) {
+            activeSlice as;
+            as.start = BlinkMeasureF::startTS;
+            as.end = BlinkMeasureF::prevTS;
+            n1ActiveSlices.push_back(as);
+            BlinkMeasureF::startTS = bm.timestamp;
+        }
+        BlinkMeasureF::prevTS = bm.timestamp;
+    }
+
     // if (bm.lDiffP.y < lsd2) {
     //     doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf L %lf SD1 %lf SD2 %lf\n", bm.frameNum, bm.timestamp, bm.lDiffP.y, lsd1, lsd2);
     //     // check whether we can create a new blink (chunk)
@@ -273,8 +291,73 @@ void BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
     // } else {
     //     BlinkMeasureF::makeChunk(false, (double)bm.timestamp, false, bm.frameNum);
     // }
+    return true;
 }
 
+bool BlinkMeasureF::checkN1Notifs(double curTimestamp) {
+    // 5 mins
+    //double watchingWindow = 1000*60*5;
+    double watchingWindow = 1000*10;
+    double minBlinksRatio = 12/(double)60;
+    double winStart = curTimestamp-watchingWindow;
+    double minWindowLength = watchingWindow/2;
+    double watchedLength = 0;
+
+    std::list<struct activeSlice>::iterator iter;
+
+    iter = n1ActiveSlices.begin();
+    while(iter != n1ActiveSlices.end()) {
+        struct activeSlice& as = *iter;
+        //doLog(debug_notifications_n1_log1, "debug_notifications_n1_log1 s %.2f e %.2f d %.2f\n", as.start, as.end, as.end-as.start);
+        if (as.end < winStart) {
+            //n1ActiveSlices.pop_front();
+            iter = n1ActiveSlices.erase(iter);
+            continue;
+        } else {
+            if (as.start < winStart) {
+                watchedLength += (as.end-winStart);
+            } else {
+                watchedLength += (as.end-as.start);
+            }
+        }
+        iter++;
+    }
+    if (BlinkMeasureF::startTS < winStart) {
+        watchedLength += (curTimestamp-winStart);
+    } else {
+        watchedLength += (curTimestamp-BlinkMeasureF::startTS);
+    }
+    if (watchedLength < minWindowLength) {
+        doLog(debug_notifications_n1_log1, "debug_notifications_n1_log1: watchingWindowSize is too small %.2lf\n", watchedLength);
+        return false;
+    } else {
+        doLog(debug_notifications_n1_log1, "debug_notifications_n1_log1: watchingWindowSize %.2lf, checking whether to notify\n", watchedLength);
+    }
+
+    int blinksCount = 0;
+    std::list<BlinkF>::iterator bIter;
+    bIter = joinedBlinkChunksfN1.begin();
+    while(bIter != joinedBlinkChunksfN1.end()) {
+        BlinkF& b = *bIter;
+        if (b.timestampStart < winStart) {
+            bIter = joinedBlinkChunksfN1.erase(bIter);
+            continue;
+        } else {
+            bIter++;
+            blinksCount++;
+        }
+    }
+    double curRatio = ((double)blinksCount)/(watchedLength/1000.);
+    doLog(debug_notifications_n1_log1, "debug_notifications_n1_log1: min ratio:%.2f curRatio %.2f\n", minBlinksRatio, curRatio);
+
+    if (curRatio < minBlinksRatio) {
+        doLog(debug_notifications_n1_log1, "debug_notifications_n1_log1: too few blinks %d\n", blinksCount);
+        return true;
+    } else {
+        doLog(debug_notifications_n1_log1, "debug_notifications_n1_log1: totalBlinks %d\n", blinksCount);
+        return false;
+    }
+}
 void BlinkMeasureF::stateMachine(unsigned int frameNum, double timestamp, double leftY, double leftLowSD, double leftHighSD, double rightY, double rightLowSD, double rightHighSD) {
     if (BlinkMeasureF::lCurState == 0) {
         if (BlinkMeasureF::lLastVal == 0) {
@@ -480,7 +563,7 @@ bool BlinkMeasureF::joinBlinks() {
                 double timestampStart = (lb.timestampStart < rb.timestampStart)?lb.timestampStart:rb.timestampStart;
                 double timestampEnd = (lb.timestampEnd > rb.timestampEnd)?lb.timestampEnd:rb.timestampEnd;
                 BlinkF joinedBlink(frameStart, frameEnd, timestampStart, timestampEnd, 0);
-                joinedBlinkChunksf.push_back(joinedBlink);
+                joinedBlinkChunksfN1.push_back(joinedBlink);
                 anyAdded = true;
                 takenRBlinks.insert(rb.frameStart);
                 doLog(debug_blinks_d5, "debug_blinks_d5: adding  fs %d fe %d start %.2lf end %lf duration %lf\n",

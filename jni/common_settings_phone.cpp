@@ -29,6 +29,7 @@ bool debug_fb_perf2 = true;
 bool debug_fb_perfa = true;
 bool debug_bp_log_pix = false;
 bool debug_notifications_log1 = false;
+bool debug_notifications_n1_log1 = true;
 bool debug_blinks_d1 = false;
 bool debug_blinks_d2 = false;
 bool debug_blinks_d3 = false;

@@ -25,7 +25,7 @@ std::list<BlinkMeasureF> blinkMeasuref;
 std::list<BlinkMeasureF> blinkMeasureShortf;
 std::list<BlinkF> lBlinkChunksf;
 std::list<BlinkF> rBlinkChunksf;
-std::list<BlinkF> joinedBlinkChunksf;
+std::list<BlinkF> joinedBlinkChunksfN1;
 
 std::list<BlinkF> lBlinkTimeframeChunksf;
 std::list<BlinkF> rBlinkTimeframeChunksf;
@@ -39,6 +39,10 @@ std::list<Blink> joinedBlinkChunks;
 
 std::list<Blink> lBlinkTimeframeChunks;
 std::list<Blink> rBlinkTimeframeChunks;
+
+
+std::list<struct activeSlice> n1ActiveSlices;
+
 int pauseFrames = 0;
 cv::Mat toSave;
 

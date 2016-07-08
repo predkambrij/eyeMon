@@ -37,6 +37,9 @@ struct annotEyePosition {
     int l1x, l1y, l2x, l2y;
     int r1x, r1y, r2x, r2y;
 };
+struct activeSlice {
+    double start, end;
+};
 extern std::map<int, annotEyePosition> annotEyePositionMap;
 extern bool shouldUseAnnotEyePosition;
 
@@ -68,6 +71,7 @@ extern bool debug_fb_perf2;
 extern bool debug_fb_perfa;
 extern bool debug_bp_log_pix;
 extern bool debug_notifications_log1;
+extern bool debug_notifications_n1_log1;
 extern bool debug_blinks_d1; // log last, avg, SD
 extern bool debug_blinks_d2; // shortBmSize
 extern bool debug_blinks_d3; // progress of blink detection state machine
@@ -111,6 +115,7 @@ extern std::list<Blink> joinedBlinkChunks;
 
 extern std::list<Blink> lBlinkTimeframeChunks;
 extern std::list<Blink> rBlinkTimeframeChunks;
+extern std::list<struct activeSlice> n1ActiveSlices;
 
 /// farne
 extern int maxFramesShortListf;
@@ -118,7 +123,7 @@ extern std::list<BlinkMeasureF> blinkMeasuref;
 extern std::list<BlinkMeasureF> blinkMeasureShortf;
 extern std::list<BlinkF> lBlinkChunksf;
 extern std::list<BlinkF> rBlinkChunksf;
-extern std::list<BlinkF> joinedBlinkChunksf;
+extern std::list<BlinkF> joinedBlinkChunksfN1;
 
 extern std::list<BlinkF> lBlinkTimeframeChunksf;
 extern std::list<BlinkF> rBlinkTimeframeChunksf;
