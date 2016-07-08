@@ -592,7 +592,7 @@ int Farneback::measureBlinks() {
     ret += n2UnderThreshold?4:0;
     // q - n1 notif
     ret += n3UnderThreshold?8:0;
-    doLog(true, "RES is %d\n", ret);
+
     return ret;
 };
 
