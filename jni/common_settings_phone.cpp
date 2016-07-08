@@ -36,6 +36,7 @@ bool debug_blinks_d3 = false;
 bool debug_blinks_d4 = false;
 bool debug_blinks_d5 = true;
 bool debug_blink_beeps = false;
+bool debug_n1_beeps = false;
 
 bool shouldUseAnnotEyePosition = false;
 

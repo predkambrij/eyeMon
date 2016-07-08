@@ -591,7 +591,9 @@ int Farneback::measureBlinks(double curTimestamp) {
         if (n1UnderThreshold == true) {
             if (BlinkMeasureF::n1UnderThreshold == false) {
                 BlinkMeasureF::n1UnderThreshold = true;
-                system("/usr/bin/beep -r 10 -l 100 -f 800 &");
+                if (debug_n1_beeps == true) {
+                    system("/usr/bin/beep -r 10 -l 100 -f 800 &");
+                }
             }
         } else {
             BlinkMeasureF::n1UnderThreshold = false;

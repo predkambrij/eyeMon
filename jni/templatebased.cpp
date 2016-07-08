@@ -271,7 +271,9 @@ int TemplateBased::measureBlinks(double curTimestamp) {
         if (n1UnderThreshold == true) {
             if (BlinkMeasure::n1UnderThreshold == false) {
                 BlinkMeasure::n1UnderThreshold = true;
-                system("/usr/bin/beep -r 10 -l 100 -f 800 &");
+                if (debug_n1_beeps == true) {
+                    system("/usr/bin/beep -r 10 -l 100 -f 800 &");
+                }
             }
         } else {
             BlinkMeasure::n1UnderThreshold = false;
