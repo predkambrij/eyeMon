@@ -205,8 +205,8 @@ double BlinkMeasureF::rZeroCrossPosToNegT = 0;
 
 bool BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
     bool forceProceedShorterSize = false;
-    //int timeWindow = 15;
-    int timeWindow = 10;
+    int timeWindow = 15;
+    //int timeWindow = 10;
 
     // ensure that queue is long enough (at least 30 frames) (that we'll know how long we want to have it)
     int firstMeasureQueueSize = 30;
