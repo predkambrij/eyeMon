@@ -30,6 +30,7 @@ void TemplateBased::setup(const char* cascadeFileName) {
     }
 };
 bool TemplateBased::preprocessing(cv::Mat& gray) {
+    /*
     // light flash at the start
     this->frameNum++;
     if (this->canProcess == false) {
@@ -38,7 +39,7 @@ bool TemplateBased::preprocessing(cv::Mat& gray) {
         } else {
             return false;
         }
-    }
+    }*/
     std::chrono::time_point<std::chrono::steady_clock> t1;
     t1 = std::chrono::steady_clock::now();
     GaussianBlur(gray, gray, cv::Size(5,5), 0);
@@ -252,6 +253,10 @@ void TemplateBased::process(cv::Mat gray, cv::Mat out, double timestamp, unsigne
         this->hasTemplate = false;
     }
 };
+void TemplateBased::flushMeasureBlinks() {
+    BlinkMeasure::rewriteElementsToStateQueue(0, 0);
+    BlinkMeasure::processStateMachineQueue();
+}
 
 int TemplateBased::measureBlinks(double curTimestamp) {
     int ret = 0;

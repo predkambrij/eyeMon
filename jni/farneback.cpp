@@ -567,6 +567,11 @@ int Farneback::setJni(JNIEnv* jenv) {
 };
 #endif
 
+void Farneback::flushMeasureBlinks() {
+    BlinkMeasureF::rewriteElementsToStateQueue(0, 0);
+    BlinkMeasureF::processStateMachineQueue();
+}
+
 int Farneback::measureBlinks(double curTimestamp) {
     int ret = 0;
     bool notifsCanProceed = false;

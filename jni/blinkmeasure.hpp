@@ -35,6 +35,7 @@ class BlinkMeasure {
 
         BlinkMeasure();
         BlinkMeasure(unsigned int frameNum, double timestamp, double lcor, double rcor);
+        static void rewriteElementsToStateQueue(unsigned int frameNum, double timestamp);
         static bool measureBlinks(BlinkMeasure bm);
         static void processStateMachineQueue();
         static void processBm(BlinkMeasure bm, double lavg, double ravg, double lSD, double rSD,

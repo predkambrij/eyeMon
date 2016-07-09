@@ -257,10 +257,12 @@ void doProcessing() {
         break;
         case METHOD_FARNEBACK:
         doLog(debug_fb_log_tracking, "debug_fb_log_tracking: F %u T %.3lf status stop\n", lastFrameNum, lastTimestamp);
+        farneback.flushMeasureBlinks();
         break;
         case METHOD_BLACKPIXELS:
         break;
         case METHOD_TEMPLATE_BASED:
+        templ.flushMeasureBlinks();
         break;
         case METHOD_BLACK_PIXELS:
         break;

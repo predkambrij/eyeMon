@@ -204,7 +204,6 @@ int    BlinkMeasureF::rZeroCrossPosToNegF = 0;
 double BlinkMeasureF::rZeroCrossPosToNegT = 0;
 
 bool BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
-    bool forceProceedShorterSize = false;
     int timeWindow = 15;
     //int timeWindow = 10;
 
@@ -241,7 +240,7 @@ bool BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
                 if (oldestBm.frameNum > BlinkMeasureF::lastAddedToStateMachine
                     || (oldestBm.frameNum == 0 && BlinkMeasureF::lastAddedToStateMachine == 0)) {
                     // reliable shortsize length?
-                    if (shortBmSize < minShortBmSize && forceProceedShorterSize == false) {
+                    if (shortBmSize < minShortBmSize) {
                         blinkMeasureShortf.pop_front();
                         doLog(debug_blinks_d2, "debug_blinks_d2: F %d T %lf shortBmSize %d is less than minShortBmSize %d (skipping %d)\n",
                             bm.frameNum, bm.timestamp, shortBmSize, minShortBmSize, oldestBm.frameNum);
@@ -283,32 +282,36 @@ bool BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
     if (rewriteElementsToStateQueue == true) {
         // happens only if delayStateMachine is/was true
         BlinkMeasureF::delayStateMachine = false;
-        double lavg, ravg, lSD, rSD;
-        double plsdt, prsdt, mlsdt, mrsdt, plsd1, prsd1, mlsd1, mrsd1, plsd2, prsd2, mlsd2, mrsd2;
-        BlinkMeasureF::measureSD(&mlsdt, &plsdt, &mrsdt, &prsdt, &lavg, &ravg, &lSD, &rSD,
-            &plsd1, &prsd1, &mlsd1, &mrsd1, &plsd2, &prsd2, &mlsd2, &mrsd2);
-
-        std::list<BlinkMeasureF>::iterator iter;
-        iter = blinkMeasureShortf.begin();
-        while(iter != blinkMeasureShortf.end()) {
-            BlinkMeasureF& bmItem = *iter;
-            BlinkMeasureF::processBm(bmItem, lavg, ravg, lSD, rSD, mlsdt, plsdt, mrsdt, prsdt, plsd1, prsd1, mlsd1, mrsd1, plsd2, prsd2, mlsd2, mrsd2);
-
-            stateMachineElement sme;
-            sme.bm = bmItem;
-            sme.mlsdt = mlsdt; sme.plsdt = plsdt; sme.mrsdt = mrsdt; sme.prsdt = prsdt;
-            doLog(debug_blinks_d2, "debug_blinks_d2: F %d T %lf pushing %u to stateMachineQueue\n", bm.frameNum, bm.timestamp, bmItem.frameNum);
-            stateMachineQueue.push_back(sme);
-            BlinkMeasureF::lastAddedToStateMachine = bmItem.frameNum;
-
-            iter++;
-        }
+        BlinkMeasureF::rewriteElementsToStateQueue(bm.frameNum, bm.timestamp);
     }
 
     blinkMeasureShortf.push_back(bm);
 
     return (rewriteElementsToStateQueue == false && BlinkMeasureF::delayStateMachine == false);
 }
+void BlinkMeasureF::rewriteElementsToStateQueue(unsigned int frameNum, double timestamp) {
+    double lavg, ravg, lSD, rSD;
+    double plsdt, prsdt, mlsdt, mrsdt, plsd1, prsd1, mlsd1, mrsd1, plsd2, prsd2, mlsd2, mrsd2;
+    BlinkMeasureF::measureSD(&mlsdt, &plsdt, &mrsdt, &prsdt, &lavg, &ravg, &lSD, &rSD,
+        &plsd1, &prsd1, &mlsd1, &mrsd1, &plsd2, &prsd2, &mlsd2, &mrsd2);
+
+    std::list<BlinkMeasureF>::iterator iter;
+    iter = blinkMeasureShortf.begin();
+    while(iter != blinkMeasureShortf.end()) {
+        BlinkMeasureF& bmItem = *iter;
+        BlinkMeasureF::processBm(bmItem, lavg, ravg, lSD, rSD, mlsdt, plsdt, mrsdt, prsdt, plsd1, prsd1, mlsd1, mrsd1, plsd2, prsd2, mlsd2, mrsd2);
+
+        stateMachineElement sme;
+        sme.bm = bmItem;
+        sme.mlsdt = mlsdt; sme.plsdt = plsdt; sme.mrsdt = mrsdt; sme.prsdt = prsdt;
+        doLog(debug_blinks_d2, "debug_blinks_d2: F %d T %lf pushing %u to stateMachineQueue\n", frameNum, timestamp, bmItem.frameNum);
+        stateMachineQueue.push_back(sme);
+        BlinkMeasureF::lastAddedToStateMachine = bmItem.frameNum;
+
+        iter++;
+    }
+}
+
 void BlinkMeasureF::processStateMachineQueue() {
     std::list<stateMachineElement>::iterator iter;
     iter = stateMachineQueue.begin();

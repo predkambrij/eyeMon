@@ -41,6 +41,7 @@ class Farneback {
         bool preprocess(cv::Mat& left, cv::Mat& right, double timestamp, unsigned int frameNum);
         void process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum);
         int measureBlinks(double curTimestamp);
+        void flushMeasureBlinks();
         void drawOptFlowMap (cv::Rect eyeE, const cv::Mat flow, cv::Mat cflowmap, int step, const cv::Scalar& color, int eye);
 #ifdef IS_PHONE
         int setJni(JNIEnv* jenv);

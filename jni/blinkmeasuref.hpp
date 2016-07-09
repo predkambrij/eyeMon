@@ -41,6 +41,7 @@ class BlinkMeasureF {
 
         BlinkMeasureF(unsigned int frameNum, double timestamp, cv::Point2d lDiffP, cv::Point2d rDiffP, bool canProceedL, bool canProceedR, bool canUpdateL, bool canUpdateR);
         BlinkMeasureF();
+        static void rewriteElementsToStateQueue(unsigned int frameNum, double timestamp);
         static bool measureBlinks(BlinkMeasureF bm);
         static void processBm(BlinkMeasureF bm);
         static void processStateMachineQueue();
