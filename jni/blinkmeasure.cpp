@@ -302,7 +302,7 @@ bool BlinkMeasure::measureBlinks() {
 void BlinkMeasure::processStateMachineQueue() {
     int timeWindow = 5;
 
-    int watchingWindowLength = maxFramesShortList/(timeWindow*2);
+    int watchingWindowLength = maxFramesShortList/(timeWindow*2); // meant to be up to 500ms long
     int stateMachineQueueTsize = stateMachineQueueT.size();
     if ((int)stateMachineQueueT.size() < watchingWindowLength) {
         doLog(debug_blinks_d2, "debug_blinks_d2: stateMachineQueueT is too short %d\n", stateMachineQueueTsize);
@@ -311,23 +311,6 @@ void BlinkMeasure::processStateMachineQueue() {
     // spike start
     stateMachineElementT spikeStart = stateMachineQueueT.front();
     BlinkMeasure spikeStartBm = spikeStart.bm;
-
-    // write detected spikes
-    if (toChunksLeft.find(spikeStartBm.frameNum) != toChunksLeft.end()) {
-        doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf L %lf\n", spikeStartBm.frameNum, spikeStartBm.timestamp, spikeStartBm.lcor);
-        BlinkMeasure::makeChunk(true, spikeStartBm.timestamp, true, spikeStartBm.frameNum);
-        toChunksLeft.erase (spikeStartBm.frameNum);
-    } else {
-        BlinkMeasure::makeChunk(true, spikeStartBm.timestamp, false, spikeStartBm.frameNum);
-    }
-    if (toChunksRight.find(spikeStartBm.frameNum) != toChunksRight.end()) {
-        doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf R %lf\n", spikeStartBm.frameNum, spikeStartBm.timestamp, spikeStartBm.rcor);
-        BlinkMeasure::makeChunk(false, spikeStartBm.timestamp, true, spikeStartBm.frameNum);
-        toChunksLeft.erase (spikeStartBm.frameNum);
-    } else {
-        BlinkMeasure::makeChunk(false, spikeStartBm.timestamp, false, spikeStartBm.frameNum);
-    }
-    ///
 
     // find spike ending
     stateMachineElementT spikeEnd;
@@ -346,10 +329,33 @@ void BlinkMeasure::processStateMachineQueue() {
         }
         iterS++;
     }
-    lsdt = spikeEnd.lsdt; rsdt = spikeEnd.rsdt;
-    //doLog(debug_blinks_d2, "debug_blinks_d2: start %u end %u\n", spikeStartBm.frameNum, spikeEndBm.frameNum);
+
+    // write detected spikes
+    if (toChunksLeft.find(spikeStartBm.frameNum) != toChunksLeft.end()) {
+        doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf L %lf\n", spikeStartBm.frameNum, spikeStartBm.timestamp, spikeStartBm.lcor);
+        BlinkMeasure::makeChunk(true, spikeStartBm.timestamp, true, spikeStartBm.frameNum);
+        toChunksLeft.erase (spikeStartBm.frameNum);
+    } else {
+        BlinkMeasure::makeChunk(true, spikeStartBm.timestamp, false, spikeStartBm.frameNum);
+    }
+    if (toChunksRight.find(spikeStartBm.frameNum) != toChunksRight.end()) {
+        doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf R %lf\n", spikeStartBm.frameNum, spikeStartBm.timestamp, spikeStartBm.rcor);
+        BlinkMeasure::makeChunk(false, spikeStartBm.timestamp, true, spikeStartBm.frameNum);
+        toChunksLeft.erase (spikeStartBm.frameNum);
+    } else {
+        BlinkMeasure::makeChunk(false, spikeStartBm.timestamp, false, spikeStartBm.frameNum);
+    }
+
+    if ((spikeEndBm.timestamp-spikeStartBm.timestamp) > 800) {
+        doLog(debug_blinks_d2, "debug_blinks_d2: length %d too long %.2f\n", watchingWindowLength, spikeEndBm.timestamp-spikeStartBm.timestamp);
+        stateMachineQueueT.pop_front();
+        return;
+    } else {
+        doLog(debug_blinks_d2, "debug_blinks_d2: length %d %.2f\n", watchingWindowLength, spikeEndBm.timestamp-spikeStartBm.timestamp);
+    }
 
     // process the window
+    lsdt = spikeEnd.lsdt; rsdt = spikeEnd.rsdt;
     iterS = stateMachineQueueT.begin();
     while(iterS != stateMachineQueueT.end()) {
         stateMachineElementT& sme = *iterS;
