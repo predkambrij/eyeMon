@@ -252,10 +252,20 @@ void TemplateBased::process(cv::Mat gray, cv::Mat out, double timestamp, unsigne
         this->hasTemplate = false;
     }
 };
+
 int TemplateBased::measureBlinks(double curTimestamp) {
     int ret = 0;
     bool notifsCanProceed = false;
-    notifsCanProceed = BlinkMeasure::measureBlinks();
+    while (blinkMeasure.size() > 0) {
+        BlinkMeasure bm = blinkMeasure.front();
+        blinkMeasure.pop_front();
+        notifsCanProceed = BlinkMeasure::measureBlinks(bm);
+
+        if (notifsCanProceed == true) {
+            BlinkMeasure::processStateMachineQueue();
+        }
+    }
+
     bool wasBlink = BlinkMeasure::joinBlinks();
     if (wasBlink == true) {
         if (debug_blink_beeps == true) {

@@ -35,11 +35,13 @@ class BlinkMeasure {
 
         BlinkMeasure();
         BlinkMeasure(unsigned int frameNum, double timestamp, double lcor, double rcor);
-        static bool measureBlinks();
+        static bool measureBlinks(BlinkMeasure bm);
         static void processStateMachineQueue();
+        static void processBm(BlinkMeasure bm, double lavg, double ravg, double lSD, double rSD,
+            double plsdf, double mlsdf, double prsdf, double mrsdf, double lsdt, double rsdt);
         static bool checkN1Notifs(double curTimestamp);
         static bool joinBlinks();
-        static void measureBlinksAVG(int shortBmSize, double *lavg, double *ravg);
+        static void measureBlinksAVG(double *lavg, double *ravg);
         static void measureBlinksSD(double *lSD, double *rSD, double *lsdt, double *rsdt, double *plsdf, double *prsdf, double *mlsdf, double *mrsdf);
         static void makeChunk(bool isLeft, double timestamp, bool isBlink, unsigned int frameNum);
         static void makeNotification(bool isLeft);
