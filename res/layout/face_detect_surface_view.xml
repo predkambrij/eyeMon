@@ -33,6 +33,20 @@
                 android:layout_gravity="end"
                 android:text="stopService" />
 
+            <Button
+                android:id="@+id/cameraRecorderFarneback"
+                android:layout_width="130dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:text="farneback" />
+
+            <Button
+                android:id="@+id/cameraRecorderTemplate"
+                android:layout_width="130dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:text="template" />
+            
             <TextView
                 android:id="@+id/textView1"
                 android:layout_width="wrap_content"

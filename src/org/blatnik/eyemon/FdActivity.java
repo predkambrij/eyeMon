@@ -23,6 +23,8 @@ public class FdActivity extends Activity {
 
     private MenuItem startService;
     private MenuItem stopService;
+    private MenuItem farneback;
+    private MenuItem template;
     
     private BroadcastReceiver receiver;
 
@@ -56,6 +58,24 @@ public class FdActivity extends Activity {
                 public void onClick(View v) {
                     Log.i(TAG, "Stooop");
                     stopService(new Intent(FdActivity.this, MainService.class));
+                }
+            }
+        );
+        Button farnebackButton = (Button) findViewById(R.id.cameraRecorderFarneback);
+        farnebackButton.setOnClickListener(
+            new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    MainService.method = MainService.METHOD_FARNEBACK;
+                }
+            }
+        );
+        Button templateButton = (Button) findViewById(R.id.cameraRecorderTemplate);
+        templateButton.setOnClickListener(
+            new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    MainService.method = MainService.METHOD_TEMPLATE_JNI;
                 }
             }
         );
@@ -106,6 +126,8 @@ public class FdActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         startService = menu.add("startService");
         stopService  = menu.add("stopService");
+        farneback  = menu.add("farneback");
+        template  = menu.add("template");
         return true;
     }
 
@@ -116,6 +138,10 @@ public class FdActivity extends Activity {
             startService(intent);
         } else if (item == stopService) {
             stopService(new Intent(FdActivity.this, MainService.class));
+        } else if (item == farneback) {
+            MainService.method = MainService.METHOD_FARNEBACK;
+        } else if (item == template) {
+            MainService.method = MainService.METHOD_TEMPLATE;
         }
 
         return true;

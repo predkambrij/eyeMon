@@ -161,14 +161,16 @@ public class MainService extends Service {
         intent.putExtra("avgOtherTime", avgOtherTime+"");
         this.sendBroadcast(intent);
     }
+    public static final int METHOD_NONE         = -1;
+    public static final int METHOD_OPTFLOW      = 0;
+    public static final int METHOD_TEMPLATE     = 1;
+    public static final int METHOD_TEMPLATE_JNI = 2;
+    public static final int METHOD_FARNEBACK = 3;
+    public static int method = METHOD_NONE;
 
     private class FrameProcessor implements Runnable {
-        static final int METHOD_OPTFLOW      = 0;
-        static final int METHOD_TEMPLATE     = 1;
-        static final int METHOD_TEMPLATE_JNI = 2;
-        static final int METHOD_FARNEBACK = 3;
         //int method = METHOD_TEMPLATE_JNI; // c++ code
-        int method = METHOD_FARNEBACK;
+        //int method = METHOD_FARNEBACK;
 
         long frameCount      = 0;
         long timeStart       = 0;
@@ -187,7 +189,7 @@ public class MainService extends Service {
         int flSize = 0;
 
         public FrameProcessor() {
-            switch (this.method) {
+            switch (MainService.method) {
             case METHOD_OPTFLOW:
                 break;
             case METHOD_TEMPLATE:
@@ -208,7 +210,7 @@ public class MainService extends Service {
 
             long methodCall = System.nanoTime();
 
-            switch (this.method) {
+            switch (MainService.method) {
             // rgb gray
             case METHOD_OPTFLOW:
                 optFlow.detect(gray, gray);
@@ -259,7 +261,7 @@ public class MainService extends Service {
         }
 
         private void cleanup() {
-            switch (this.method) {
+            switch (MainService.method) {
             case METHOD_OPTFLOW:
                 optFlow.release();
                 break;
