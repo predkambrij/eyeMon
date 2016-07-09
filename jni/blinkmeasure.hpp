@@ -15,6 +15,8 @@ class BlinkMeasure {
         static double startTS;
         static double prevTS;
         static bool lAdding;
+        static unsigned int lastAddedToStateMachine;
+        static bool delayStateMachine;
         static bool isFirst;
         static double prevLcor;
         static double prevRcor;
@@ -34,6 +36,7 @@ class BlinkMeasure {
         BlinkMeasure();
         BlinkMeasure(unsigned int frameNum, double timestamp, double lcor, double rcor);
         static bool measureBlinks();
+        static void processStateMachineQueue();
         static bool checkN1Notifs(double curTimestamp);
         static bool joinBlinks();
         static void measureBlinksAVG(int shortBmSize, double *lavg, double *ravg);

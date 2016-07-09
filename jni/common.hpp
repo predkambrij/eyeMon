@@ -46,6 +46,11 @@ struct stateMachineElement {
     double mlsdt, plsdt, mrsdt, prsdt;
 };
 
+struct stateMachineElementT {
+    BlinkMeasure bm;
+    double lsdt, rsdt;
+};
+
 
 
 
@@ -126,6 +131,7 @@ extern std::list<Blink> rBlinkChunks;
 extern std::list<Blink> joinedBlinkChunksN1;
 
 extern std::list<struct stateMachineElement> stateMachineQueue;
+extern std::list<struct stateMachineElementT> stateMachineQueueT;
 
 extern std::list<Blink> lBlinkTimeframeChunks;
 extern std::list<Blink> rBlinkTimeframeChunks;

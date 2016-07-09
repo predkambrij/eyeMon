@@ -31,6 +31,7 @@ std::list<BlinkF> lBlinkTimeframeChunksf;
 std::list<BlinkF> rBlinkTimeframeChunksf;
 std::list<struct stateMachineElement> stateMachineQueue;
 ///
+std::list<struct stateMachineElementT> stateMachineQueueT;
 
 std::list<BlinkMeasure> blinkMeasure;
 std::list<BlinkMeasure> blinkMeasureShort;

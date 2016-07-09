@@ -291,89 +291,100 @@ bool BlinkMeasure::measureBlinks() {
             BlinkMeasure::prevLcor = bm.lcor;
             BlinkMeasure::prevRcor = bm.rcor;
     }
+    stateMachineElementT e; e.bm = bm; e.lsdt = lsdt; e.rsdt = rsdt;
+    stateMachineQueueT.push_back(e);
 
-    // spike detection
-    BlinkMeasure spikeEndBm = blinkMeasureShort.back();
-    BlinkMeasure spikeStartBm;
-    //double maxTimediffBetweenFrames = 150;
-    int skipElements = shortBmSize-(maxFramesShortList/(timeWindow*2));
-    if (skipElements < 0) {
-        skipElements = 0;
+    BlinkMeasure::processStateMachineQueue();
+
+    return true;
+}
+
+void BlinkMeasure::processStateMachineQueue() {
+    int timeWindow = 5;
+
+    int watchingWindowLength = maxFramesShortList/(timeWindow*2);
+    int stateMachineQueueTsize = stateMachineQueueT.size();
+    if ((int)stateMachineQueueT.size() < watchingWindowLength) {
+        doLog(debug_blinks_d2, "debug_blinks_d2: stateMachineQueueT is too short %d\n", stateMachineQueueTsize);
+        return;
     }
-    int i=0;
-    std::list<BlinkMeasure>::iterator iter = blinkMeasureShort.begin();
-    while(iter != blinkMeasureShort.end()) {
-        BlinkMeasure& bm = *iter;
-        if (i == skipElements) {
-            // frames might repeat because maxFramesShortList might extend
-            // preventing that by using (l/r)LastAddedFN
-            if (bm.frameNum > BlinkMeasure::lLastAddedFN) {
-                if (toChunksLeft.find(bm.frameNum) != toChunksLeft.end()) {
-                    doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf L %lf\n", bm.frameNum, bm.timestamp, bm.lcor);
-                    BlinkMeasure::makeChunk(true, bm.timestamp, true, bm.frameNum);
-                    toChunksLeft.erase (bm.frameNum);
-                } else {
-                    BlinkMeasure::makeChunk(true, bm.timestamp, false, bm.frameNum);
-                }
-                BlinkMeasure::lLastAddedFN = bm.frameNum;
-            }
-            if (bm.frameNum > BlinkMeasure::rLastAddedFN) {
-                if (toChunksRight.find(bm.frameNum) != toChunksRight.end()) {
-                    doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf R %lf\n", bm.frameNum, bm.timestamp, bm.rcor);
-                    BlinkMeasure::makeChunk(false, bm.timestamp, true, bm.frameNum);
-                    toChunksLeft.erase (bm.frameNum);
-                } else {
-                    BlinkMeasure::makeChunk(false, bm.timestamp, false, bm.frameNum);
-                }
-                BlinkMeasure::rLastAddedFN = bm.frameNum;
-            }
-            spikeStartBm = bm;
+    // spike start
+    stateMachineElementT spikeStart = stateMachineQueueT.front();
+    BlinkMeasure spikeStartBm = spikeStart.bm;
+
+    // write detected spikes
+    if (toChunksLeft.find(spikeStartBm.frameNum) != toChunksLeft.end()) {
+        doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf L %lf\n", spikeStartBm.frameNum, spikeStartBm.timestamp, spikeStartBm.lcor);
+        BlinkMeasure::makeChunk(true, spikeStartBm.timestamp, true, spikeStartBm.frameNum);
+        toChunksLeft.erase (spikeStartBm.frameNum);
+    } else {
+        BlinkMeasure::makeChunk(true, spikeStartBm.timestamp, false, spikeStartBm.frameNum);
+    }
+    if (toChunksRight.find(spikeStartBm.frameNum) != toChunksRight.end()) {
+        doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf R %lf\n", spikeStartBm.frameNum, spikeStartBm.timestamp, spikeStartBm.rcor);
+        BlinkMeasure::makeChunk(false, spikeStartBm.timestamp, true, spikeStartBm.frameNum);
+        toChunksLeft.erase (spikeStartBm.frameNum);
+    } else {
+        BlinkMeasure::makeChunk(false, spikeStartBm.timestamp, false, spikeStartBm.frameNum);
+    }
+    ///
+
+    // find spike ending
+    stateMachineElementT spikeEnd;
+    BlinkMeasure spikeEndBm;
+    double lsdt, rsdt;
+    int position = 0;
+    std::list<stateMachineElementT>::iterator iterS;
+    iterS = stateMachineQueueT.begin();
+    while(iterS != stateMachineQueueT.end()) {
+        position++;
+        if (position == watchingWindowLength) {
+            stateMachineElementT& sme = *iterS;
+            spikeEnd = sme;
+            spikeEndBm = spikeEnd.bm;
+            break;
         }
-        if (i > skipElements) {
-            if (bm.lcor < (spikeStartBm.lcor-lsdt) && bm.lcor < (spikeEndBm.lcor-lsdt)) {
-                toChunksLeft[bm.frameNum] = bm.timestamp;
-            }
-            if (bm.rcor < (spikeStartBm.rcor-rsdt) && bm.rcor < (spikeEndBm.rcor-rsdt)) {
-                toChunksRight[bm.frameNum] = bm.timestamp;
-            }
+        iterS++;
+    }
+    lsdt = spikeEnd.lsdt; rsdt = spikeEnd.rsdt;
+    //doLog(debug_blinks_d2, "debug_blinks_d2: start %u end %u\n", spikeStartBm.frameNum, spikeEndBm.frameNum);
+
+    // process the window
+    iterS = stateMachineQueueT.begin();
+    while(iterS != stateMachineQueueT.end()) {
+        stateMachineElementT& sme = *iterS;
+
+        if (sme.bm.lcor < (spikeStartBm.lcor-lsdt) && sme.bm.lcor < (spikeEndBm.lcor-lsdt)) {
+            toChunksLeft[sme.bm.frameNum] = sme.bm.timestamp;
         }
-        i++;
-        iter++;
+        if (sme.bm.rcor < (spikeStartBm.rcor-rsdt) && sme.bm.rcor < (spikeEndBm.rcor-rsdt)) {
+            toChunksRight[sme.bm.frameNum] = sme.bm.timestamp;
+        }
+
+        if (sme.bm.frameNum == spikeEndBm.frameNum) {
+            break;
+        }
+        iterS++;
     }
 
     // track watching time for notifications
     if (BlinkMeasure::prevTS == -1) {
-        BlinkMeasure::prevTS = bm.timestamp;
-        BlinkMeasure::startTS = bm.timestamp;
+        BlinkMeasure::prevTS = spikeStartBm.timestamp;
+        BlinkMeasure::startTS = spikeStartBm.timestamp;
     } else {
-        if ((bm.timestamp - BlinkMeasure::prevTS) > 200) {
+        if ((spikeStartBm.timestamp - BlinkMeasure::prevTS) > 200) {
             activeSlice as;
             as.start = BlinkMeasure::startTS;
             as.end = BlinkMeasure::prevTS;
             n1ActiveSlices.push_back(as);
-            BlinkMeasure::startTS = bm.timestamp;
+            BlinkMeasure::startTS = spikeStartBm.timestamp;
         }
-        BlinkMeasure::prevTS = bm.timestamp;
+        BlinkMeasure::prevTS = spikeStartBm.timestamp;
     }
 
-/*
-    if (bm.lcor < lsd2) {
-        doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf L %lf SD1 %lf SD2 %lf\n", bm.frameNum, bm.timestamp, bm.lcor, lsd1, lsd2);
-        // check whether we can create a new blink (chunk)
-        BlinkMeasure::makeChunk(true, (double)bm.timestamp, true, bm.frameNum);
-    } else {
-        BlinkMeasure::makeChunk(true, (double)bm.timestamp, false, bm.frameNum);
-    }
-    if (bm.rcor < rsd2) {
-        doLog(debug_blinks_d3, "debug_blinks_d3: BLINK F %d T %.2lf R %lf SD1 %lf SD2 %lf\n", bm.frameNum, bm.timestamp, bm.rcor, rsd1, rsd2);
-        // check whether we can create a new blink (chunk)
-        BlinkMeasure::makeChunk(false, (double)bm.timestamp, true, bm.frameNum);
-    } else {
-        BlinkMeasure::makeChunk(false, (double)bm.timestamp, false, bm.frameNum);
-    }
-*/
-    return true;
+    stateMachineQueueT.pop_front();
 }
+
 bool BlinkMeasure::checkN1Notifs(double curTimestamp) {
     // 5 mins
     //double watchingWindow = 1000*60*5;
@@ -438,6 +449,9 @@ bool BlinkMeasure::checkN1Notifs(double curTimestamp) {
         return false;
     }
 }
+
+unsigned int BlinkMeasure::lastAddedToStateMachine = 0;
+bool BlinkMeasure::delayStateMachine = true;
 
 bool BlinkMeasure::n1UnderThreshold = false;
 double BlinkMeasure::startTS = -1;
