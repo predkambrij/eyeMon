@@ -231,7 +231,7 @@ void BlinkMeasure::measureBlinksSD(double *lSD, double *rSD, double *lsdt, doubl
 
 bool BlinkMeasure::measureBlinks(BlinkMeasure bm) {
     bool forceProceedShorterSize = false;
-    int timeWindow = 5;
+    int timeWindow = 10;
 
     // ensure that queue is long enough (at least 30 frames) (that we'll know how long we want to have it)
     int firstMeasureQueueSize = 30;
@@ -346,7 +346,7 @@ void BlinkMeasure::processBm(BlinkMeasure bm, double lavg, double ravg, double l
 }
 
 void BlinkMeasure::processStateMachineQueue() {
-    int timeWindow = 5;
+    int timeWindow = 10;
 
     int watchingWindowLength = maxFramesShortList/(timeWindow*2); // meant to be up to 500ms long
     int stateMachineQueueTSize = stateMachineQueueT.size();
