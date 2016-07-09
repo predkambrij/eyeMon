@@ -257,7 +257,9 @@ bool BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
                 blinkMeasureShortf.pop_front();
             }
         }
+        shortBmSize = blinkMeasureShortf.size();
     }
+
     if (BlinkMeasureF::delayStateMachine == false) {
         if (shortBmSize < minShortBmSize) {
             BlinkMeasureF::delayStateMachine = true;
@@ -277,6 +279,7 @@ bool BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
             BlinkMeasureF::lastAddedToStateMachine = prevBm.frameNum;
         }
     }
+
     if (rewriteElementsToStateQueue == true) {
         // happens only if delayStateMachine is/was true
         BlinkMeasureF::delayStateMachine = false;
@@ -301,6 +304,7 @@ bool BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
             iter++;
         }
     }
+
     blinkMeasureShortf.push_back(bm);
 
     return (rewriteElementsToStateQueue == false && BlinkMeasureF::delayStateMachine == false);
