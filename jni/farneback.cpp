@@ -570,6 +570,9 @@ int Farneback::setJni(JNIEnv* jenv) {
 void Farneback::flushMeasureBlinks() {
     BlinkMeasureF::rewriteElementsToStateQueue(0, 0);
     BlinkMeasureF::processStateMachineQueue();
+    BlinkMeasureF::lAdding = false;
+    BlinkMeasureF::rAdding = false;
+    BlinkMeasureF::joinBlinks();
 }
 
 int Farneback::measureBlinks(double curTimestamp) {

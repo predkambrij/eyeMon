@@ -347,8 +347,10 @@ void BlinkMeasure::processBm(BlinkMeasure bm, double lavg, double ravg, double l
 
 void BlinkMeasure::processStateMachineQueue() {
     int timeWindow = 10;
-
     int watchingWindowLength = maxFramesShortList/(timeWindow*2); // meant to be up to 500ms long
+    if (watchingWindowLength < 3) {
+        return;
+    }
     int stateMachineQueueTSize = stateMachineQueueT.size();
     while (stateMachineQueueTSize >= watchingWindowLength) {
         // spike start

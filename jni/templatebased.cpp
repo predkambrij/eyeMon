@@ -256,6 +256,9 @@ void TemplateBased::process(cv::Mat gray, cv::Mat out, double timestamp, unsigne
 void TemplateBased::flushMeasureBlinks() {
     BlinkMeasure::rewriteElementsToStateQueue(0, 0);
     BlinkMeasure::processStateMachineQueue();
+    BlinkMeasure::lAdding = false;
+    BlinkMeasure::rAdding = false;
+    BlinkMeasure::joinBlinks();
 }
 
 int TemplateBased::measureBlinks(double curTimestamp) {
