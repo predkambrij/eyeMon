@@ -299,6 +299,10 @@ void BlinkMeasureF::rewriteElementsToStateQueue(unsigned int frameNum, double ti
     iter = blinkMeasureShortf.begin();
     while(iter != blinkMeasureShortf.end()) {
         BlinkMeasureF& bmItem = *iter;
+        if (bmItem.frameNum <= BlinkMeasureF::lastAddedToStateMachine) {
+            iter++;
+            continue;
+        }
         BlinkMeasureF::processBm(bmItem, lavg, ravg, lSD, rSD, mlsdt, plsdt, mrsdt, prsdt, plsd1, prsd1, mlsd1, mrsd1, plsd2, prsd2, mlsd2, mrsd2);
 
         stateMachineElement sme;
@@ -370,8 +374,8 @@ void BlinkMeasureF::measureSD(double* mlsdt, double* plsdt, double* mrsdt, doubl
 bool BlinkMeasureF::checkN1Notifs(double curTimestamp) {
     // 5 mins
     //double watchingWindow = 1000*60*5;
-    double watchingWindow = 1000*10;
-    double minBlinksRatio = 12/(double)60;
+    double watchingWindow = 1000*60*5;
+    double minBlinksRatio = 7/(double)60;
     double winStart = curTimestamp-watchingWindow;
     double minWindowLength = watchingWindow/2;
     double watchedLength = 0;
