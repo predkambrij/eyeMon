@@ -51,6 +51,10 @@ _setTestVars :
 	$(eval FILES_TO_COMPILE = test.cpp)
 	$(eval OUTPUT_BIN = bins/test)
 
+_setDebayerVars :
+	$(eval FILES_TO_COMPILE = debayering.cpp)
+	$(eval OUTPUT_BIN = bins/debayer)
+
 run/% :
 	bins/$*
 
@@ -59,6 +63,7 @@ d : _setDesktopSettings _setEyelikeFiles _compile run/d
 dt : _setTestSettings _setEyelikeFiles _compile run/t
 dtp : _setTestpySettings _setEyelikeFiles _compile run/tp
 annot : _setAnnotVars _compile run/annot
+debayer : _setDebayerVars _compile run/debayer
 test : _setTestVars _compile run/test
 
 # tests (it doesn't work, see Makefile in test directory)
