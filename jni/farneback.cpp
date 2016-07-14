@@ -60,17 +60,24 @@ int Farneback::faceDetect(cv::Mat gray, cv::Rect *face) {
     *face = faces[0];
     return 0;
 }
+void Farneback::getAnnotLoc(unsigned int frameNum, int *lx, int *ly, int *rx, int *ry) {
+    if (annotEyePositionMap.find((int)frameNum)!=annotEyePositionMap.end()) {
+        annotEyePosition annot = annotEyePositionMap[(int)frameNum];
+        *lx = (annot.l1x+annot.l2x)/2;
+        *ly = (annot.l1y+annot.l2y)/2;
+        *ly -= 5;
+        *rx = (annot.r1x+annot.r2x)/2;
+        *ry = (annot.r1y+annot.r2y)/2;
+        *ry -= 5;
+    } else {
+        *lx = -1; *ly = -1; *rx = -1; *ry = -1;
+    }
+}
 void Farneback::eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point &leftPupil, cv::Point &rightPupil, __attribute__((unused)) double timestamp, unsigned int frameNum) {
+    int lx, ly, rx, ry;
     if (shouldUseAnnotEyePosition == true) {
-        if (annotEyePositionMap.find((int)frameNum)!=annotEyePositionMap.end()) {
-            annotEyePosition annot = annotEyePositionMap[(int)frameNum];
-            int lx, ly, rx, ry;
-            lx = (annot.l1x+annot.l2x)/2;
-            ly = (annot.l1y+annot.l2y)/2;
-            ly -= 5;
-            rx = (annot.r1x+annot.r2x)/2;
-            ry = (annot.r1y+annot.r2y)/2;
-            ry -= 5;
+        this->getAnnotLoc(frameNum, &lx, &ly, &rx, &ry);
+        if (!(lx == -1 || ly == -1 || rx == -1 || ry == -1)) {
             lx -= this->leftRg.x;
             ly -= this->leftRg.y;
             rx -= this->rightRg.x;
@@ -90,7 +97,8 @@ void Farneback::eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rig
             leftPupil = cv::Point(leftEyeRegion.width/2, leftEyeRegion.height/2);
             rightPupil = cv::Point(rightEyeRegion.width/2, rightEyeRegion.height/2);
         }
-    } else {
+    }
+    if (shouldUseAnnotEyePosition != true) {
         leftPupil  = findEyeCenter(faceROI, leftEyeRegion);
         rightPupil = findEyeCenter(faceROI, rightEyeRegion);
     }
@@ -168,6 +176,7 @@ bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double times
 
 std::array<bool, 4> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned int frameNum) {
     std::chrono::time_point<std::chrono::steady_clock> t1;
+    int lx, ly, rx, ry;
     bool firePreprocess = false, canUpdateL = false, canUpdateR = false;
     cv::Point newLEyeLoc, newREyeLoc;
     unsigned int curXEyesDistance, curYEyesDistance;
@@ -179,6 +188,17 @@ std::array<bool, 4> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
         && abs(this->lastRepupilDiffLeft.x) < 2 && abs(this->lastRepupilDiffLeft.y) < 2
         && abs(this->lastRepupilDiffRight.x) < 2 && abs(this->lastRepupilDiffRight.y) < 2
         ) {
+        if (debug_fb_log_pupil_coverage == true) {
+            this->getAnnotLoc(frameNum, &lx, &ly, &rx, &ry);
+            int lDiffX = abs((this->lEye.x+this->leftRg.x)-lx);
+            int lDiffY = abs((this->lEye.y+this->leftRg.y)-ly);
+            int rDiffX = abs((this->rEye.x+this->rightRg.x)-rx);
+            int rDiffY = abs((this->rEye.y+this->rightRg.y)-ry);
+
+            doLog(debug_fb_log_pupil_coverage, "debug_fb_log_pupil_coverage: F %u T %.3lf L %d R %d\n", frameNum, timestamp,
+                lDiffX+lDiffY, rDiffX+rDiffY);
+        }
+
         std::array<bool, 4> ret;
         ret[0] = true;
         ret[1] = true;
@@ -306,6 +326,17 @@ std::array<bool, 4> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
     if (canUpdateR == true) {
         this->rEye = newREyeLoc;
     }
+    if (debug_fb_log_pupil_coverage == true) {
+        this->getAnnotLoc(frameNum, &lx, &ly, &rx, &ry);
+        int lDiffX = abs((this->lEye.x+this->leftRg.x)-lx);
+        int lDiffY = abs((this->lEye.y+this->leftRg.y)-ly);
+        int rDiffX = abs((this->rEye.x+this->rightRg.x)-rx);
+        int rDiffY = abs((this->rEye.y+this->rightRg.y)-ry);
+
+        doLog(debug_fb_log_pupil_coverage, "debug_fb_log_pupil_coverage: F %u T %.3lf L %d R %d\n", frameNum, timestamp,
+            lDiffX+lDiffY, rDiffX+rDiffY);
+    }
+
     std::array<bool, 4> ret;
     ret[0] = canProceedL;
     ret[1] = canProceedR;

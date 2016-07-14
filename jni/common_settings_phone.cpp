@@ -24,6 +24,7 @@ bool debug_fb_log_tracking = false;
 bool debug_fb_log_reinit = false;
 bool debug_fb_log_repupil = false;
 bool debug_fb_log_repupil1 = false;
+bool debug_fb_log_pupil_coverage = false;
 bool debug_fb_perf1 = true;
 bool debug_fb_perf2 = true;
 bool debug_fb_perfa = true;

@@ -307,7 +307,7 @@ int main() { // int argc, char * argv[]
     //processOptions(argc, argv);
     //return 0;
 #ifdef IS_TEST
-    if (shouldUseAnnotEyePosition == true) {
+    if (shouldUseAnnotEyePosition == true || debug_fb_log_pupil_coverage == true) {
         std::string tagNameS(fileName);
         bool res = getTagName(tagNameS);
         if (res == false) {

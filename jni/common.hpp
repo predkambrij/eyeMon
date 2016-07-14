@@ -81,6 +81,7 @@ extern bool debug_fb_log_tracking;
 extern bool debug_fb_log_reinit;
 extern bool debug_fb_log_repupil;
 extern bool debug_fb_log_repupil1;
+extern bool debug_fb_log_pupil_coverage;
 extern bool debug_fb_perf1;
 extern bool debug_fb_perf2;
 extern bool debug_fb_perfa;

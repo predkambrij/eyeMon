@@ -30,6 +30,7 @@ class Farneback {
         bool flagReinit = true, flagPupilSearch = false;
 
         Farneback();
+        void getAnnotLoc(unsigned int frameNum, int *lx, int *ly, int *rx, int *ry);
         int faceDetect(cv::Mat gray, cv::Rect *face);
         void eyeCenters(cv::Mat faceROI, cv::Rect leftEyeRegion, cv::Rect rightEyeRegion, cv::Point& leftPupil, cv::Point& rightPupil, double timestamp, unsigned int frameNum);
         void method(cv::Mat gray, bool canProceedL, bool canProceedR, bool canUpdateL, bool canUpdateR, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum);
