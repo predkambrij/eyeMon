@@ -365,8 +365,7 @@ std::array<bool, 4> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
     // printf("%d,%d %d,%d \n", leftUpdateLoc.x, leftUpdateLoc.y, rightUpdateLoc.x, rightUpdateLoc.y);
 
 }
-void Farneback::dominantDirection(cv::Mat flow, cv::Rect bounding, cv::Point2d& totalP, cv::Point2d& boundingP, cv::Point2d& diffP) {
-    cv::Point2d upper=cv::Point2d(0, 0), lower=cv::Point2d(0, 0);
+void Farneback::dominantDirection(cv::Mat flow, cv::Rect bounding, cv::Point2d& totalP, cv::Point2d& boundingP, cv::Point2d& diffP, cv::Point2d& upper, cv::Point2d& lower) {
     int upperPointsNum = 0, lowerPointsNum = 0;
     double totalX=0, totalY=0, btotalX=0, btotalY=0;
     for(int y = 0; y < flow.rows; y += 1) {
@@ -413,7 +412,7 @@ void Farneback::dominantDirection(cv::Mat flow, cv::Rect bounding, cv::Point2d& 
 }
 void Farneback::method(cv::Mat gray, bool canProceedL, bool canProceedR, bool canUpdateL, bool canUpdateR, cv::Mat& left, cv::Mat& right, cv::Mat& flowLeft, cv::Mat& flowRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
     std::chrono::time_point<std::chrono::steady_clock> t1;
-    cv::Point2d lTotalP, lBoundingP, lDiffP, rTotalP, rBoundingP, rDiffP;
+    cv::Point2d lTotalP, lBoundingP, lDiffP, rTotalP, rBoundingP, rDiffP, lUpper, lLower, rUpper, rLower;
     left = gray(this->leftRg);
     right = gray(this->rightRg);
 
@@ -436,10 +435,12 @@ void Farneback::method(cv::Mat gray, bool canProceedL, bool canProceedR, bool ca
         t1 = std::chrono::steady_clock::now();
         int leftBw = this->leftRg.width*0.75, leftBh = this->leftRg.height*0.5;
         leftB = cv::Rect(this->lEye.x-(leftBw/2), this->lEye.y-(leftBh/2), leftBw, leftBh);
-        this->dominantDirection(flowLeft, leftB, lTotalP, lBoundingP, lDiffP);
+        this->dominantDirection(flowLeft, leftB, lTotalP, lBoundingP, lDiffP, lUpper, lLower);
         difftime("debug_fb_perf2: method:leftDominant", t1, debug_fb_perf2);
         this->lastRepupilDiffLeft.x +=  lTotalP.x;
         this->lastRepupilDiffLeft.y +=  lTotalP.y;
+        doLog(debug_fb_log_upperlowerdiff, "debug_fb_log_upperlowerdiff: F %u T %lf L %.2lf\n", frameNum, timestamp, lUpper.y-lLower.y);
+
         //printf("L dominant F %u T %.3lf total %5.2lf %5.2lf\n", frameNum, timestamp, lTotalP.x, lTotalP.y);
     }
     if (canProceedR == true) {
@@ -453,10 +454,11 @@ void Farneback::method(cv::Mat gray, bool canProceedL, bool canProceedR, bool ca
         t1 = std::chrono::steady_clock::now();
         int rightBw = this->rightRg.width*0.75, rightBh = this->rightRg.height*0.5;
         rightB = cv::Rect(this->rEye.x-(rightBw/2), this->rEye.y-(rightBh/2), rightBw, rightBh);
-        this->dominantDirection(flowRight, rightB, rTotalP, rBoundingP, rDiffP);
+        this->dominantDirection(flowRight, rightB, rTotalP, rBoundingP, rDiffP, rUpper, rLower);
         difftime("debug_fb_perf2: method:rightDominant", t1, debug_fb_perf2);
         this->lastRepupilDiffRight.x +=  rTotalP.x;
         this->lastRepupilDiffRight.y +=  rTotalP.y;
+        doLog(debug_fb_log_upperlowerdiff, "debug_fb_log_upperlowerdiff: F %u T %lf R %.2lf\n", frameNum, timestamp, rUpper.y-rLower.y);
         //printf("R dominant F %u T %.3lf total %5.2lf %5.2lf\n", frameNum, timestamp, rTotalP.x, rTotalP.y);
     }
 

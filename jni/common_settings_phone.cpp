@@ -21,6 +21,7 @@ bool debug_tmpl_perfa = true;
 bool debug_fb_log1 = false;
 bool debug_fb_log_flow = false;
 bool debug_fb_log_tracking = false;
+bool debug_fb_log_upperlowerdiff = false;
 bool debug_fb_log_reinit = false;
 bool debug_fb_log_repupil = false;
 bool debug_fb_log_repupil1 = false;

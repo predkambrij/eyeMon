@@ -78,6 +78,7 @@ extern bool debug_tmpl_perfa;
 extern bool debug_fb_log1;
 extern bool debug_fb_log_flow;
 extern bool debug_fb_log_tracking;
+extern bool debug_fb_log_upperlowerdiff;
 extern bool debug_fb_log_reinit;
 extern bool debug_fb_log_repupil;
 extern bool debug_fb_log_repupil1;
