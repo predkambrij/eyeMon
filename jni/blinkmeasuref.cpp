@@ -204,7 +204,7 @@ int    BlinkMeasureF::rZeroCrossPosToNegF = 0;
 double BlinkMeasureF::rZeroCrossPosToNegT = 0;
 
 bool BlinkMeasureF::measureBlinks(BlinkMeasureF bm) {
-    int timeWindow = 15;
+    int timeWindow = 18;
     //int timeWindow = 10;
 
     // ensure that queue is long enough (at least 30 frames) (that we'll know how long we want to have it)
@@ -462,7 +462,7 @@ void BlinkMeasureF::stateMachine(unsigned int frameNum, double timestamp, double
             }
         }
     } else if (BlinkMeasureF::lCurState == 2) {
-        if ((timestamp-BlinkMeasureF::lZeroCrossPosToNegT) > 800) {
+        if ((timestamp-BlinkMeasureF::lZeroCrossPosToNegT) > 1100) {
             BlinkMeasureF::lCurState = 0;
         } else {
             if (BlinkMeasureF::lLastVal > 0 && leftY < 0) {
@@ -509,7 +509,7 @@ void BlinkMeasureF::stateMachine(unsigned int frameNum, double timestamp, double
             }
         }
     } else if (BlinkMeasureF::rCurState == 2) {
-        if ((timestamp-BlinkMeasureF::rZeroCrossPosToNegT) > 800) {
+        if ((timestamp-BlinkMeasureF::rZeroCrossPosToNegT) > 1100) {
             BlinkMeasureF::rCurState = 0;
         } else {
             if (BlinkMeasureF::rLastVal > 0 && rightY < 0) {

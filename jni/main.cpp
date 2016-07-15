@@ -89,7 +89,17 @@ void captureFrames() {
             long int ft = (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
             frameTimeMs = (double) ft;
         } else {
-            frameTimeMs = (double) stream1.get(CV_CAP_PROP_POS_MSEC);
+            if (shouldUseAnnotTimestamps == true) {
+                if (annotTimestampsMap.find((int)frameNum)!=annotTimestampsMap.end()) {
+                    frameTimeMs = annotTimestampsMap[(int)frameNum];
+                } else {
+                    printf("missing framenum %d\n", (int)frameNum);
+                    return;
+                }
+                
+            } else {
+                frameTimeMs = (double) stream1.get(CV_CAP_PROP_POS_MSEC);
+            }
         }
         if (frameNum >= startingFrameNum) {
             FrameCarrier fc(frame.clone(), frameTimeMs, frameNum);
@@ -303,6 +313,15 @@ bool getTagName(std::string& str) {
     str.replace(start_pos, from.length(), to);
     return true;
 }
+bool getTimestampsName(std::string& str) {
+    std::string from = ".avi";
+    std::string to = ".txt";
+    size_t start_pos = str.find(from);
+    if(start_pos == std::string::npos)
+        return false;
+    str.replace(start_pos, from.length(), to);
+    return true;
+}
 int main() { // int argc, char * argv[]
     //processOptions(argc, argv);
     //return 0;
@@ -350,6 +369,26 @@ int main() { // int argc, char * argv[]
 
         //printf("seems we did it %lu\n", annotEyePositionMap.size());
         //printf("%d %d (%d %d)\n", annotEyePositionMap[1].lx1, annotEyePositionMap[1].ly1, , annotEyePositionMap.find(1)!=annotEyePositionMap.end());
+    }
+    if (shouldUseAnnotTimestamps == true) {
+        std::string tsNameS(fileName);
+        bool res = getTimestampsName(tsNameS);
+        if (res == false) {
+            printf("Cannot provide timestamps name\n");
+            return 1;
+        }
+        std::ifstream f;
+        f.open(tsNameS.c_str(), std::fstream::in);
+        if (!f.good()) {
+            printf("It seems that timestamps doesn't exist\n");
+            return 2;
+        }
+        int frameCounter;
+        while(f >> frameCounter) {
+            double timestamp;
+            f>>timestamp;
+            annotTimestampsMap[frameCounter] = (timestamp*1000);
+        }
     }
 #endif
     PHONE = 0;

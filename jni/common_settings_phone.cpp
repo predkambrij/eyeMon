@@ -41,6 +41,7 @@ bool debug_blink_beeps = false;
 bool debug_n1_beeps = false;
 
 bool shouldUseAnnotEyePosition = false;
+bool shouldUseAnnotTimestamps = false;
 
 //int method = METHOD_OPTFLOW;
 //int method = METHOD_TEMPLATE_BASED;

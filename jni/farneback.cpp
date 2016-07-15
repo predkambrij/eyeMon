@@ -249,7 +249,7 @@ std::array<bool, 4> Farneback::rePupil(cv::Mat gray, double timestamp, unsigned 
     //printf("L repupil F %u T %.3lf %d reinit %d canCallMeasureBlinks %d diff %3d %3d\n", frameNum, timestamp, canUpdateL?1:0, this->flagReinit?1:0, this->canCallMeasureBlinks?1:0, newLEyeLoc.x-this->lEye.x, newLEyeLoc.y-this->lEye.y);
     //printf("R repupil F %u T %.3lf %d reinit %d canCallMeasureBlinks %d diff %3d %3d\n", frameNum, timestamp, canUpdateR?1:0, this->flagReinit?1:0, this->canCallMeasureBlinks?1:0, newREyeLoc.x-this->rEye.x, newREyeLoc.y-this->rEye.y);
     // if we lost eyes for more than half a second, request reinit
-    if ((this->lLastTime+400) < timestamp || (this->rLastTime+400) < timestamp) {
+    if ((this->lLastTime+500) < timestamp || (this->rLastTime+500) < timestamp) {
         // we lost eyes, request reinit
         this->flagReinit = true;
         doLog(debug_fb_log1, "debug_fb_log1: F %u T %lf reinit: eyes were displaced lLastTime %lf rLastTime %lf\n", frameNum, timestamp, this->lLastTime, this->rLastTime);

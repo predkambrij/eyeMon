@@ -18,6 +18,7 @@
 
 
 std::map<int, annotEyePosition> annotEyePositionMap;
+std::map<int, double> annotTimestampsMap;
 
 /// farne
 int maxFramesShortListf = 0;

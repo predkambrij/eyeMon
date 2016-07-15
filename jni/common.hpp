@@ -56,7 +56,9 @@ struct stateMachineElementT {
 
 
 extern std::map<int, annotEyePosition> annotEyePositionMap;
+extern std::map<int, double> annotTimestampsMap;
 extern bool shouldUseAnnotEyePosition;
+extern bool shouldUseAnnotTimestamps;
 
 extern bool debug_show_img_d1;
 extern bool debug_show_img_main;
