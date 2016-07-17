@@ -425,7 +425,7 @@ bool BlinkMeasureF::checkN1Notifs(double curTimestamp) {
         }
     }
     double curRatio = ((double)blinksCount)/(watchedLength/1000.);
-    doLog(debug_notifications_n1_log1, "debug_notifications_n1_log1: min ratio:%.2f curRatio %.2f\n", minBlinksRatio, curRatio);
+    doLog(debug_notifications_n1_log1, "debug_notifications_n1_log1: min ratio:%.2f curRatio %.2f\n", minBlinksRatio*60, curRatio*60);
 
     if (curRatio < minBlinksRatio) {
         doLog(debug_notifications_n1_log1, "debug_notifications_n1_log1: too few blinks %d\n", blinksCount);
