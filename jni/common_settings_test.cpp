@@ -2,7 +2,7 @@
 
 // TODO this could be done using macros (at all places is used ifdef)
 bool debug_show_img_d1 = false;
-bool debug_show_img_main = false;
+bool debug_show_img_main = true;
 bool debug_show_img_gray = false;
 bool debug_show_img_face = false;
 bool debug_show_img_optfl_eyes = false;
@@ -17,19 +17,31 @@ bool debug_t2_perf = false;
 bool debug_tmpl_log = false;
 bool debug_tmpl_perf1 = false;
 bool debug_tmpl_perf2 = false;
+bool debug_tmpl_perfa = false;
 bool debug_fb_log1 = false;
-bool debug_fb_log_flow = true;
-bool debug_fb_log_reinit = true;
-bool debug_fb_log_repupil = true;
-bool debug_fb_log_repupil1 = true;
+bool debug_fb_log_flow = false;
+bool debug_fb_log_tracking = false;
+bool debug_fb_log_upperlowerdiff = false;
+bool debug_fb_log_reinit = false;
+bool debug_fb_log_repupil = false;
+bool debug_fb_log_repupil1 = false;
+bool debug_fb_log_pupil_coverage = false;
 bool debug_fb_perf1 = false;
 bool debug_fb_perf2 = false;
-bool debug_bp_log_pix = true;
-bool debug_notifications_log1 = true;
+bool debug_fb_perfa = false;
+bool debug_bp_log_pix = false;
+bool debug_notifications_log1 = false;
+bool debug_notifications_n1_log1 = false;
 bool debug_blinks_d1 = true;
-bool debug_blinks_d2 = false;
+bool debug_blinks_d2 = true;
 bool debug_blinks_d3 = true;
 bool debug_blinks_d4 = true;
+bool debug_blinks_d5 = true;
+bool debug_blink_beeps = true;
+bool debug_n1_beeps = false;
+
+bool shouldUseAnnotEyePosition = false;
+bool shouldUseAnnotTimestamps = true;
 
 //int method = METHOD_OPTFLOW;
 //int method = METHOD_TEMPLATE_BASED;

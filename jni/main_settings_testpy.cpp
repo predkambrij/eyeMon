@@ -1,6 +1,6 @@
 #include <opencv2/highgui/highgui.hpp>
 
-char fileName[100] = "/home/developer/other/posnetki/talking.avi";
+char fileName[200] = "/home/developer/other/posnetki/sk/basler/poli1person21/poli1person21_x263.avi";
 
 
 cv::VideoCapture stream1(fileName);
@@ -19,8 +19,7 @@ unsigned int endingFrameNum = 0;
 //unsigned int startingFrameNum = 8900;
 //unsigned int endingFrameNum = 9600;
 
-// talking blink 56
-unsigned int startingFrameNum = 4400;
-unsigned int endingFrameNum = 4900;
+unsigned int startingFrameNum = 1500;
+unsigned int endingFrameNum = 0;
 #endif
 
