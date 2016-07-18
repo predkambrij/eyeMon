@@ -33,7 +33,7 @@
 //char fileName[200] = "/home/developer/other/posnetki/o4_90.mp4"; // knjiznica luc zadi, premikal glavo
 //char fileName[200] = "/home/developer/other/posnetki/o4_101.mp4"; // iso noise
 
-char fileName[200] = "/home/developer/other/posnetki/sk/basler/poli1person10/poli1person10_x263.avi";
+char fileName[200] = "/home/developer/other/posnetki/sk/basler/poli1person6/poli1person6_x263.avi";
 
 //char fileName[200] = "/home/developer/other/posnetki/o4_102.mp4"; // look away
 //char fileName[200] = "/home/developer/other/posnetki/phone1.mp4"; // phone1

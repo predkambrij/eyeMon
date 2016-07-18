@@ -39,7 +39,7 @@ bool debug_blinks_d5 = true;
 bool debug_blink_beeps = false;
 bool debug_n1_beeps = false;
 
-bool debug_fb_log_pupil_coverage = false; // don't turn off (except for basler)
+bool debug_fb_log_pupil_coverage = true; // don't turn off (except for basler)
 
 bool shouldUseAnnotEyePosition = false;
 bool shouldUseAnnotTimestamps = true;

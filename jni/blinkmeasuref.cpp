@@ -184,6 +184,13 @@ void BlinkMeasureF::measureBlinksSD(double *lSD, double *rSD, double *plsd1, dou
     *prsd1 = ravg+(1*(*rSD));
     *mlsd1 = lavg-(1*(*lSD));
     *mrsd1 = ravg-(1*(*rSD));
+
+/*
+    *plsdt = lavg+(1.5*(*lSD));
+    *prsdt = ravg+(1.5*(*rSD));
+    *mlsdt = lavg-(1.8*(*lSD));
+    *mrsdt = ravg-(1.8*(*rSD));
+*/
     *plsdt = lavg+(3.5*(*lSD));
     *prsdt = ravg+(3.5*(*rSD));
     *mlsdt = lavg-(4*(*lSD));

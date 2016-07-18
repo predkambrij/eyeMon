@@ -1,6 +1,6 @@
 #include <opencv2/highgui/highgui.hpp>
 
-char fileName[200] = "/home/developer/other/posnetki/sk/basler/poli1person21/poli1person21_x263.avi";
+char fileName[200] = "/home/developer/other/posnetki/sk/zju/1/000001M_FBN.avi";
 
 
 cv::VideoCapture stream1(fileName);
