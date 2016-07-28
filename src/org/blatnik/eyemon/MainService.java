@@ -39,6 +39,8 @@ public class MainService extends Service {
 //    public static List<byte[]> frameList = Collections.synchronizedList(new LinkedList<byte[]>());
     public static List<ObjCarrier> frameList = Collections.synchronizedList(new LinkedList<ObjCarrier>());
 //    public static List<Long> frameTime = Collections.synchronizedList(new LinkedList<Long>());
+    public static boolean serviceState = false;
+    public static boolean frontCamera = true;
     public static Bitmap bitmapImage;
     public static volatile boolean frameAdding = true;
 //    public static int[] widthHeight =  new int[]{320, 240};
@@ -90,7 +92,13 @@ public class MainService extends Service {
                         MainService.this.frameProcessor.start();
 
                         MainService.this.mOpenCvCameraView = new CameraPreview(MainService.this);
-                        MainService.this.mOpenCvCameraView.connectCamera(MainService.widthHeight, 1);
+                        //MainService.this.mOpenCvCameraView.connectCamera(MainService.widthHeight, 1);
+                        if (MainService.frontCamera == true) {
+                            MainService.this.mOpenCvCameraView.connectCamera(MainService.widthHeight, 1);
+                        } else {
+                            MainService.this.mOpenCvCameraView.connectCamera(MainService.widthHeight, 0);
+                        }
+                        
                         MainService.this.mOpenCvCameraView.setVisibility(1);
 
                         cascadeDir.delete();

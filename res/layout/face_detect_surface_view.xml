@@ -20,18 +20,18 @@
             android:layout_height="wrap_content" >
 
             <Button
-                android:id="@+id/cameraRecorderStartService"
+                android:id="@+id/cameraRecorderStartStopService"
                 android:layout_width="130dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:text="startService" />
+                android:text="Start" />
 
             <Button
-                android:id="@+id/cameraRecorderStopService"
+                android:id="@+id/cameraRecorderCameraSelector"
                 android:layout_width="130dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:text="stopService" />
+                android:text="Back" />
 
             <Button
                 android:id="@+id/cameraRecorderFarneback"

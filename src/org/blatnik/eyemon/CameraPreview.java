@@ -1,6 +1,7 @@
 package org.blatnik.eyemon;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -58,6 +59,16 @@ public class CameraPreview extends SurfaceView implements PreviewCallback {
         mFrameHeight = widthHeight[1];
         mCamera = Camera.open(camera);
         Camera.Parameters params = mCamera.getParameters();
+        List<int[]> fpss = params.getSupportedPreviewFpsRange();
+        /*
+        for(int[] fps : fpss) {
+            String f = "";
+            for (int ff :fps) {
+                f+=ff+" ";
+            }
+            Log.i("FPSSS", ""+f);
+        }*/
+        params.setPreviewFpsRange(fpss.get(fpss.size()-1)[0], fpss.get(fpss.size()-1)[1]);
         params.setPreviewFormat(ImageFormat.NV21);
         params.setPreviewSize(mFrameWidth, mFrameHeight);
         params.setRecordingHint(true);

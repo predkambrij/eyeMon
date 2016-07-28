@@ -39,28 +39,44 @@ public class FdActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.face_detect_surface_view);
 
-        Button startButton = (Button) findViewById(R.id.cameraRecorderStartService);
-        startButton.setOnClickListener(
+        final Button startStopButton = (Button) findViewById(R.id.cameraRecorderStartStopService);
+        startStopButton.setOnClickListener(
             new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.i(TAG, "Staaart");
-                    Intent intent = new Intent(FdActivity.this, MainService.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startService(intent);
+                    if (MainService.serviceState == false) {
+                        MainService.serviceState = true;
+                        startStopButton.setText("Stop");
+                        Log.i(TAG, "Staaart");
+                        Intent intent = new Intent(FdActivity.this, MainService.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startService(intent);
+                    } else {
+                        startStopButton.setText("Start");
+                        MainService.serviceState = false;
+                        Log.i(TAG, "Stooop");
+                        stopService(new Intent(FdActivity.this, MainService.class));
+                    }
                 }
             }
         );
-        Button stopButton = (Button) findViewById(R.id.cameraRecorderStopService);
-        stopButton.setOnClickListener(
+
+        final Button cameraSelectorButton = (Button) findViewById(R.id.cameraRecorderCameraSelector);
+        cameraSelectorButton.setOnClickListener(
             new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.i(TAG, "Stooop");
-                    stopService(new Intent(FdActivity.this, MainService.class));
+                    if (MainService.frontCamera == false) {
+                        MainService.frontCamera = true;
+                        cameraSelectorButton.setText("Back");
+                    } else {
+                        MainService.frontCamera = false;
+                        cameraSelectorButton.setText("Front");
+                    }
                 }
             }
         );
+
         Button farnebackButton = (Button) findViewById(R.id.cameraRecorderFarneback);
         farnebackButton.setOnClickListener(
             new View.OnClickListener() {
