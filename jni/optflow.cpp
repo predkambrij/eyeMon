@@ -377,16 +377,16 @@ cv::RNG rng(12345);
         if (flg1 == 1) {
             start = clock();
 
-            printf("BUJU init %d\n", frameNum);
+            //printf("BUJU init %d\n", frameNum);
             cv::Mat lmask = cv::Mat::zeros(gray.size(), CV_8U);
             lmask(cv::Rect(face.x+leftE.x, face.y+leftE.y, leftE.width, leftE.height)) = 1;
             cv::goodFeaturesToTrack(gray, lpoints[1], MAX_COUNT, 0.01, 1, lmask, 3, false, 0.04);
-            printf("BUJU lInit res %d %lu\n", frameNum, lpoints[1].size());
+            //printf("BUJU lInit res %d %lu\n", frameNum, lpoints[1].size());
 
             cv::Mat rmask = cv::Mat::zeros(gray.size(), CV_8U);
             rmask(cv::Rect(face.x+rightE.x, face.y+rightE.y, rightE.width, rightE.height)) = 1;
             cv::goodFeaturesToTrack(gray, rpoints[1], MAX_COUNT, 0.01, 1, rmask, 3, false, 0.04);
-            printf("BUJU rInit res %d %lu\n", frameNum, rpoints[1].size());
+            //printf("BUJU rInit res %d %lu\n", frameNum, rpoints[1].size());
             // cornerSubPix(gray, points[1], subPixWinSize, Size(-1,-1), termcrit); // sig abrt
             flg1 = 0;
          } else {

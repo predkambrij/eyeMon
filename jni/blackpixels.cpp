@@ -262,17 +262,32 @@ double Blackpixels::countPixels(cv::Mat eye, cv::Rect bounding) {
     return 255-totalGray;
 }
 void Blackpixels::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& tLeft, cv::Mat& tRight, cv::Rect& leftB, cv::Rect& rightB, double timestamp, unsigned int frameNum) {
+    int erosion_size = 1;
+    int iterations = 2;
+    cv::Mat element = cv::getStructuringElement(cv::MORPH_CROSS,
+          cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),
+          cv::Point(erosion_size, erosion_size) );
+
     left = gray(this->leftRg);
     right = gray(this->rightRg);
 
     // preprocess only eye region(blur, eqHist)
     this->preprocess(left, right, timestamp, frameNum);
+    cv::dilate(left, left, element, cv::Point(-1, -1), iterations, 1, 1); // cv::Mat()
+    cv::dilate(right, right, element, cv::Point(-1, -1), iterations, 1, 1);
+    cv::erode(left, left, element, cv::Point(-1, -1), iterations, 1, 1);
+    cv::erode(right, right, element, cv::Point(-1, -1), iterations, 1, 1);
     left = left.clone();
     right = right.clone();
 
     cv::threshold(left, tLeft, 27, 255, CV_THRESH_BINARY);
     cv::threshold(right, tRight, 27, 255, CV_THRESH_BINARY);
-
+/*
+    cv::dilate(tLeft, tLeft, element, cv::Point(-1, -1), iterations, 1, 1); // cv::Mat()
+    cv::dilate(tRight, tRight, element, cv::Point(-1, -1), iterations, 1, 1);
+    cv::erode(tLeft, tLeft, element, cv::Point(-1, -1), iterations, 1, 1);
+    cv::erode(tRight, tRight, element, cv::Point(-1, -1), iterations, 1, 1);
+*/
     //cv::calcOpticalFlowFarneback(this->pleft, left, flowLeft, 0.5, 3, 15, 3, 5, 1.2, 0);
     //cv::calcOpticalFlowFarneback(this->pright, right, flowRight, 0.5, 3, 15, 3, 5, 1.2, 0);
 
@@ -298,10 +313,10 @@ void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned 
             this->flagReinit = false;
         }
     } else {
-        if ((frameNum % 2) == 0) {
-            //return;
+        if ((frameNum % 15) == 0) {
+            this->rePupil(gray, timestamp, frameNum);
         }
-        this->rePupil(gray, timestamp, frameNum);
+        
         this->method(gray, left, right, tLeft, tRight, leftB, rightB, timestamp, frameNum);
         hasTLeftRight = true;
     }
@@ -329,10 +344,19 @@ void Blackpixels::process(cv::Mat gray, cv::Mat out, double timestamp, unsigned 
             imshowWrapper("leftSR", tLeft, debug_show_img_templ_eyes_tmpl);
             imshowWrapper("rightSR", tRight, debug_show_img_templ_eyes_tmpl);
         }
+        int rowsO = out.rows/4;
+        int colsO = out.cols/4;
+        int rows2 = out.rows/2;
+        int cols2 = out.cols/2;
+
+        cv::Rect mainZoomedRect = cv::Rect(colsO, rowsO, cols2, rows2);
+        cv::Mat mainZoomedMat = out(mainZoomedRect);
+
         imshowWrapper("left", left, debug_show_img_templ_eyes_tmpl);
         imshowWrapper("right", right, debug_show_img_templ_eyes_tmpl);
         imshowWrapper("main", out, debug_show_img_main);
-        //imshowWrapper("gray", gray, debug_show_img_main);
+        imshowWrapper("gray", mainZoomedMat, debug_show_img_gray);
+        //imshowWrapper("gray", gray, debug_show_img_gray);
     }
 
     this->hasPLeftRight = true;

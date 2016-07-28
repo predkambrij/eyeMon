@@ -33,10 +33,10 @@
 //char fileName[200] = "/home/developer/other/posnetki/o4_90.mp4"; // knjiznica luc zadi, premikal glavo
 //char fileName[200] = "/home/developer/other/posnetki/o4_101.mp4"; // iso noise
 
-char fileName[200] = "/home/developer/other/posnetki/sk/basler/poli1person6/poli1person6_x263.avi";
+//char fileName[200] = "/home/developer/other/posnetki/sk/basler/poli1person6/poli1person6_x263.avi";
 
 //char fileName[200] = "/home/developer/other/posnetki/o4_102.mp4"; // look away
-//char fileName[200] = "/home/developer/other/posnetki/phone1.mp4"; // phone1
+char fileName[200] = "/home/developer/other/posnetki/phone1.mp4"; // phone1
 
 
 //char fileName[200] = "/home/developer/other/posnetki/sk/eyeblink8/3/26122013_230103_cam.avi"; // fant gleda neki
@@ -65,7 +65,7 @@ bool disable_max_size = false;
 
 // it can load the whole file in seconds and make huge memory consumption
 int maxSize = 300;
-#define allVid
+//#define allVid
 #ifdef allVid
 unsigned int startingFrameNum = 0;
 unsigned int endingFrameNum = 0;
@@ -75,6 +75,6 @@ unsigned int endingFrameNum = 0;
 //unsigned int endingFrameNum = 9600;
 
 // talking blink 56
-unsigned int startingFrameNum = 5000;
+unsigned int startingFrameNum = 800;
 unsigned int endingFrameNum = 0;
 #endif

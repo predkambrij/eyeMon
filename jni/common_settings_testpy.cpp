@@ -15,9 +15,9 @@ bool debug_t2_perf_method = false;
 bool debug_t2_perf_whole = false;
 bool debug_t2_perf = false;
 bool debug_tmpl_log = false;
-bool debug_tmpl_perf1 = false;
-bool debug_tmpl_perf2 = false;
-bool debug_tmpl_perfa = false;
+bool debug_tmpl_perf1 = true;
+bool debug_tmpl_perf2 = true;
+bool debug_tmpl_perfa = true;
 bool debug_fb_log1 = false;
 bool debug_fb_log_flow = true;
 bool debug_fb_log_tracking = true;
@@ -25,9 +25,9 @@ bool debug_fb_log_upperlowerdiff = true;
 bool debug_fb_log_reinit = true;
 bool debug_fb_log_repupil = true;
 bool debug_fb_log_repupil1 = true; // don't turn off
-bool debug_fb_perf1 = false;
-bool debug_fb_perf2 = false;
-bool debug_fb_perfa = false;
+bool debug_fb_perf1 = true;
+bool debug_fb_perf2 = true;
+bool debug_fb_perfa = true;
 bool debug_bp_log_pix = true;
 bool debug_notifications_log1 = true;
 bool debug_notifications_n1_log1 = false;
@@ -39,14 +39,14 @@ bool debug_blinks_d5 = true;
 bool debug_blink_beeps = false;
 bool debug_n1_beeps = false;
 
-bool debug_fb_log_pupil_coverage = true; // don't turn off (except for basler)
+bool debug_fb_log_pupil_coverage = false; // don't turn off (except for basler) and when testing templ method
 
 bool shouldUseAnnotEyePosition = false;
-bool shouldUseAnnotTimestamps = true;
+bool shouldUseAnnotTimestamps = false;
 
 //int method = METHOD_OPTFLOW;
-int method = METHOD_TEMPLATE_BASED;
-//int method = METHOD_FARNEBACK;
+//int method = METHOD_TEMPLATE_BASED;
+int method = METHOD_FARNEBACK;
 //int method = METHOD_BLACKPIXELS;
 double previousFrameTime = -1;
 

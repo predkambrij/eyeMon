@@ -225,6 +225,10 @@ void BlinkMeasure::measureBlinksSD(double *lSD, double *rSD, double *lsdt, doubl
             *rSD = 0;
         }
     }
+/*
+    *lsdt = (*lSD)*2;
+    *rsdt = (*rSD)*2;
+*/
     *lsdt = (*lSD)*5;
     *rsdt = (*rSD)*5;
 };

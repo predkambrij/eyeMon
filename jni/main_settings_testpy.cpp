@@ -1,6 +1,6 @@
 #include <opencv2/highgui/highgui.hpp>
 
-char fileName[200] = "/home/developer/other/posnetki/sk/zju/1/000001M_FBN.avi";
+char fileName[200] = "/home/developer/other/posnetki/o4_101.mp4";
 
 
 cv::VideoCapture stream1(fileName);
@@ -19,7 +19,7 @@ unsigned int endingFrameNum = 0;
 //unsigned int startingFrameNum = 8900;
 //unsigned int endingFrameNum = 9600;
 
-unsigned int startingFrameNum = 1500;
-unsigned int endingFrameNum = 0;
+unsigned int startingFrameNum = 0;
+unsigned int endingFrameNum = 1000;
 #endif
 

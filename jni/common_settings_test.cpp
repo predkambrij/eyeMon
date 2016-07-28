@@ -3,7 +3,7 @@
 // TODO this could be done using macros (at all places is used ifdef)
 bool debug_show_img_d1 = false;
 bool debug_show_img_main = true;
-bool debug_show_img_gray = false;
+bool debug_show_img_gray = true;
 bool debug_show_img_face = false;
 bool debug_show_img_optfl_eyes = false;
 bool debug_show_img_templ_eyes_cor = true;
@@ -37,11 +37,11 @@ bool debug_blinks_d2 = true;
 bool debug_blinks_d3 = true;
 bool debug_blinks_d4 = true;
 bool debug_blinks_d5 = true;
-bool debug_blink_beeps = true;
+bool debug_blink_beeps = false;
 bool debug_n1_beeps = false;
 
 bool shouldUseAnnotEyePosition = false;
-bool shouldUseAnnotTimestamps = true;
+bool shouldUseAnnotTimestamps = false;
 
 //int method = METHOD_OPTFLOW;
 int method = METHOD_TEMPLATE_BASED;
