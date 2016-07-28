@@ -393,7 +393,8 @@ int main() { // int argc, char * argv[]
 #endif
     PHONE = 0;
 
-    char faceDetector[200] = "/home/developer/other/android_deps/OpenCV-2.4.10-android-sdk/samples/optical-flow/res/raw/lbpcascade_frontalface.xml";
+    //char faceDetector[200] = "/home/developer/other/android_deps/OpenCV-2.4.10-android-sdk/samples/optical-flow/res/raw/lbpcascade_frontalface.xml";
+    char faceDetector[200] = "res/raw/lbpcascade_frontalface.xml";
     switch (method) {
         case METHOD_OPTFLOW:
         optf.setup(faceDetector);

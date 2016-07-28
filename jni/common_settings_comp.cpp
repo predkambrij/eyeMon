@@ -2,7 +2,7 @@
 
 // TODO this could be done using macros (at all places is used ifdef)
 bool debug_show_img_d1 = false;
-bool debug_show_img_main = false;
+bool debug_show_img_main = true;
 bool debug_show_img_gray = false;
 bool debug_show_img_face = false;
 bool debug_show_img_templ_eyes_cor = true;
@@ -45,8 +45,8 @@ bool shouldUseAnnotTimestamps = false;
 
 
 //int method = METHOD_OPTFLOW;
-int method = METHOD_TEMPLATE_BASED;
-//int method = METHOD_FARNEBACK;
+//int method = METHOD_TEMPLATE_BASED;
+int method = METHOD_FARNEBACK;
 //int method = METHOD_BLACKPIXELS;
 double previousFrameTime = -1;
 
