@@ -15,6 +15,8 @@ clonegoogletest :
 	git clone git@github.com:predkambrij/googletest.git test/googletest/
 cloneEyeLike :
 	git clone git@github.com:predkambrij/eyeLike.git jni/eyeLike/
+cloneEyeLikeHttps :
+	git clone https://github.com/predkambrij/eyeLike.git jni/eyeLike/
 
 ndkb :
 	/home/developer/other/android_deps/android-ndk-r10d/ndk-build
