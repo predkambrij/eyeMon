@@ -5,14 +5,7 @@ Eye monitor for Linux and Android using OpenCV.
 
 Currently are employed two methods for eye blink detection (template based and using farneback optical flow). See common_settings_comp.cpp
 
-##Running the code on your computer with X11 unix socket:
-- update uid and guid so that it matches your user and group id
-docker run -ti --rm \
-       -e DISPLAY=$DISPLAY \
-       -v /tmp/.X11-unix:/tmp/.X11-unix \
-       predkambrij/eyeMon
-
-##Running the code on your computer with SSH X11 forwarding:
+##Running the code on your computer:
 - git clone git@github.com:predkambrij/eyeMon.git
 - git clone git@github.com:predkambrij/eyeLike.git eyeMon/jni/eyeLike/
 - in case of using X11 unix socket, replace uid and gid in Dockerfile so that it matches your user id and group id
@@ -30,9 +23,6 @@ Using X11 unix socket (it's less CPU intensive)
 
 ##TODO
 - build android apk in cli
-
-
-##Modifications needed to run the code on your computer:
 
 ##Credits:
 - This application is using https://github.com/trishume/eyeLike/ for finding eye centers
