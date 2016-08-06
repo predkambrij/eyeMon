@@ -1,7 +1,7 @@
 eyeMon
 ======
 
-Eye monitor for Linux and Android using OpenCV.
+Eye fatigue monitor based on eye blinking for Linux and Android using OpenCV.
 
 Currently are employed two methods for eye blink detection (template based and using farneback optical flow). See common_settings_comp.cpp
 

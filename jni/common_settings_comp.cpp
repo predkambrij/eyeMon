@@ -16,7 +16,7 @@ bool debug_t2_perf_whole = false;
 bool debug_t2_perf = false;
 bool debug_tmpl_log = false;
 bool debug_tmpl_perf1 = false;
-bool debug_tmpl_perf2 = false;
+bool debug_tmpl_perf2 = true;
 bool debug_tmpl_perfa = false;
 bool debug_fb_log1 = false;
 bool debug_fb_log_flow = false;
@@ -45,8 +45,8 @@ bool shouldUseAnnotTimestamps = false;
 
 
 //int method = METHOD_OPTFLOW;
-//int method = METHOD_TEMPLATE_BASED;
-int method = METHOD_FARNEBACK;
+int method = METHOD_TEMPLATE_BASED;
+//int method = METHOD_FARNEBACK;
 //int method = METHOD_BLACKPIXELS;
 double previousFrameTime = -1;
 
