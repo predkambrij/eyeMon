@@ -7,7 +7,7 @@
 //char fileName[200] = "/home/developer/other/posnetki/o4_31.mp4";
 //char fileName[200] = "/home/developer/other/posnetki/o4_64.mp4"; // 1280x720
 //char fileName[200] = "/home/developer/other/posnetki/o4_65.mp4"; // 640x480
-char fileName[200] = "/home/developer/other/posnetki/o4_66.mp4"; // 320x240
+//char fileName[200] = "/home/developer/other/posnetki/o4_66.mp4"; // 320x240
 
 //char fileName[200] = "/home/developer/other/posnetki/test_videos/crnc1.mp4";
 //char fileName[200] = "/home/developer/other/posnetki/test_videos/very_dark.mp4";
@@ -41,6 +41,7 @@ char fileName[200] = "/home/developer/other/posnetki/o4_66.mp4"; // 320x240
 
 //char fileName[200] = "/home/developer/other/posnetki/sk/eyeblink8/3/26122013_230103_cam.avi"; // fant gleda neki
 
+char fileName[200] = "/eyeMon/posnetki/talking.avi";
 //char fileName[200] = "/home/developer/other/posnetki/talking.avi";
 //char fileName[200] = "/home/developer/other/posnetki/sk/eyeblink8/1/26122013_223310_cam.avi"; // punca od dalec
 //char fileName[200] = "/home/developer/other/posnetki/sk/NightOfResearchers15/test/14/26092014_211047_cam.avi"; // ful partial

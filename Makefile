@@ -19,11 +19,12 @@ cloneEyeLikeHttps :
 	git clone https://github.com/predkambrij/eyeLike.git jni/eyeLike/
 
 ndkb :
-	/home/developer/other/android_deps/android-ndk-r10d/ndk-build
+	cd /eyeMon/_1OpenCVopticalflow/src/main/jni; \
+	/home/developer/android-ndk-r12b/ndk-build
 
 _compile :
-	cd jni; \
-	g++ $(MACROS) $(COMPILER_FLAGS) $(FILES_TO_COMPILE) -o ../$(OUTPUT_BIN) -I. $$(pkg-config --cflags --libs opencv);
+	cd /eyeMon/_1OpenCVopticalflow/src/main/jni; \
+	g++ $(MACROS) $(COMPILER_FLAGS) $(FILES_TO_COMPILE) -o $(OUTPUT_BIN) -I. $$(pkg-config --cflags --libs opencv);
 
 #	$(eval FILES_TO_COMPILE += eyeLike/src/findEyeCorner.cpp eyeLike/src/findEyeCenter.cpp eyeLike/src/helpers.cpp)
 _setEyelikeFiles :
@@ -32,30 +33,30 @@ _setEyelikeFiles :
 # setEyelikeFiles
 _setDesktopSettings :
 	$(eval FILES_TO_COMPILE += common_settings_comp.cpp main_settings.cpp)
-	$(eval OUTPUT_BIN = bins/d)
+	$(eval OUTPUT_BIN = /eyeMon/bins/d)
 
 # setEyelikeFiles
 _setTestSettings :
 	$(eval FILES_TO_COMPILE += common_settings_test.cpp main_settings_test.cpp)
 	$(eval MACROS = -DIS_TEST)
-	$(eval OUTPUT_BIN = bins/t)
+	$(eval OUTPUT_BIN = /eyeMon/bins/t)
 
 _setTestpySettings :
 	$(eval FILES_TO_COMPILE += common_settings_testpy.cpp main_settings_testpy.cpp)
 	$(eval MACROS = -DIS_TEST -DIS_TESTPY)
-	$(eval OUTPUT_BIN = bins/tp)
+	$(eval OUTPUT_BIN = /eyeMon/bins/tp)
 
 _setAnnotVars :
 	$(eval FILES_TO_COMPILE = annot.cpp)
-	$(eval OUTPUT_BIN = bins/annot)
+	$(eval OUTPUT_BIN = /eyeMon/bins/annot)
 
 _setTestVars :
 	$(eval FILES_TO_COMPILE = test.cpp)
-	$(eval OUTPUT_BIN = bins/test)
+	$(eval OUTPUT_BIN = /eyeMon/bins/test)
 
 _setDebayerVars :
 	$(eval FILES_TO_COMPILE = debayering.cpp)
-	$(eval OUTPUT_BIN = bins/debayer)
+	$(eval OUTPUT_BIN = /eyeMon/bins/debayer)
 
 run/% :
 	bins/$*
