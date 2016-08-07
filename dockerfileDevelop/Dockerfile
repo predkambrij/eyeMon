@@ -86,15 +86,10 @@ RUN sudo wget https://dl.google.com/dl/android/studio/ide-zips/2.1.2.0/android-s
 
 # obsolete google-m2repo (required by android studio)
 RUN echo "y" | ~/android-sdk-linux/tools/android update sdk -a --filter extra-google-m2repository --no-ui
+# update tools
 RUN echo "y" | bash -c "/home/developer/android-sdk-linux/tools/android update sdk --filter tools --no-ui; rmdir /home/developer/android-sdk-linux/tools; unzip /home/developer/android-sdk-linux/temp/tools_*-linux.zip -d /tmp/; mv /tmp/tools/ /home/developer/android-sdk-linux/"
 
-# update tools
-#RUN /home/developer/android-sdk-linux/tools/android update sdk --filter tools --no-ui
-
-#ADD cfgs/51-android.rules /etc/udev/rules.d/51-android.rules
-
-# wget https://dl.google.com/dl/android/studio/ide-zips/2.1.2.0/android-studio-ide-143.2915827-linux.zip
-
+RUN /bin/echo -e "if [ -f ~/.bashrc ]; then\n.    ~/.bashrc\nfi" >> /home/developer/.bash_login
 
 USER root
 

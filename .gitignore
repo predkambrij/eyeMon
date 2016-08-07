@@ -1,9 +1,10 @@
 build
 .gradle
-_1OpenCVopticalflow/src/main/libs/armeabi-v7a/libeyemon.so
-_1OpenCVopticalflow/src/main/obj/
-
 *.iml
 import-summary.txt
 .idea
+
+_1OpenCVopticalflow/src/main/libs/armeabi-v7a/libeyemon.so
+_1OpenCVopticalflow/src/main/obj/
+_1OpenCVopticalflow/src/main/jni/eyeLike/
 
