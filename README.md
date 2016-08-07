@@ -26,8 +26,8 @@ Using X11 unix socket (it's less CPU intensive)
 - in case of using X11 unix socket, replace uid and gid in Dockerfile so that it matches your user id and group id
 - docker build -t predkambrij/eyemondev eyeMon/dockerfileDevelop/ # it takes some time to download and compile; currently docker image takes 8.7 GB
 
-Note: if you want to install the apk using adb, find which usb device belongs to your phone, in this case it's /dev/bus/usb/003/013
-Note2: you can use also X11 unix the same way as above
+Note: if you want to install the apk using adb, find which usb device belongs to your phone, in this case it's /dev/bus/usb/003/013  
+Note2: you can use also X11 unix the same way as above  
 Note3: this docker image contains also setup for running the code on your computer, so you can run "make d" to start the application
 
 Using SSH: (pass: developerpw)
@@ -51,10 +51,10 @@ Start Android Studio and open the project
 - ssh -Y developer@127.0.2.5 -p 1122
     - ~/android-studio/bin/studio.sh # note you can install and start it inside the screen or tmux command
     - # it will be the first run. There shouldn't be anything additional to download (Android SDK)
-    - # select open an existing Android Studio project (select /eyeMon)
+    - # open an existing Android Studio project (select /eyeMon)
     - # all changes will be visible in the project on your host computer ($(pwd)/eyeMon)
-        - # you can build the apk from menu build -> build APK and install and run the same way as above
-        - note, currently you need to run "cd /eyeMon/; make ndkb" that changes in c++ files will take effect
+        - # you can build the apk from menu: build -> build APK and install and run the same way as above
+        - note, currently you need to run "cd /eyeMon/; make ndkb" that changes of c++ files will take effect
 
 ##Credits:
 - This application is using https://github.com/trishume/eyeLike/ for finding eye centers
