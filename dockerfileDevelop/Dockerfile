@@ -91,6 +91,8 @@ RUN echo "y" | bash -c "/home/developer/android-sdk-linux/tools/android update s
 
 RUN /bin/echo -e "if [ -f ~/.bashrc ]; then\n.    ~/.bashrc\nfi" >> /home/developer/.bash_login
 
+RUN sudo usermod -a -G audio developer
+
 USER root
 
 EXPOSE 22

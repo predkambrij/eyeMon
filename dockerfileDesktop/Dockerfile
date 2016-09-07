@@ -54,6 +54,7 @@ RUN cd /home/developer/ && sudo chmod a+r /2.4.10.4.zip && unzip /2.4.10.4.zip &
     sudo ldconfig && \
     rm -rf /home/developer/opencv-*
 
+RUN sudo usermod -a -G audio developer
 
 USER root
 
