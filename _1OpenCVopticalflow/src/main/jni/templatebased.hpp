@@ -28,7 +28,7 @@ class TemplateBased {
         void method(cv::Mat& gray, cv::Mat& out, double timestamp, unsigned int frameNum);
         void process(cv::Mat gray, cv::Mat out, double timestamp, unsigned int frameNum);
         void flushMeasureBlinks();
-        int measureBlinks(double curTimestamp);
+        int measureBlinks(unsigned int frameNum, double curTimestamp);
         //void checkNotificationStatus(double timestamp);
         //void frameTimeProcessing(double timestamp);
         int faceDetect(cv::Mat gray, cv::Rect *face);

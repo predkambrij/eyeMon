@@ -608,7 +608,7 @@ void Farneback::flushMeasureBlinks() {
     BlinkMeasureF::joinBlinks();
 }
 
-int Farneback::measureBlinks(double curTimestamp) {
+int Farneback::measureBlinks(unsigned int frameNum, double curTimestamp) {
     int ret = 0;
     bool notifsCanProceed = false;
     bool wasBlink = false;
@@ -631,7 +631,7 @@ int Farneback::measureBlinks(double curTimestamp) {
     bool n3UnderThreshold = false; // 20 minutes
 
     if (notifsCanProceed == true) {
-        n1UnderThreshold = BlinkMeasureF::checkN1Notifs(curTimestamp);
+        n1UnderThreshold = BlinkMeasureF::checkN1Notifs(frameNum, curTimestamp);
         if (n1UnderThreshold == true) {
             if (BlinkMeasureF::n1UnderThreshold == false) {
                 BlinkMeasureF::n1UnderThreshold = true;
@@ -666,7 +666,7 @@ int Farneback::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int fra
     difftime("debug_fb_perf1: process", t1, debug_fb_perf1);
 
     t1 = std::chrono::steady_clock::now();
-    int ret = this->measureBlinks(timestamp);
+    int ret = this->measureBlinks(frameNum, timestamp);
     difftime("debug_fb_perf1: measureBlinks", t1, debug_fb_perf1);
     difftime("debug_fb_perfa:", ta, debug_fb_perfa);
 

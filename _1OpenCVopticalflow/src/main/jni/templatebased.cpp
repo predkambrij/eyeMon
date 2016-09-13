@@ -261,7 +261,7 @@ void TemplateBased::flushMeasureBlinks() {
     BlinkMeasure::joinBlinks();
 }
 
-int TemplateBased::measureBlinks(double curTimestamp) {
+int TemplateBased::measureBlinks(unsigned int frameNum, double curTimestamp) {
     int ret = 0;
     bool notifsCanProceed = false;
     while (blinkMeasure.size() > 0) {
@@ -285,7 +285,7 @@ int TemplateBased::measureBlinks(double curTimestamp) {
     bool n3UnderThreshold = false; // 20 minutes
 
     if (notifsCanProceed == true) {
-        n1UnderThreshold = BlinkMeasure::checkN1Notifs(curTimestamp);
+        n1UnderThreshold = BlinkMeasure::checkN1Notifs(frameNum, curTimestamp);
         if (n1UnderThreshold == true) {
             if (BlinkMeasure::n1UnderThreshold == false) {
                 BlinkMeasure::n1UnderThreshold = true;
@@ -379,7 +379,7 @@ int TemplateBased::run(cv::Mat gray, cv::Mat out, double timestamp, unsigned int
     difftime("-- process", t1, debug_tmpl_perf2);
 
     t1 = std::chrono::steady_clock::now();
-    int result = this->measureBlinks(timestamp);
+    int result = this->measureBlinks(frameNum, timestamp);
     difftime("-- measureBlinks", t1, debug_tmpl_perf2);
     if (frameNum % 2 == 0) {
         imshowWrapper("main", out, debug_show_img_main);

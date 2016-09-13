@@ -378,7 +378,7 @@ void BlinkMeasureF::measureSD(double* mlsdt, double* plsdt, double* mrsdt, doubl
     BlinkMeasureF::measureBlinksSD(lSD, rSD, plsd1, prsd1, plsd2, prsd2, plsdt, prsdt, mlsd1, mrsd1, mlsd2, mrsd2, mlsdt, mrsdt);
 }
 
-bool BlinkMeasureF::checkN1Notifs(double curTimestamp) {
+bool BlinkMeasureF::checkN1Notifs(unsigned int frameNum, double curTimestamp) {
     // 5 mins
     //double watchingWindow = 1000*60*5;
     double watchingWindow = 1000*60*5;
@@ -419,6 +419,7 @@ bool BlinkMeasureF::checkN1Notifs(double curTimestamp) {
     }
 
     int blinksCount = 0;
+    double blinksLen = 0;
     std::list<BlinkF>::iterator bIter;
     bIter = joinedBlinkChunksfN1.begin();
     while(bIter != joinedBlinkChunksfN1.end()) {
@@ -429,10 +430,14 @@ bool BlinkMeasureF::checkN1Notifs(double curTimestamp) {
         } else {
             bIter++;
             blinksCount++;
+            blinksLen += (b.timestampEnd-b.timestampStart);
         }
     }
+    if (blinksCount > 0) {
+        blinksLen /= blinksCount;
+    }
     double curRatio = ((double)blinksCount)/(watchedLength/1000.);
-    doLog(debug_notifications_n1_log1, "debug_notifications_n1_log1: min ratio:%.2f curRatio %.2f\n", minBlinksRatio*60, curRatio*60);
+    doLog(debug_notifications_n1_log1, "debug_notifications_n1_log1: fn %d minRatio %.2f curRatio %.2f bLen %.2f\n", frameNum, minBlinksRatio*60, curRatio*60, blinksLen);
 
     if (curRatio < minBlinksRatio) {
         doLog(debug_notifications_n1_log1, "debug_notifications_n1_log1: too few blinks %d\n", blinksCount);

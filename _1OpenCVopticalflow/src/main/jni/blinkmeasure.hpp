@@ -40,7 +40,7 @@ class BlinkMeasure {
         static void processStateMachineQueue();
         static void processBm(BlinkMeasure bm, double lavg, double ravg, double lSD, double rSD,
             double plsdf, double mlsdf, double prsdf, double mrsdf, double lsdt, double rsdt);
-        static bool checkN1Notifs(double curTimestamp);
+        static bool checkN1Notifs(unsigned int frameNum, double curTimestamp);
         static bool joinBlinks();
         static void measureBlinksAVG(double *lavg, double *ravg);
         static void measureBlinksSD(double *lSD, double *rSD, double *lsdt, double *rsdt, double *plsdf, double *prsdf, double *mlsdf, double *mrsdf);

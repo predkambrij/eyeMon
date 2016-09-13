@@ -1,6 +1,6 @@
 #include <opencv2/highgui/highgui.hpp>
 
-char fileName[200] = "/home/developer/other/posnetki/o4_101.mp4";
+char fileName[200] = "/eyeMon/posnetki/o4_105.mp4";
 
 
 cv::VideoCapture stream1(fileName);

@@ -51,7 +51,7 @@ class BlinkMeasureF {
             double mlsdt, double plsdt, double mrsdt, double prsdt,
             double plsd1, double prsd1, double mlsd1, double mrsd1,
             double plsd2, double prsd2, double mlsd2, double mrsd2);
-        static bool checkN1Notifs(double curTimestamp);
+        static bool checkN1Notifs(unsigned int frameNum, double curTimestamp);
         static void stateMachine(unsigned int frameNum, double timestamp, double leftY, double leftLowSD, double leftHighSD, double rightY, double rightLowSD, double rightHighSD);
         static void measureBlinksAVG(double *lavg, double *ravg);
         static void measureBlinksSD(double *lSD, double *rSD, double *plsd1, double *prsd1, double *plsd2, double *prsd2, double *plsdt, double *prsdt, double *mlsd1, double *mrsd1, double *mlsd2, double *mrsd2, double *mlsdt, double *mrsdt);
