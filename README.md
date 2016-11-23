@@ -11,7 +11,7 @@ In the scope of this project, [eyeMonTester](https://github.com/predkambrij/eyeM
 - ```git clone git@github.com:predkambrij/eyeMon.git```
 - ```git clone git@github.com:predkambrij/eyeLike eyeMon/_1OpenCVopticalflow/src/main/jni/eyeLike```
 - in case of using X11 unix socket, replace uid and gid in Dockerfile so that it matches your user id and group id
-- ```docker build -t predkambrij/eyemon eyeMon/dockerfileDesktop/``` # it takes some time to download and compile; currently docker image takes 882.6 MB
+- ```docker build --build-arg ARG_UID=$(id -u) --build-arg ARG_GID=$(id -g) -t predkambrij/eyemon eyeMon/dockerfileDesktop/``` # it takes some time to download and compile; currently docker image takes 882.6 MB
 
 Note: if you want sound notifications, you need to pass --device /dev/tty0 and --cap-add SYS_TTY_CONFIG so that beep command (pc speaker) will work
 
