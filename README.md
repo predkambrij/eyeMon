@@ -7,7 +7,7 @@ Currently are employed two methods for eye blink detection (template based and u
 
 In the scope of this project, [eyeMonTester](https://github.com/predkambrij/eyeMonTester) was developed. You can test the methods against public available databases, or create your own (you can determine frame numbers of eye blinks with "make annot" tool).
 
-##Running the code on your computer:
+## Running the code on your computer:
 - ```git clone git@github.com:predkambrij/eyeMon.git```
 - ```git clone git@github.com:predkambrij/eyeLike eyeMon/_1OpenCVopticalflow/src/main/jni/eyeLike```
 - ```docker build --build-arg ARG_UID=$(id -u) --build-arg ARG_GID=$(id -g) -t predkambrij/eyemon eyeMon/dockerfileDesktop/``` # it takes some time to download and compile; currently docker image takes 882.6 MB
@@ -21,7 +21,7 @@ Using SSH: (pass: developerpw)
 Using X11 unix socket (it's less CPU intensive)
 - ```docker run -it --rm -v $(pwd)/eyeMon:/eyeMon -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY --device /dev/video0 --device /dev/tty0 --cap-add SYS_TTY_CONFIG -u developer predkambrij/eyemon bash -c "cd /eyeMon/; make d"```
 
-##Running the code on your Android phone:
+## Running the code on your Android phone:
 - ```git clone git@github.com:predkambrij/eyeMon.git```
 - ```git clone git@github.com:predkambrij/eyeLike eyeMon/_1OpenCVopticalflow/src/main/jni/eyeLike```
 - in case of using X11 unix socket, replace uid and gid in Dockerfile so that it matches your user id and group id
@@ -37,11 +37,11 @@ Using SSH: (pass: developerpw)
 Building the apk and running it on your phone
 - ```ssh -Y developer@127.0.2.5 -p 1122```
     - ```cd /eyeMon/```
-    - # build jni dependences
+    - build jni dependences
     - ```make ndkb```
-    - # build the apk from cli
+    - build the apk from cli
     - ```./gradlew assembleDebug```
-    - # install the apk
+    - install the apk
     - ```~/android-sdk-linux/platform-tools/adb install -r ./_1OpenCVopticalflow/build/outputs/apk/_1OpenCVopticalflow-debug.apk```
         - in case of INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES error (rebuilt container)
         - ```~/android-sdk-linux/platform-tools/adb uninstall org.blatnik.eyemon```
@@ -50,14 +50,14 @@ Building the apk and running it on your phone
 
 Start Android Studio and open the project
 - ```ssh -Y developer@127.0.2.5 -p 1122```
-    - ```~/android-studio/bin/studio.sh``` # note you can install and start it inside the screen or tmux command
-    - # it will be the first run. There shouldn't be anything additional to download (Android SDK)
-    - # open an existing Android Studio project (select /eyeMon)
-    - # all changes will be visible in the project on your host computer ($(pwd)/eyeMon)
-        - # you can build the apk from menu: build -> build APK and install and run the same way as above
+    - ```~/android-studio/bin/studio.sh``` note: you can install and start it inside the screen or tmux command
+    -  it will be the first run. There shouldn't be anything additional to download (Android SDK)
+    -  open an existing Android Studio project (select /eyeMon)
+    -  all changes will be visible in the project on your host computer ($(pwd)/eyeMon)
+        -  you can build the apk from menu: build -> build APK and install and run the same way as above
         - note, currently you need to run "cd /eyeMon/; make ndkb" that changes of c++ files will take effect
 
-##Credits:
+## Credits:
 - This application is using [eyeLike](https://github.com/trishume/eyeLike/) for finding eye centers
 
 
