@@ -1,6 +1,6 @@
 FROM ubuntu:14.04
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 ARG ARG_UID
 ARG ARG_GID
@@ -22,6 +22,8 @@ COPY script4.sh /
 RUN /script4.sh
 
 USER root
+
+RUN apt-get install -y supervisor
 
 EXPOSE 22
 CMD ["supervisord", "-n", "-c", "/etc/supervisord.conf"]

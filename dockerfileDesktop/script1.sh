@@ -14,4 +14,4 @@ echo "Europe/Ljubljana" > /etc/timezone
 dpkg-reconfigure -f noninteractive tzdata
 
 apt-get install -y pwgen python-pip
-pip install supervisor
+
