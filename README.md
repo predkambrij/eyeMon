@@ -10,7 +10,8 @@ In the scope of this project, [eyeMonTester](https://github.com/predkambrij/eyeM
 ## Running the code on your computer:
 - ```git clone git@github.com:predkambrij/eyeMon.git```
 - ```git clone git@github.com:predkambrij/eyeLike eyeMon/_1OpenCVopticalflow/src/main/jni/eyeLike```
-- ```docker build --build-arg ARG_UID=$(id -u) --build-arg ARG_GID=$(id -g) -t predkambrij/eyemon eyeMon/dockerfileDesktop/``` # it takes some time to download and compile; currently docker image takes 882.6 MB
+- ```cd eyeMon```
+- ```docker build --build-arg ARG_UID=$(id -u) --build-arg ARG_GID=$(id -g) -t predkambrij/eyemon dockerfileDesktop/``` # it takes some time to download and compile; currently docker image takes 882.6 MB
 
 Note: if you want sound notifications, you need to pass --device /dev/tty0 and --cap-add SYS_TTY_CONFIG so that beep command (pc speaker) will work
 
@@ -33,8 +34,8 @@ Capture log files:
 ## Running the code on your Android phone:
 - ```git clone git@github.com:predkambrij/eyeMon.git```
 - ```git clone git@github.com:predkambrij/eyeLike eyeMon/_1OpenCVopticalflow/src/main/jni/eyeLike```
-- in case of using X11 unix socket, replace uid and gid in Dockerfile so that it matches your user id and group id
-- ```docker build -t predkambrij/eyemondev eyeMon/dockerfileDevelop/``` # it takes some time to download and compile; currently docker image takes 8.7 GB
+- ```cd eyeMon```
+- ```docker build --build-arg ARG_UID=$(id -u) --build-arg ARG_GID=$(id -g) -t predkambrij/eyemondev -f dockerfileDesktop/Dockerfile_develop dockerfileDesktop/``` # it takes some time to download and compile; currently docker image takes 8.7 GB
 
 Note: if you want to install the apk using adb, find which usb device belongs to your phone, in this case it's /dev/bus/usb/003/013  
 Note2: you can use also X11 unix the same way as above  
