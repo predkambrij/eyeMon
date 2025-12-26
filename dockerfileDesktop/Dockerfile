@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -9,12 +9,14 @@ ADD cfgs/supervisord.conf /etc/supervisord.conf
 
 COPY script1.sh /
 RUN /script1.sh
+RUN apt-get install -y pwgen python3-pip
 
 COPY script2.sh /
 RUN /script2.sh
 
 COPY script3.sh /
 RUN /script3.sh
+RUN wget https://github.com/Itseez/opencv/archive/2.4.10.4.zip -O /2.4.10.4.zip
 
 USER developer
 
@@ -23,7 +25,6 @@ RUN /script4.sh
 
 USER root
 
-RUN apt-get install -y supervisor
 
 EXPOSE 22
 CMD ["supervisord", "-n", "-c", "/etc/supervisord.conf"]

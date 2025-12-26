@@ -8,7 +8,7 @@ set -o pipefail
 scriptDir="$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
 
 # http://fabiorehm.com/blog/2014/09/11/running-gui-apps-with-docker/
-apt-get install -y x11-apps 
+apt-get install -y x11-apps sudo
 # Replace with your user / group id
 export uid=$ARG_UID gid=$ARG_GID
 mkdir -p /home/developer

@@ -10,8 +10,8 @@ scriptDir="$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
 apt-get update
 apt-get upgrade -y
 
+apt-get install -y tzdata
 echo "Europe/Ljubljana" > /etc/timezone
 dpkg-reconfigure -f noninteractive tzdata
 
-apt-get install -y pwgen python-pip
-
+apt-get install -y supervisor
