@@ -19,7 +19,10 @@ Using SSH: (pass: developerpw)
 - ```ssh -Y developer@127.0.2.4 -p 1122 "cd /eyeMon/; make d"```
 
 Using X11 unix socket (it's less CPU intensive)
-- ```docker run -it --rm -v $(pwd)/eyeMon:/eyeMon -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY --device /dev/video0 --device /dev/tty0 --cap-add SYS_TTY_CONFIG -u developer predkambrij/eyemon bash -c "cd /eyeMon/; make d"```
+- ```docker run -it --rm -v .:/eyeMon -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY --device /dev/video0 --device /dev/tty0 --cap-add SYS_TTY_CONFIG -u developer predkambrij/eyemon bash -c "cd /eyeMon/; make d"```
+
+Using privileged
+- ```docker run -it --rm -v .:/eyeMon -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY --privileged -u developer predkambrij/eyemon bash -c "cd /eyeMon/; make d"```
 
 ## Running the code on your Android phone:
 - ```git clone git@github.com:predkambrij/eyeMon.git```
