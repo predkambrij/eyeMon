@@ -21,10 +21,13 @@ USER developer
 COPY script4.sh /
 RUN /script4.sh
 
+
+
 # develop part
 # java8 for gradle and android studio
-RUN sudo wget --no-cookies --header "Cookie: oraclelicense=foo" http://download.oracle.com/otn-pub/java/jdk/8u101-b13/jdk-8u101-linux-x64.tar.gz -O /jdk-8u101-linux-x64.tar.gz && \
-    tar xzf /jdk-8u101-linux-x64.tar.gz -C /home/developer/
+COPY jdk-8u471-linux-x64.tar.gz /
+RUN \
+    tar xzf /jdk-8u471-linux-x64.tar.gz -C /home/developer/
 
 # sdk, ndk
 RUN sudo wget http://dl.google.com/android/repository/android-ndk-r12b-linux-x86_64.zip -O /android-ndk-r12b-linux-x86_64.zip && \
@@ -36,9 +39,9 @@ RUN sudo wget http://dl.google.com/android/repository/android-ndk-r12b-linux-x86
 RUN sudo apt-get update && \
     sudo apt-get install -y openjdk-7-jdk
 
-RUN echo 'export JAVA="/home/developer/jdk1.8.0_101/bin"' >> /home/developer/.bashrc && \
-    echo 'export JAVA_HOME="/home/developer/jdk1.8.0_101"' >> /home/developer/.bashrc && \
-    echo 'export STUDIO_JDK="/home/developer/jdk1.8.0_101"' >> /home/developer/.bashrc && \
+RUN echo 'export JAVA="/home/developer/jdk1.8.0_471/bin"' >> /home/developer/.bashrc && \
+    echo 'export JAVA_HOME="/home/developer/jdk1.8.0_471"' >> /home/developer/.bashrc && \
+    echo 'export STUDIO_JDK="/home/developer/jdk1.8.0_471"' >> /home/developer/.bashrc && \
     echo 'export PATH="$JAVA:$PATH"' >> /home/developer/.bashrc && \
     echo 'export ANDROID_HOME="/home/developer/android-sdk-linux"' >> /home/developer/.bashrc && \
     echo 'export ANDROID_TOOLS="/home/developer/android-sdk-linux/tools"' >> /home/developer/.bashrc && \
