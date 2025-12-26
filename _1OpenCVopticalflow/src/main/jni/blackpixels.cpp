@@ -30,7 +30,7 @@
 
 int Blackpixels::faceDetect(cv::Mat gray, cv::Rect *face) {
     std::vector<cv::Rect> faces;
-    face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
+    face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|cv::CASCADE_SCALE_IMAGE|cv::CASCADE_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
     if (faces.size() != 1) {
         return -1;
     }
@@ -280,8 +280,8 @@ void Blackpixels::method(cv::Mat gray, cv::Mat& left, cv::Mat& right, cv::Mat& t
     left = left.clone();
     right = right.clone();
 
-    cv::threshold(left, tLeft, 27, 255, CV_THRESH_BINARY);
-    cv::threshold(right, tRight, 27, 255, CV_THRESH_BINARY);
+    cv::threshold(left, tLeft, 27, 255, cv::THRESH_BINARY);
+    cv::threshold(right, tRight, 27, 255, cv::THRESH_BINARY);
 /*
     cv::dilate(tLeft, tLeft, element, cv::Point(-1, -1), iterations, 1, 1); // cv::Mat()
     cv::dilate(tRight, tRight, element, cv::Point(-1, -1), iterations, 1, 1);

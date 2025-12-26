@@ -68,7 +68,7 @@ void getLeftRightEyeMat(cv::Mat gray, __attribute__((unused)) cv::Rect leftEyeRe
 
 int faceDetect(cv::Mat gray, cv::Rect *face) {
     std::vector<cv::Rect> faces;
-    face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
+    face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|cv::CASCADE_SCALE_IMAGE|cv::CASCADE_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
     if (faces.size() != 1) {
         return -1;
     }
@@ -284,12 +284,12 @@ void OptFlow::process(cv::Mat gray, cv::Mat out, __attribute__((unused)) double 
 /*
     //cv::equalizeHist(left, left);
     //cv::equalizeHist(right, right);
-    cv::threshold(left, left, 27, 255, CV_THRESH_BINARY);
-    cv::threshold(right, right, 27, 255, CV_THRESH_BINARY);
-    //cv::threshold(left, left, 50, 255, CV_THRESH_BINARY+CV_THRESH_OTSU);
-    //cv::threshold(right, right, 50, 255, CV_THRESH_BINARY+CV_THRESH_OTSU);
-    //cv::adaptiveThreshold(left, left, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 15, 0);
-    //cv::adaptiveThreshold(right, right, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 15, 0);
+    cv::threshold(left, left, 27, 255, cv::THRESH_BINARY);
+    cv::threshold(right, right, 27, 255, cv::THRESH_BINARY);
+    //cv::threshold(left, left, 50, 255, cv::THRESH_BINARY+CV_THRESH_OTSU);
+    //cv::threshold(right, right, 50, 255, cv::THRESH_BINARY+CV_THRESH_OTSU);
+    //cv::adaptiveThreshold(left, left, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 15, 0);
+    //cv::adaptiveThreshold(right, right, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 15, 0);
     imshowWrapper("leftSR", left, debug_show_img_templ_eyes_cor);
     imshowWrapper("rightSR", right, debug_show_img_templ_eyes_cor);
 
@@ -394,7 +394,7 @@ cv::RNG rng(12345);
                 cv::Point2f point;
                 std::vector<uchar> status;
                 std::vector<float> err;
-                cv::TermCriteria termcrit(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 20, 0.03);
+                cv::TermCriteria termcrit(cv::TermCriteria::COUNT|cv::TermCriteria::EPS, 20, 0.03);
                 cv::Size subPixWinSize(10,10), winSize(31,31);
                 
                 cv::calcOpticalFlowPyrLK(pgray, gray, lpoints[0], lpoints[1], status, err  , winSize, 3, termcrit, 0, 0.001);
@@ -420,7 +420,7 @@ cv::RNG rng(12345);
                 cv::Point2f point;
                 std::vector<uchar> status;
                 std::vector<float> err;
-                cv::TermCriteria termcrit(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 20, 0.03);
+                cv::TermCriteria termcrit(cv::TermCriteria::COUNT|cv::TermCriteria::EPS, 20, 0.03);
                 cv::Size subPixWinSize(10,10), winSize(31,31);
                 
                 cv::calcOpticalFlowPyrLK(pgray, gray, rpoints[0], rpoints[1], status, err  , winSize, 3, termcrit, 0, 0.001);
@@ -460,7 +460,7 @@ cv::RNG rng(12345);
 OptFlow::OptFlow () {
     ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-startx).count();
     
-    termcrit= cv::TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 20, 0.03);
+    termcrit= cv::TermCriteria(cv::TermCriteria::COUNT|cv::TermCriteria::EPS, 20, 0.03);
     subPixWinSize = cv::Size(10,10);
     winSize = cv::Size(31,31);
 };

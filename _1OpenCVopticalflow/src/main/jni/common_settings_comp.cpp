@@ -46,8 +46,8 @@ bool shouldUseAnnotTimestamps = false;
 
 //int method = METHOD_OPTFLOW;
 //int method = METHOD_TEMPLATE_BASED;
-//int method = METHOD_FARNEBACK;
-int method = METHOD_TEMPLATE_BASED;
+int method = METHOD_FARNEBACK;
+//int method = METHOD_TEMPLATE_BASED;
 //int method = METHOD_BLACKPIXELS;
 double previousFrameTime = -1;
 
@@ -68,7 +68,7 @@ cv::TermCriteria termcrit;
 cv::Size subPixWinSize, winSize;
 const int MAX_COUNT = 500;
 bool addRemovePtx = false;
-cv::vector<cv::Point2f> points[2];
+std::vector<cv::Point2f> points[2];
 cv::Mat pleft, pright;
 int firstLoopProcs = 1;
 

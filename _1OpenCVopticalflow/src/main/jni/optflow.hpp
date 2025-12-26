@@ -1,6 +1,8 @@
 #ifndef OPTFLOW_H
 #define OPTFLOW_H
 
+#include <vector>
+
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -33,7 +35,7 @@ class OptFlow {
 
         cv::Mat rgb, grayx, left, right, prevLeft, prevRight;
         unsigned long long int ns = 0;
-        cv::vector<cv::Point2f> lpoints[2], rpoints[2];
+        std::vector<cv::Point2f> lpoints[2], rpoints[2];
         const int MAX_COUNT = 501;
         cv::TermCriteria termcrit;
         cv::Size subPixWinSize, winSize;

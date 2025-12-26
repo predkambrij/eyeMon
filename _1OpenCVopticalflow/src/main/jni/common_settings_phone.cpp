@@ -64,7 +64,7 @@ cv::TermCriteria termcrit;
 cv::Size subPixWinSize, winSize;
 const int MAX_COUNT = 500;
 bool addRemovePtx = false;
-cv::vector<cv::Point2f> points[2];
+std::vector<cv::Point2f> points[2];
 cv::Mat pleft, pright;
 int firstLoopProcs = 1;
 

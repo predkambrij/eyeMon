@@ -45,15 +45,15 @@ void captureFrames() {
 
     if (isVideoCapture == true) {
         // resolutions 320, 240; 800, 448; 640, 480
-        //stream1.set(CV_CAP_PROP_FRAME_WIDTH, 320); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 240);
-        stream1.set(CV_CAP_PROP_FRAME_WIDTH, 640); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
-        //stream1.set(CV_CAP_PROP_FRAME_WIDTH, 1280); stream1.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
+        //stream1.set(cv::CAP_PROP_FRAME_WIDTH, 320); stream1.set(cv::CAP_PROP_FRAME_HEIGHT, 240);
+        stream1.set(cv::CAP_PROP_FRAME_WIDTH, 640); stream1.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+        //stream1.set(cv::CAP_PROP_FRAME_WIDTH, 1280); stream1.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
     }
 
     if (isVideoCapture == false) {
-        doLog(debug_t1_log, "debug_t1_log: T1 video capture %f %f %f\n", stream1.get(CV_CAP_PROP_FRAME_WIDTH), stream1.get(CV_CAP_PROP_FRAME_HEIGHT), stream1.get(CV_CAP_PROP_FPS));
-        doLog(debug_t1_log, "debug_t1_log: CAP_PROP_FPS %f\n", stream1.get(CV_CAP_PROP_FPS));
-        doLog(debug_t1_log, "debug_t1_log: CAP_PROP_FRAME_COUNT %f\n", stream1.get(CV_CAP_PROP_FRAME_COUNT));
+        doLog(debug_t1_log, "debug_t1_log: T1 video capture %f %f %f\n", stream1.get(cv::CAP_PROP_FRAME_WIDTH), stream1.get(cv::CAP_PROP_FRAME_HEIGHT), stream1.get(cv::CAP_PROP_FPS));
+        doLog(debug_t1_log, "debug_t1_log: CAP_PROP_FPS %f\n", stream1.get(cv::CAP_PROP_FPS));
+        doLog(debug_t1_log, "debug_t1_log: CAP_PROP_FRAME_COUNT %f\n", stream1.get(cv::CAP_PROP_FRAME_COUNT));
     }
 
     cv::Mat frame;
@@ -98,7 +98,7 @@ void captureFrames() {
                 }
                 
             } else {
-                frameTimeMs = (double) stream1.get(CV_CAP_PROP_POS_MSEC);
+                frameTimeMs = (double) stream1.get(cv::CAP_PROP_POS_MSEC);
             }
         }
         if (frameNum >= startingFrameNum) {
@@ -122,48 +122,48 @@ Blackpixels blackpixels;
 TemplateBased templ;
 
 void doProcessing() {
-    //cv::namedWindow(face_window_name,CV_WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
+    //cv::namedWindow(face_window_name,cv::WINDOW_NORMAL); cv::moveWindow(face_window_name, 10, 100);
     if (debug_show_img_d1 == true) {
-        cv::namedWindow("debug1",CV_WINDOW_NORMAL); cv::moveWindow("debug1", 60, 220);
-        cv::namedWindow("debug2",CV_WINDOW_NORMAL); cv::moveWindow("debug2", 60, 490);
-        cv::namedWindow("debug3",CV_WINDOW_NORMAL); cv::moveWindow("debug3", 60, 790);
-        cv::namedWindow("debug4",CV_WINDOW_NORMAL); cv::moveWindow("debug4", 60, 30);
+        cv::namedWindow("debug1",cv::WINDOW_NORMAL); cv::moveWindow("debug1", 60, 220);
+        cv::namedWindow("debug2",cv::WINDOW_NORMAL); cv::moveWindow("debug2", 60, 490);
+        cv::namedWindow("debug3",cv::WINDOW_NORMAL); cv::moveWindow("debug3", 60, 790);
+        cv::namedWindow("debug4",cv::WINDOW_NORMAL); cv::moveWindow("debug4", 60, 30);
     }
     if (debug_show_img_main == true) {
-        cv::namedWindow("main",CV_WINDOW_NORMAL); cv::moveWindow("main", 400, 30); cv::resizeWindow("main",1280, 960);
+        cv::namedWindow("main",cv::WINDOW_NORMAL); cv::moveWindow("main", 400, 30); cv::resizeWindow("main",1280, 960);
     }
     if (debug_show_img_gray == true) {
-        cv::namedWindow("gray",CV_WINDOW_NORMAL); cv::moveWindow("gray", 400, 100); cv::resizeWindow("gray",1280, 960);
+        cv::namedWindow("gray",cv::WINDOW_NORMAL); cv::moveWindow("gray", 400, 100); cv::resizeWindow("gray",1280, 960);
     }
     if (debug_show_img_face == true) {
-        cv::namedWindow("face",CV_WINDOW_NORMAL); cv::moveWindow("face", 60, 30);
+        cv::namedWindow("face",cv::WINDOW_NORMAL); cv::moveWindow("face", 60, 30);
     }
     if (debug_show_img_farne_eyes == true && debug_show_img_main == true && (method == METHOD_FARNEBACK || method == METHOD_BLACKPIXELS)) {
-        cv::namedWindow("leftR",CV_WINDOW_NORMAL); cv::moveWindow("leftR", 1300, 800);
-        cv::namedWindow("rightR",CV_WINDOW_NORMAL); cv::moveWindow("rightR", 1600, 800);
-        cv::namedWindow("left",CV_WINDOW_NORMAL); cv::moveWindow("left", 1300, 500);
-        cv::namedWindow("right",CV_WINDOW_NORMAL); cv::moveWindow("right", 1600, 500);
-        cv::namedWindow("leftSR",CV_WINDOW_NORMAL); cv::moveWindow("leftSR", 1300, 200);
-        cv::namedWindow("rightSR",CV_WINDOW_NORMAL); cv::moveWindow("rightSR", 1600, 200);
+        cv::namedWindow("leftR",cv::WINDOW_NORMAL); cv::moveWindow("leftR", 1300, 800);
+        cv::namedWindow("rightR",cv::WINDOW_NORMAL); cv::moveWindow("rightR", 1600, 800);
+        cv::namedWindow("left",cv::WINDOW_NORMAL); cv::moveWindow("left", 1300, 500);
+        cv::namedWindow("right",cv::WINDOW_NORMAL); cv::moveWindow("right", 1600, 500);
+        cv::namedWindow("leftSR",cv::WINDOW_NORMAL); cv::moveWindow("leftSR", 1300, 200);
+        cv::namedWindow("rightSR",cv::WINDOW_NORMAL); cv::moveWindow("rightSR", 1600, 200);
     }
     if (debug_show_img_templ_eyes_tmpl == true && method == METHOD_TEMPLATE_BASED) {
-        cv::namedWindow("leftSR",CV_WINDOW_NORMAL); cv::moveWindow("leftSR", 1300, 200);
-        cv::namedWindow("rightSR",CV_WINDOW_NORMAL); cv::moveWindow("rightSR", 1600, 200);
+        cv::namedWindow("leftSR",cv::WINDOW_NORMAL); cv::moveWindow("leftSR", 1300, 200);
+        cv::namedWindow("rightSR",cv::WINDOW_NORMAL); cv::moveWindow("rightSR", 1600, 200);
     }
     if (debug_show_img_templ_eyes_tmpl == true && method == METHOD_TEMPLATE_BASED) {
-        cv::namedWindow("left",CV_WINDOW_NORMAL); cv::moveWindow("left", 1300, 500);
-        cv::namedWindow("right",CV_WINDOW_NORMAL); cv::moveWindow("right", 1600, 500);
+        cv::namedWindow("left",cv::WINDOW_NORMAL); cv::moveWindow("left", 1300, 500);
+        cv::namedWindow("right",cv::WINDOW_NORMAL); cv::moveWindow("right", 1600, 500);
     }
     if (debug_show_img_templ_eyes_cor == true && method == METHOD_TEMPLATE_BASED) {
-        cv::namedWindow("leftR",CV_WINDOW_NORMAL); cv::moveWindow("leftR", 1300, 800);
-        cv::namedWindow("rightR",CV_WINDOW_NORMAL); cv::moveWindow("rightR", 1600, 800);
+        cv::namedWindow("leftR",cv::WINDOW_NORMAL); cv::moveWindow("leftR", 1300, 800);
+        cv::namedWindow("rightR",cv::WINDOW_NORMAL); cv::moveWindow("rightR", 1600, 800);
     }
     /*
-    cv::namedWindow("leftR1",CV_WINDOW_NORMAL); cv::moveWindow("leftR1", 10, 800);
-    cv::namedWindow("rightR1",CV_WINDOW_NORMAL); cv::moveWindow("rightR1", 200, 800);
+    cv::namedWindow("leftR1",cv::WINDOW_NORMAL); cv::moveWindow("leftR1", 10, 800);
+    cv::namedWindow("rightR1",cv::WINDOW_NORMAL); cv::moveWindow("rightR1", 200, 800);
     */
-    // cv::namedWindow("Right Eye",CV_WINDOW_NORMAL); cv::moveWindow("Right Eye", 10, 600);
-    // cv::namedWindow("Left Eye",CV_WINDOW_NORMAL); cv::moveWindow("Left Eye", 10, 800);
+    // cv::namedWindow("Right Eye",cv::WINDOW_NORMAL); cv::moveWindow("Right Eye", 10, 600);
+    // cv::namedWindow("Left Eye",cv::WINDOW_NORMAL); cv::moveWindow("Left Eye", 10, 800);
     // createCornerKernels(), at the end // releaseCornerKernels(); // ellipse(skinCrCbHist, cv::Point(113, 155.6), cv::Size(23.4, 15.2), 43.0, 0.0, 360.0, cv::Scalar(255, 255, 255), -1);
 
     std::chrono::time_point<std::chrono::steady_clock> t1 = std::chrono::steady_clock::now();
@@ -400,6 +400,7 @@ int main() { // int argc, char * argv[]
     switch (method) {
         case METHOD_OPTFLOW:
         optf.setup(faceDetector);
+        break;
         case METHOD_FARNEBACK:
         farneback.setup(faceDetector);
         break;

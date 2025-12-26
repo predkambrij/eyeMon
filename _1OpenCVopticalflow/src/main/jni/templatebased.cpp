@@ -186,8 +186,8 @@ void TemplateBased::method(cv::Mat& gray, cv::Mat& out, double timestamp, unsign
 // TODO we should estimate whether we lost eyes
 // - location moved too far, correlation too low, (face not visible)
     t1 = std::chrono::steady_clock::now();
-    cv::matchTemplate(lTemplSearch, this->leftTemplate, leftResult, CV_TM_SQDIFF_NORMED);
-    cv::matchTemplate(rTemplSearch, this->rightTemplate, rightResult, CV_TM_SQDIFF_NORMED);
+    cv::matchTemplate(lTemplSearch, this->leftTemplate, leftResult, cv::TM_SQDIFF_NORMED);
+    cv::matchTemplate(rTemplSearch, this->rightTemplate, rightResult, cv::TM_SQDIFF_NORMED);
     difftime("debug_tmpl_perf2: matchTemplate (2x)", t1, debug_tmpl_perf2);
     imshowWrapper("leftR", leftResult, debug_show_img_templ_eyes_cor);
     imshowWrapper("rightR", rightResult, debug_show_img_templ_eyes_cor);
@@ -358,7 +358,7 @@ void TemplateBased::frameTimeProcessing(double timestamp) {
 };*/
 int TemplateBased::faceDetect(cv::Mat gray, cv::Rect *face) {
     std::vector<cv::Rect> faces;
-    face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
+    face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|cv::CASCADE_SCALE_IMAGE|cv::CASCADE_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
     if (faces.size() != 1) {
         return -1;
     }

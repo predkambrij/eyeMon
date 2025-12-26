@@ -3,6 +3,8 @@
 
 #include <chrono>
 #include <list>
+#include <map>
+#include <vector>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
@@ -116,7 +118,7 @@ extern cv::TermCriteria termcrit;
 extern cv::Size subPixWinSize, winSize;
 extern const int MAX_COUNT;
 extern bool addRemovePtx;
-extern cv::vector<cv::Point2f> points[2];
+extern std::vector<cv::Point2f> points[2];
 extern cv::Mat pleft, pright;
 extern cv::Mat toSave;
 extern int firstLoopProcs;

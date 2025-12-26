@@ -53,7 +53,7 @@ void Farneback::drawOptFlowMap (cv::Rect eyeE, const cv::Mat flow, cv::Mat cflow
 
 int Farneback::faceDetect(cv::Mat gray, cv::Rect *face) {
     std::vector<cv::Rect> faces;
-    face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE|CV_HAAR_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
+    face_cascade.detectMultiScale(gray, faces, 1.1, 2, 0|cv::CASCADE_SCALE_IMAGE|cv::CASCADE_FIND_BIGGEST_OBJECT, cv::Size(150, 150));
     if (faces.size() != 1) {
         return -1;
     }

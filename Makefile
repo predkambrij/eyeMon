@@ -24,7 +24,7 @@ ndkb :
 
 _compile :
 	cd /eyeMon/_1OpenCVopticalflow/src/main/jni; \
-	g++ $(MACROS) $(COMPILER_FLAGS) $(FILES_TO_COMPILE) -o $(OUTPUT_BIN) -I. $$(pkg-config --cflags --libs opencv);
+	g++ $(MACROS) $(COMPILER_FLAGS) $(FILES_TO_COMPILE) -o $(OUTPUT_BIN) -I. $$(pkg-config --cflags --libs opencv4);
 
 #	$(eval FILES_TO_COMPILE += eyeLike/src/findEyeCorner.cpp eyeLike/src/findEyeCenter.cpp eyeLike/src/helpers.cpp)
 _setEyelikeFiles :
