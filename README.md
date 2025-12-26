@@ -24,6 +24,12 @@ Using X11 unix socket (it's less CPU intensive)
 Using privileged
 - ```docker run -it --rm -v .:/eyeMon -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY --privileged -u developer predkambrij/eyemon bash -c "cd /eyeMon/; make d"```
 
+Capture log files:
+- ```touch ./tmp/eyemonpy.log ./tmp/testlog.txt```
+- ```docker run -it --rm -v .:/eyeMon -v ./tmp/eyemonpy.log:/tmp/eyemonpy.log -v ./tmp/testlog.txt:/tmp/testlog.txt -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY --privileged -u developer predkambrij/eyemon bash -c "cd /eyeMon/; make d"```
+
+
+
 ## Running the code on your Android phone:
 - ```git clone git@github.com:predkambrij/eyeMon.git```
 - ```git clone git@github.com:predkambrij/eyeLike eyeMon/_1OpenCVopticalflow/src/main/jni/eyeLike```
