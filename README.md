@@ -27,7 +27,7 @@ Using X11 unix socket (it's less CPU intensive)
 
 Using privileged
 
-    docker run -it --rm -v .:/eyeMon -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY --privileged -u developer predkambrij/eyemon bash -c "cd /eyeMon/; make d"
+    docker run -it --gpus all --rm -v .:/eyeMon -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=all --privileged -u developer predkambrij/eyemon bash -c "cd /eyeMon/; make d"
 
 Capture log files:
 
