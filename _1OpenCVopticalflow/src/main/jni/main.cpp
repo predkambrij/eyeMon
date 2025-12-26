@@ -40,7 +40,9 @@ bool grabbing = true;
 
 void captureFrames() {
     if (!stream1.isOpened()) {
-        CV_Assert("T1 cam open failed");
+        doLog(true, "T1 cam open failed\n");
+        finished = true;
+        return;
     }
 
     if (isVideoCapture == true) {
@@ -68,6 +70,11 @@ void captureFrames() {
 #endif
         if(!(stream1.read(frame))) {
             doLog(debug_t1_log, "debug_t1_log: No captured frame, exiting!\n");
+            finished = true;
+            return;
+        }
+        if(frame.empty()) {
+            doLog(true, "Empty frame received, exiting!\n");
             finished = true;
             return;
         }

@@ -144,12 +144,14 @@ bool Farneback::reinit(cv::Mat gray, cv::Mat& left, cv::Mat& right, double times
     doLog(debug_fb_log_tracking, "debug_fb_log_tracking: F %u T %.3lf size face %d %d eyeR %d %d\n",
         frameNum, timestamp, face.width, face.height, this->leftRg.width, this->leftRg.height);
 
+    // extract eye regions first, then preprocess
+    left  = gray(this->leftRg).clone();
+    right = gray(this->rightRg).clone();
+
     // preprocess only eye region(blur, eqHist)
     t1 = std::chrono::steady_clock::now();
     this->preprocess(left, right, timestamp, frameNum);
     difftime("debug_fb_perf2: reinit:preprocess", t1, debug_fb_perf2);
-    left  = gray(this->leftRg).clone();
-    right = gray(this->rightRg).clone();
 
     // locate and save pupil location
     t1 = std::chrono::steady_clock::now();
