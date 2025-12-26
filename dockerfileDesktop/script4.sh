@@ -10,8 +10,13 @@ scriptDir="$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
 sudo bash -c "echo /usr/local/lib >> /etc/ld.so.conf; ldconfig"
 
 cd /home/developer/ && sudo chmod a+r /2.4.10.4.zip && unzip /2.4.10.4.zip
-cd opencv-* && mkdir release && cd release
-#cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..
-#make -j8 && sudo make install
+
+# Patch OpenCV CMake to handle newer GCC versions (10+) that only output major version
+cd /home/developer/opencv-2.4.10.4
+sed -i 's/execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} -dumpversion/execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} -dumpfullversion -dumpversion/' cmake/OpenCVDetectCXXCompiler.cmake
+
+mkdir release && cd release
+cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local ..
+make -j8 && sudo make install
 sudo ldconfig
 #rm -rf /home/developer/opencv-*
