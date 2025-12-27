@@ -6,7 +6,7 @@ ARG ARG_UID
 ARG ARG_GID
 
 ADD cfgs/supervisord.conf /etc/supervisord.conf
-
+RUN apt-get update && apt-get install -y tzdata
 COPY script1.sh /
 RUN /script1.sh
 RUN apt-get install -y pwgen python3-pip

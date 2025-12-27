@@ -12,7 +12,8 @@ In the scope of this project, [eyeMonTester](https://github.com/predkambrij/eyeM
     git clone git@github.com:predkambrij/eyeMon.git
     git clone git@github.com:predkambrij/eyeLike eyeMon/_1OpenCVopticalflow/src/main/jni/eyeLike
     cd eyeMon
-    docker build --build-arg ARG_UID=$(id -u) --build-arg ARG_GID=$(id -g) -t predkambrij/eyemon dockerfileDesktop/ # it takes some time to download and compile; currently docker image takes 882.6 MB
+    # it takes some time to download and compile; currently docker image takes 2.13 GB
+    docker build --build-arg ARG_UID=$(id -u) --build-arg ARG_GID=$(id -g) -t predkambrij/eyemon dockerfileDesktop/
 
 Note: if you want sound notifications, you need to pass --device /dev/tty0 and --cap-add SYS_TTY_CONFIG so that beep command (pc speaker) will work
 
@@ -32,8 +33,7 @@ Using privileged
 Capture log files:
 
     touch ./tmp/eyemonpy.log ./tmp/testlog.txt
-    docker run -it --rm -v .:/eyeMon -v ./tmp/eyemonpy.log:/tmp/eyemonpy.log -v ./tmp/testlog.txt:/tmp/testlog.txt -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY --privileged -u developer predkambrij/eyemon bash -c "cd /eyeMon/; make d"
-
+    docker run -it --gpus all --rm -v .:/eyeMon -v ./tmp/eyemonpy.log:/tmp/eyemonpy.log -v ./tmp/testlog.txt:/tmp/testlog.txt -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=all --privileged -u developer predkambrij/eyemon bash -c "cd /eyeMon/; make d"
 
 
 ## Running the code on your Android phone:
@@ -41,7 +41,8 @@ Capture log files:
     git clone git@github.com:predkambrij/eyeMon.git
     git clone git@github.com:predkambrij/eyeLike eyeMon/_1OpenCVopticalflow/src/main/jni/eyeLike
     cd eyeMon
-    docker build --build-arg ARG_UID=$(id -u) --build-arg ARG_GID=$(id -g) -t predkambrij/eyemondev -f dockerfileDesktop/Dockerfile_develop dockerfileDesktop/ # it takes some time to download and compile; currently docker image takes 8.7
+    # it takes some time to download and compile; currently docker image takes 13.3 GB
+    docker build --build-arg ARG_UID=$(id -u) --build-arg ARG_GID=$(id -g) -t predkambrij/eyemondev -f dockerfileDesktop/Dockerfile_develop dockerfileDesktop/
 
 Note: if you want to install the apk using adb, find which usb device belongs to your phone, in this case it's /dev/bus/usb/003/013  
 Note2: you can use also X11 unix the same way as above  

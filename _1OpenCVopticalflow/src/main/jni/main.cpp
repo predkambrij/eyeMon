@@ -49,7 +49,7 @@ void captureFrames() {
         // resolutions 320, 240; 800, 448; 640, 480
         //stream1.set(cv::CAP_PROP_FRAME_WIDTH, 320); stream1.set(cv::CAP_PROP_FRAME_HEIGHT, 240);
         stream1.set(cv::CAP_PROP_FRAME_WIDTH, 640); stream1.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
-        //stream1.set(cv::CAP_PROP_FRAME_WIDTH, 1280); stream1.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
+        //stream1.set(cv::CAP_PROP_FRAME_WIDTH, 1280); stream1.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
     }
 
     if (isVideoCapture == false) {
