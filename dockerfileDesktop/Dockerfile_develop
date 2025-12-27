@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -9,12 +9,14 @@ ADD cfgs/supervisord.conf /etc/supervisord.conf
 
 COPY script1.sh /
 RUN /script1.sh
+RUN apt-get install -y pwgen python3-pip
 
 COPY script2.sh /
 RUN /script2.sh
 
 COPY script3.sh /
 RUN /script3.sh
+#RUN wget https://github.com/Itseez/opencv/archive/2.4.10.4.zip -O /2.4.10.4.zip
 
 USER developer
 
@@ -37,7 +39,7 @@ RUN sudo wget http://dl.google.com/android/repository/android-ndk-r12b-linux-x86
 
 # for sdk manager gui
 RUN sudo apt-get update && \
-    sudo apt-get install -y openjdk-7-jdk
+    true
 
 RUN echo 'export JAVA="/home/developer/jdk1.8.0_471/bin"' >> /home/developer/.bashrc && \
     echo 'export JAVA_HOME="/home/developer/jdk1.8.0_471"' >> /home/developer/.bashrc && \
@@ -47,6 +49,7 @@ RUN echo 'export JAVA="/home/developer/jdk1.8.0_471/bin"' >> /home/developer/.ba
     echo 'export ANDROID_TOOLS="/home/developer/android-sdk-linux/tools"' >> /home/developer/.bashrc && \
     true
 
+RUN sudo apt-get install -y openjdk-17-jdk
 RUN echo "y" | /home/developer/android-sdk-linux/tools/android update sdk --filter build-tools-24.0.1,extra-android-m2repository,android-15,android-21,android-24,platform-tools --no-ui
 
 RUN sudo wget http://downloads.sourceforge.net/project/opencvlibrary/opencv-android/2.4.10/OpenCV-2.4.10-android-sdk.zip -O /OpenCV-2.4.10-android-sdk.zip && \
@@ -68,6 +71,7 @@ RUN /bin/echo -e "if [ -f ~/.bashrc ]; then\n.    ~/.bashrc\nfi" >> /home/develo
 RUN sudo usermod -a -G audio developer
 # end of develop part
 USER root
+
 
 RUN apt-get install -y supervisor
 
