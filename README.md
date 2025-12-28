@@ -1,6 +1,6 @@
 eyeMon
 ======
-This is very experimental. If you're looking for something that just works, try [blinkingmatters](https://www.blinkingmatters.com/download) although it's not open source and it's available only for Windows and MacOS.
+This is very experimental. If you're looking for something that just works, try [blinkingmatters](https://www.blinkingmatters.com/download) although it's not open source and it's available only for Windows and MacOS. It works through Wine on Linux also.
 
 # Description
 
